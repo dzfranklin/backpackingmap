@@ -50,5 +50,6 @@ defmodule HikingmapWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
+  plug Pow.Plug.Session, otp_app: :hikingmap
   plug HikingmapWeb.Router
 end

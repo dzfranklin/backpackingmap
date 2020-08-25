@@ -10,6 +10,11 @@ use Mix.Config
 config :hikingmap,
   ecto_repos: [Hikingmap.Repo]
 
+config :hikingmap, :pow,
+  user: Hikingmap.Users.User,
+  repo: Hikingmap.Repo,
+  web_module: HikingmapWeb
+
 # Configures the endpoint
 config :hikingmap, HikingmapWeb.Endpoint,
   url: [host: "localhost"],

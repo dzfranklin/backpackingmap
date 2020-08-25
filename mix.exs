@@ -47,7 +47,8 @@ defmodule Hikingmap.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:coord, "~> 0.1"}
+      {:coord, "~> 0.1"},
+      {:pow, "~> 1.0.20"}
     ]
   end
 
