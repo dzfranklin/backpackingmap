@@ -51,8 +51,9 @@ defmodule HikingmapWeb.Router do
   scope "/api/v1", HikingmapWeb.API.V1, as: :v1_api do
     pipe_through :api
 
-    resources "/registration", RegistrationController, singleton: true, only: [:create]
-    resources "/session", SessionController, singleton: true, only: [:create, :delete]
+    post "/registration", RegistrationController, :create
+    post "/session", SessionController, :create
+    delete "/session", SessionController, :delete
     post "/session/renew", SessionController, :renew
   end
 
