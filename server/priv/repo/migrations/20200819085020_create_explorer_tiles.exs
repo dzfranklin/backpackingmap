@@ -1,4 +1,4 @@
-defmodule Hikingmap.Repo.Migrations.CreateExplorerTiles do
+defmodule Backpackingmap.Repo.Migrations.CreateExplorerTiles do
   use Ecto.Migration
 
   def change do

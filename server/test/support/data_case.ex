@@ -1,4 +1,4 @@
-defmodule Hikingmap.DataCase do
+defmodule Backpackingmap.DataCase do
   @moduledoc """
   This module defines the setup for tests requiring
   access to the application's data layer.
@@ -10,7 +10,7 @@ defmodule Hikingmap.DataCase do
   we enable the SQL sandbox, so changes done to the database
   are reverted at the end of every test. If you are using
   PostgreSQL, you can even run database tests asynchronously
-  by setting `use Hikingmap.DataCase, async: true`, although
+  by setting `use Backpackingmap.DataCase, async: true`, although
   this option is not recommended for other databases.
   """
 
@@ -18,20 +18,20 @@ defmodule Hikingmap.DataCase do
 
   using do
     quote do
-      alias Hikingmap.Repo
+      alias Backpackingmap.Repo
 
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import Hikingmap.DataCase
+      import Backpackingmap.DataCase
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Hikingmap.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Backpackingmap.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Hikingmap.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(Backpackingmap.Repo, {:shared, self()})
     end
 
     :ok

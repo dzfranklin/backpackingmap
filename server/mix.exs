@@ -1,9 +1,9 @@
-defmodule Hikingmap.MixProject do
+defmodule Backpackingmap.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :hikingmap,
+      app: :backpackingmap,
       version: "0.1.0",
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -19,7 +19,7 @@ defmodule Hikingmap.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {Hikingmap.Application, []},
+      mod: {Backpackingmap.Application, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end
@@ -48,7 +48,8 @@ defmodule Hikingmap.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:coord, "~> 0.1"},
-      {:pow, "~> 1.0.20"}
+      {:pow, "~> 1.0.20"},
+      {:site_encrypt, "~> 0.3.0"}
     ]
   end
 

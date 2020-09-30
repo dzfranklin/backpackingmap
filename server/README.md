@@ -1,4 +1,4 @@
-# Hikingmap
+# Backpackingmap
 
 To start your Phoenix server:
 

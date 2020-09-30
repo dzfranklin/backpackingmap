@@ -1,10 +1,10 @@
 use Mix.Config
 
 # Configure your database
-config :hikingmap, Hikingmap.Repo,
+config :backpackingmap, Backpackingmap.Repo,
   username: "postgres",
   password: "postgres",
-  database: "hikingmap_dev",
+  database: "backpackingmap_dev",
   hostname: "localhost",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
@@ -15,8 +15,11 @@ config :hikingmap, Hikingmap.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we use it
 # with webpack to recompile .js and .css sources.
-config :hikingmap, HikingmapWeb.Endpoint,
-  http: [port: 4000],
+config :backpackingmap, BackpackingmapWeb.Endpoint,
+  http: [port: 5080],
+  https: [
+    port: 5443
+  ],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
@@ -29,6 +32,13 @@ config :hikingmap, HikingmapWeb.Endpoint,
       cd: Path.expand("../assets", __DIR__)
     ]
   ]
+
+config :backpackingmap, :certbot,
+  db_folder: "priv/dev_site_encrypt",
+  directory_url: {
+    :internal,
+    port: 5002
+  }
 
 # ## SSL Support
 #
@@ -55,13 +65,13 @@ config :hikingmap, HikingmapWeb.Endpoint,
 # different ports.
 
 # Watch static and templates for browser reloading.
-config :hikingmap, HikingmapWeb.Endpoint,
+config :backpackingmap, BackpackingmapWeb.Endpoint,
   live_reload: [
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/hikingmap_web/(live|views)/.*(ex)$",
-      ~r"lib/hikingmap_web/templates/.*(eex)$"
+      ~r"lib/backpackingmap_web/(live|views)/.*(ex)$",
+      ~r"lib/backpackingmap_web/templates/.*(eex)$"
     ]
   ]
 

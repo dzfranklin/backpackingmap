@@ -7,20 +7,23 @@
 # General application configuration
 use Mix.Config
 
-config :hikingmap,
-  ecto_repos: [Hikingmap.Repo]
+config :backpackingmap, :certbot,
+  error_contacts: ["daniel@danielzfranklin.org"]
 
-config :hikingmap, :pow,
-  user: Hikingmap.Users.User,
-  repo: Hikingmap.Repo,
-  web_module: HikingmapWeb
+config :backpackingmap,
+  ecto_repos: [Backpackingmap.Repo]
+
+config :backpackingmap, :pow,
+  user: Backpackingmap.Users.User,
+  repo: Backpackingmap.Repo,
+  web_module: BackpackingmapWeb
 
 # Configures the endpoint
-config :hikingmap, HikingmapWeb.Endpoint,
+config :backpackingmap, BackpackingmapWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "2fYs29lZ+dptYGCRIEkPIi55ikABOYcIseagrFNgj/CF9TL8J7XVSPukjcGy3YAZ",
-  render_errors: [view: HikingmapWeb.ErrorView, accepts: ~w(html json), layout: false],
-  pubsub_server: Hikingmap.PubSub,
+  render_errors: [view: BackpackingmapWeb.ErrorView, accepts: ~w(html json), layout: false],
+  pubsub_server: Backpackingmap.PubSub,
   live_view: [signing_salt: "Y23eZRzD"]
 
 # Configures Elixir's Logger
