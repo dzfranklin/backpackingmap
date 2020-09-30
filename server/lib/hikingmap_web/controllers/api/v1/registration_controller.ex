@@ -21,7 +21,7 @@ defmodule HikingmapWeb.API.V1.RegistrationController do
 
         conn
         |> put_status(500)
-        |> json(%{error: %{status: 500, message: "Couldn't create user", errors: errors}})
+        |> json(%{error: %{status: 500, message: "Couldn't create user", field_errors: errors}})
     end
   end
 end
