@@ -20,8 +20,8 @@ defmodule BackpackingmapWeb.API.V1.RegistrationController do
         errors = Changeset.traverse_errors(changeset, &ErrorHelpers.translate_error/1)
 
         conn
-        |> put_status(500)
-        |> json(%{error: %{status: 500, message: "Couldn't create user", field_errors: errors}})
+        |> put_status(400)
+        |> json(%{error: %{status: 400, message: "Couldn't create user", field_errors: errors}})
     end
   end
 end
