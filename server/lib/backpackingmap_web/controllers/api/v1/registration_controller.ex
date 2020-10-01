@@ -20,8 +20,8 @@ defmodule BackpackingmapWeb.API.V1.RegistrationController do
         errors = Changeset.traverse_errors(changeset, &ErrorHelpers.translate_error/1)
 
         conn
-        |> put_status(400)
-        |> json(%{error: %{status: 400, message: "You couldn't be registered", field_errors: errors}})
+        |> put_status(200)
+        |> json(%{error: %{message: "You couldn't be registered", field_errors: errors}})
     end
   end
 end
