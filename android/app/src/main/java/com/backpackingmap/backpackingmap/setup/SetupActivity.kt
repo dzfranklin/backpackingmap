@@ -43,7 +43,7 @@ class SetupActivity : AppCompatActivity() {
     }
 
     private fun updateOnTabChange() {
-        model.registerSelected.observe(this, Observer { registerSelected ->
+        model.registerSelected.observe(this, { registerSelected ->
             val transaction = supportFragmentManager.beginTransaction()
             if (registerSelected) {
                 transaction.replace(R.id.setup_container, RegisterFragment())

@@ -32,21 +32,21 @@ class RegisterFragment : Fragment() {
     }
 
     private fun cleanInputErrorsOnChange() {
-        viewModel.email.observe(viewLifecycleOwner, Observer {
-            viewModel.emailError.value = null
+        viewModel.email.observe(viewLifecycleOwner, {
+            viewModel.clearEmailError()
         })
 
         viewModel.password.observe(viewLifecycleOwner, {
-            viewModel.passwordError.value = null
+            viewModel.clearPasswordError()
         })
     }
 
     private fun bindInputErrors() {
-        viewModel.emailError.observe(viewLifecycleOwner, Observer { error ->
+        viewModel.emailError.observe(viewLifecycleOwner, { error ->
             binding.emailLayout.error = error
         })
 
-        viewModel.passwordError.observe(viewLifecycleOwner, Observer { error ->
+        viewModel.passwordError.observe(viewLifecycleOwner, { error ->
             binding.passwordLayout.error = error
         })
     }
