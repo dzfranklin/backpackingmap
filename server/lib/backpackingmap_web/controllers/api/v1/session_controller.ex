@@ -18,7 +18,7 @@ defmodule BackpackingmapWeb.API.V1.SessionController do
       {:error, conn} ->
         conn
         |> put_status(401)
-        |> json(%{error: %{status: 401, message: "Invalid email or password"}})
+        |> json(%{error: %{status: 401, message: "Incorrect email or password"}})
     end
   end
 
@@ -31,7 +31,7 @@ defmodule BackpackingmapWeb.API.V1.SessionController do
       {conn, nil} ->
         conn
         |> put_status(401)
-        |> json(%{error: %{status: 401, message: "Invalid token"}})
+        |> json(%{error: %{status: 401, message: "Incorrect authentication token"}})
 
       {conn, _user} ->
         json(conn, %{

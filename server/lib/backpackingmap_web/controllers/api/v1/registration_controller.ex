@@ -21,7 +21,7 @@ defmodule BackpackingmapWeb.API.V1.RegistrationController do
 
         conn
         |> put_status(400)
-        |> json(%{error: %{status: 400, message: "Couldn't create user", field_errors: errors}})
+        |> json(%{error: %{status: 400, message: "You couldn't be registered", field_errors: errors}})
     end
   end
 end
