@@ -5,10 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.databinding.FragmentRegisterBinding
-import timber.log.Timber
+import com.backpackingmap.backpackingmap.repository.RegisterError
 
 class RegisterFragment : Fragment() {
     lateinit var binding: FragmentRegisterBinding
@@ -17,7 +17,7 @@ class RegisterFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         binding = FragmentRegisterBinding.inflate(layoutInflater, container, false)
         binding.lifecycleOwner = this
@@ -25,29 +25,38 @@ class RegisterFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity()).get(RegisterViewModel::class.java)
         binding.viewModel = viewModel
 
-        cleanInputErrorsOnChange()
-        bindInputErrors()
+        hideInputErrorsOnChange()
+        bindErrors()
 
         return binding.root
     }
 
     private fun cleanInputErrorsOnChange() {
         viewModel.email.observe(viewLifecycleOwner, {
-            viewModel.clearEmailError()
+            viewModel.hideEmailError()
         })
 
         viewModel.password.observe(viewLifecycleOwner, {
-            viewModel.clearPasswordError()
+            viewModel.hidePasswordError()
         })
     }
 
     private fun bindInputErrors() {
-        viewModel.emailError.observe(viewLifecycleOwner, { error ->
-            binding.emailLayout.error = error
-        })
-
-        viewModel.passwordError.observe(viewLifecycleOwner, { error ->
-            binding.passwordLayout.error = error
+        viewModel.error.observe(viewLifecycleOwner, { error ->
+            when (error) {
+                null -> null
+                is RegisterError.Network -> binding.generalError.text =
+                    getString(R.string.network_error, error.cause.localizedMessage)
+                is RegisterError.Server -> binding.generalError.text =
+                    getString(R.string.server_error, error.type)
+                is RegisterError.Api -> {
+                    val response = error.response
+                    binding.generalError.text = response.message
+                    response.field_errors.email?.let {
+                        binding.emailLayout.error = it
+                    }
+                }
+            }!!
         })
     }
 }

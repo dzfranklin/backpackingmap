@@ -11,6 +11,6 @@ data class RegisterResponseError(
 )
 
 data class RegisterResponseFieldErrors(
-    val email: List<String>?,
-    val password: List<String>?
+    val email: String?,
+    val password: String?
 )
