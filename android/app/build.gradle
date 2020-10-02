@@ -48,6 +48,7 @@ android {
     }
 }
 
+def arrow_version = "0.11.0"
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -80,4 +81,9 @@ dependencies {
     kapt "com.squareup.moshi:moshi-kotlin-codegen:1.9.3"
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
     implementation "com.squareup.retrofit2:converter-moshi:2.9.0"
+
+    // Arrow
+    implementation "io.arrow-kt:arrow-core:$arrow_version"
+    implementation "io.arrow-kt:arrow-syntax:$arrow_version"
+    kapt "io.arrow-kt:arrow-meta:$arrow_version"
 }
