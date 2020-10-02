@@ -1,6 +1,16 @@
 defmodule BackpackingmapWeb.ErrorView do
   use BackpackingmapWeb, :view
 
+  def render("500.json", assigns) do
+    Jason.encode!(
+      %{
+        message: "Internal server error",
+        _reason: inspect(assigns.reason),
+        _stack: inspect(assigns.stack)
+      }
+    )
+  end
+
   # If you want to customize a particular status code
   # for a certain format, you may uncomment below.
   # def render("500.html", _assigns) do

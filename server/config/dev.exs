@@ -20,7 +20,7 @@ config :backpackingmap, BackpackingmapWeb.Endpoint,
   https: [
     port: 5443
   ],
-  debug_errors: true,
+  debug_errors: false,
   code_reloader: true,
   check_origin: false,
   watchers: [
