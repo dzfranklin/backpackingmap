@@ -5,16 +5,50 @@ defmodule BackpackingmapWeb.ErrorHelpers do
 
   use Phoenix.HTML
 
+  def translate_changeset(%Ecto.Changeset{} = changeset) do
+    Ecto.Changeset.traverse_errors(changeset, &translate_error/1)
+    |> Enum.map(
+         fn {field, errors} ->
+           field = Atom.to_string(field)
+           {field, "#{titlecase(field)} #{join_list(errors)}."}
+         end
+       )
+    |> Map.new()
+  end
+
+  defp titlecase(s) do
+    first =
+      String.at(s, 0)
+      |> String.upcase()
+
+    rest = String.slice(s, 1..-1)
+
+    "#{first}#{rest}"
+  end
+
+  defp join_list([s]), do: s
+  defp join_list([s1, s2]), do: "#{s1} and #{s2}"
+  defp join_list(list) do
+    last = Enum.at(list, -1)
+    rest = Enum.slice(list, 0..-2)
+    "#{Enum.join(rest, ", ")}, and #{last}"
+  end
+
   @doc """
   Generates tag for inlined form input errors.
   """
   def error_tag(form, field) do
-    Enum.map(Keyword.get_values(form.errors, field), fn error ->
-      content_tag(:span, translate_error(error),
-        class: "invalid-feedback",
-        phx_feedback_for: input_id(form, field)
-      )
-    end)
+    Enum.map(
+      Keyword.get_values(form.errors, field),
+      fn error ->
+        content_tag(
+          :span,
+          translate_error(error),
+          class: "invalid-feedback",
+          phx_feedback_for: input_id(form, field)
+        )
+      end
+    )
   end
 
   @doc """

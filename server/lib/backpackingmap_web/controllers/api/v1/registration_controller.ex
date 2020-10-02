@@ -17,7 +17,7 @@ defmodule BackpackingmapWeb.API.V1.RegistrationController do
         })
 
       {:error, changeset, conn} ->
-        errors = Changeset.traverse_errors(changeset, &ErrorHelpers.translate_error/1)
+        errors = ErrorHelpers.translate_changeset(changeset)
 
         conn
         |> put_status(200)
