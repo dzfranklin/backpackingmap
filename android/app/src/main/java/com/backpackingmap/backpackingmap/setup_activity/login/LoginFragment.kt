@@ -10,7 +10,7 @@ import com.backpackingmap.backpackingmap.databinding.FragmentLoginBinding
 
 class LoginFragment : Fragment() {
     lateinit var binding: FragmentLoginBinding
-    lateinit var viewModel: LoginViewModel
+    lateinit var model: LoginViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -19,7 +19,7 @@ class LoginFragment : Fragment() {
     ): View? {
         binding =
             FragmentLoginBinding.inflate(layoutInflater, container, false)
-        viewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
+        model = ViewModelProvider(this).get(LoginViewModel::class.java)
 
         return binding.root
     }

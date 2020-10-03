@@ -5,7 +5,7 @@
     <data>
 
         <variable
-            name="viewModel"
+            name="model"
             type="com.backpackingmap.backpackingmap.setup_activity.register.RegisterViewModel" />
     </data>
 
@@ -42,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:autofillHints="emailAddress"
                 android:inputType="textEmailAddress"
-                android:text="@={viewModel.email}" />
+                android:text="@={model.email}" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -64,7 +64,7 @@
                 android:layout_height="wrap_content"
                 android:autofillHints="password"
                 android:inputType="textPassword"
-                android:text="@={viewModel.password}" />
+                android:text="@={model.password}" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button
@@ -72,7 +72,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/form_field_spacing"
-            android:onClick="@{() -> viewModel.submit()}"
+            android:onClick="@{() -> model.submit()}"
             android:text="@string/register"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/password_layout" />

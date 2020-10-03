@@ -14,7 +14,7 @@ import com.backpackingmap.backpackingmap.repo.RemoteError
 
 class RegisterFragment : Fragment() {
     lateinit var binding: FragmentRegisterBinding
-    lateinit var viewModel: RegisterViewModel
+    lateinit var model: RegisterViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -24,8 +24,8 @@ class RegisterFragment : Fragment() {
         binding = FragmentRegisterBinding.inflate(layoutInflater, container, false)
         binding.lifecycleOwner = this
         // Using the activity allows us to survive being re-created as a new fragment by the activity
-        viewModel = ViewModelProvider(requireActivity()).get(RegisterViewModel::class.java)
-        binding.viewModel = viewModel
+        model = ViewModelProvider(requireActivity()).get(RegisterViewModel::class.java)
+        binding.model = model
 
         hideInputErrorsOnChange()
         bindErrors()
@@ -35,17 +35,17 @@ class RegisterFragment : Fragment() {
     }
 
     private fun hideInputErrorsOnChange() {
-        viewModel.email.observe(viewLifecycleOwner, {
-            viewModel.hideEmailError()
+        model.email.observe(viewLifecycleOwner, {
+            model.hideEmailError()
         })
 
-        viewModel.password.observe(viewLifecycleOwner, {
-            viewModel.hidePasswordError()
+        model.password.observe(viewLifecycleOwner, {
+            model.hidePasswordError()
         })
     }
 
     private fun bindErrors() {
-        viewModel.error.observe(viewLifecycleOwner, { error ->
+        model.error.observe(viewLifecycleOwner, { error ->
             when (error) {
                 null -> null
                 is RemoteError.Network -> {
@@ -69,14 +69,14 @@ class RegisterFragment : Fragment() {
             }!!
         })
 
-        viewModel.hideEmailError.observe(viewLifecycleOwner,
+        model.hideEmailError.observe(viewLifecycleOwner,
             { binding.emailLayout.isErrorEnabled = !it })
-        viewModel.hidePasswordError.observe(viewLifecycleOwner,
+        model.hidePasswordError.observe(viewLifecycleOwner,
             { binding.passwordLayout.isErrorEnabled = !it })
     }
 
     private fun exitWhenFinished() {
-        viewModel.finished.observe(viewLifecycleOwner, { finished ->
+        model.finished.observe(viewLifecycleOwner, { finished ->
             if (finished) {
                 val intent = Intent(activity, MapActivity::class.java)
                 startActivity(intent)
