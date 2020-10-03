@@ -18,6 +18,16 @@ defmodule Backpackingmap.Os.ExplorerTile do
   get({row, col}, %Auth{})
   """
   def get(loc, %Auth{} = auth) do
+    with {:ok, png} <- get_without_unauthorized_report(loc, auth) do
+      {:ok, png}
+    else
+      {:error, :unauthorized} ->
+         Auth.report_unauthorized(auth)
+         {:error, :unauthorized}
+    end
+  end
+
+  defp get_without_unauthorized_report(loc, %Auth{} = auth) do
     with {:ok, png} <- fetch_stored_tile(loc, auth) do
       {:ok, png}
     else
