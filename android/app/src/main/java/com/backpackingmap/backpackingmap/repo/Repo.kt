@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.repository
+package com.backpackingmap.backpackingmap.repo
 
 import com.backpackingmap.backpackingmap.net.AuthApi
 import com.backpackingmap.backpackingmap.net.RegisterRequest
@@ -7,7 +7,7 @@ import com.backpackingmap.backpackingmap.net.RegisterResponseError
 import retrofit2.HttpException
 import timber.log.Timber
 
-object Repository {
+object Repo {
     suspend fun register(email: String, password: String): RemoteError<RegisterResponseError>? {
         Timber.i("Attempting to register $email")
 

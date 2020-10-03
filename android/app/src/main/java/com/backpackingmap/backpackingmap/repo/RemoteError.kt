@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.repository
+package com.backpackingmap.backpackingmap.repo
 
 sealed class RemoteError<out ApiErrorResponse>() {
 

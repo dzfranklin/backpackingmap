@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.databinding.FragmentRegisterBinding
 import com.backpackingmap.backpackingmap.map.MapActivity
-import com.backpackingmap.backpackingmap.repository.RemoteError
+import com.backpackingmap.backpackingmap.repo.RemoteError
 
 class RegisterFragment : Fragment() {
     lateinit var binding: FragmentRegisterBinding
