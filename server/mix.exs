@@ -49,7 +49,8 @@ defmodule Backpackingmap.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:coord, "~> 0.1"},
       {:pow, "~> 1.0.20"},
-      {:site_encrypt, "~> 0.3.0"}
+      {:site_encrypt, "~> 0.3.0"},
+      {:httpoison, "~> 1.6"}
     ]
   end
 

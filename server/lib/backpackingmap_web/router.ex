@@ -45,7 +45,7 @@ defmodule BackpackingmapWeb.Router do
   scope "/api/v1", BackpackingmapWeb.API.V1, as: :api_v1 do
     pipe_through [:api, :api_protected]
 
-    # Your protected API endpoints here
+    get "/tile/:type", TileController, :get
   end
 
   scope "/api/v1", BackpackingmapWeb.API.V1, as: :v1_api do

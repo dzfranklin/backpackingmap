@@ -3,46 +3,44 @@ defmodule Backpackingmap.Os.Client do
   require Logger
 
   def request(method, url) do
-    :httpc.request(method, {to_charlist(url), basic_headers()}, [], [])
+    HTTPoison.request(method, url, "", basic_headers())
     |> handle_response()
   end
 
   def request(method, url, %Auth{} = auth) do
-    :httpc.request(method, {to_charlist(url), headers(auth)}, [], [])
+    HTTPoison.request(method, url, "", headers(auth))
     |> handle_response()
   end
 
   def request(method, url, {content_type, body}) do
-    :httpc.request(
+    HTTPoison.request(
       method,
-      {to_charlist(url), basic_headers(), to_charlist(content_type), body},
-      [],
-      []
+      url,
+      body,
+      [content_type_header(content_type) | basic_headers()]
     )
     |> handle_response()
   end
 
   def request(method, url, %Auth{} = auth, {content_type, body}) do
-    :httpc.request(
+    HTTPoison.request(
       method,
-      {to_charlist(url), headers(auth), to_charlist(content_type), body},
-      [],
-      []
+      url,
+      body,
+      [content_type_header(content_type) | headers(auth)]
     )
     |> handle_response(auth)
   end
 
+  defp content_type_header(content_type), do: {"Content-Type", content_type}
+
   defp handle_response(resp, auth \\ nil)
 
-  defp handle_response({:ok, {{_, 200, _}, headers, body}}, _auth) do
-    headers = parse_response_headers(headers)
-
+  defp handle_response({:ok, %{status_code: 200, headers: headers, body: body}}, _auth) do
     {:ok, {headers, body}}
   end
 
-  defp handle_response({:ok, {{_, 403, _}, headers, body}}, auth) do
-    headers = parse_response_headers(headers)
-
+  defp handle_response({:ok, %{status_code: 403, headers: headers, body: body}}, auth) do
     if auth do
       Auth.report_unauthorized(auth)
     else
@@ -52,9 +50,7 @@ defmodule Backpackingmap.Os.Client do
     {:error, {403, headers, body}}
   end
 
-  defp handle_response({:ok, {{_, status_code, _}, headers, body}}, auth) do
-    headers = parse_response_headers(headers)
-
+  defp handle_response({:ok, %{status_code: status_code, headers: headers, body: body}}, auth) do
     Logger.warn(
       "Status code #{status_code} in response for auth #{inspect(auth)}, headers: #{
         inspect(headers)
@@ -64,31 +60,28 @@ defmodule Backpackingmap.Os.Client do
     {:error, {status_code, headers, body}}
   end
 
-  defp parse_response_headers(headers),
-       do: Enum.map(headers, fn {name, value} -> {to_string(name), to_string(value)} end)
-
   defp headers(auth), do: Enum.concat([basic_headers(), auth_headers(auth)])
 
-  defp auth_headers(%{refresh: {ident, token}}) do
+  defp auth_headers(%{refresh_ident: ident, refresh_token: token}) do
     [
-      {'Cookie', 'PROFILEMARK=#{to_charlist(ident)}'},
-      {'Cookie', 'REMEMBER_ME=#{to_charlist(token)}'}
+      {"Cookie", "PROFILEMARK=#{ident}"},
+      {"Cookie", "REMEMBER_ME=#{token}"}
     ]
   end
 
   defp basic_headers do
     [
       {
-        'User-Agent',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'
+        "User-Agent",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36"
       },
-      {'Accept', '*/*'},
-      {'Accept-Language', 'en-US,en;q=0.5'},
-      {'Referer', 'https://osmaps.ordnancesurvey.co.uk/'},
-      {'X-Requested-With', 'XMLHttpRequest'},
-      {'Origin', 'https://osmaps.ordnancesurvey.co.uk'},
-      {'TE', 'Trailers'},
-      {'Cookie', generate_consent_cookie()}
+      {"Accept", "*/*"},
+      {"Accept-Language", "en-US,en;q=0.5"},
+      {"Referer", "https://osmaps.ordnancesurvey.co.uk/"},
+      {"X-Requested-With", "XMLHttpRequest"},
+      {"Origin", "https://osmaps.ordnancesurvey.co.uk"},
+      {"TE", "Trailers"},
+      {"Cookie", generate_consent_cookie()}
     ]
   end
 
@@ -97,7 +90,6 @@ defmodule Backpackingmap.Os.Client do
     ~s(CookieControl={"necessaryCookies":["TS*","BIGip*","prod_tomcat*","Contensis*","CookieControl","cookieMessage","__cfduid","frontend","JSESSIONID","varnish/*","PHPSESSID","AUXSESSION*","PROFILEMARK"],"optionalCookies":{"performance":"legitimate interest","functionality":"legitimate interest"},"initialState":{"type":"notify"},"statement":{"shown":true,"updated":"06/09/2019"},"consentDate":#{
       generate_consent_cookie_consent_date()
     },"consentExpiry":90,"interactedWith":false,"user":"#{generate_consent_cookie_user_id()}"})
-    |> String.to_charlist()
   end
 
   defp generate_consent_cookie_consent_date do
