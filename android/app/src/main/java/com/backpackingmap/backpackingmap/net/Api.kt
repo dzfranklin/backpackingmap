@@ -1,6 +1,7 @@
-package com.backpackingmap.backpackingmap.net.auth
+package com.backpackingmap.backpackingmap.net
 
 import com.backpackingmap.backpackingmap.BuildConfig
+import com.backpackingmap.backpackingmap.net.auth.*
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import retrofit2.Retrofit
@@ -20,7 +21,7 @@ private val retrofit = Retrofit.Builder()
     .baseUrl(BASE_URL)
     .build()
 
-interface AuthApiService {
+interface ApiService {
     @POST("registration")
     suspend fun register(@Body request: RegisterRequest):
             Response<AuthInfo, RegisterResponseError>
@@ -37,8 +38,8 @@ interface AuthApiService {
             Response<AuthInfo, RenewSessionResponseError>
 }
 
-object AuthApi {
-    val service: AuthApiService by lazy {
-        retrofit.create(AuthApiService::class.java)
+object Api {
+    val service: ApiService by lazy {
+        retrofit.create(ApiService::class.java)
     }
 }

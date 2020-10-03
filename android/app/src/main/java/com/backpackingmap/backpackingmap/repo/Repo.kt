@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import com.backpackingmap.backpackingmap.db.Db
 import com.backpackingmap.backpackingmap.db.user.User
 import com.backpackingmap.backpackingmap.db.user.UserDao
+import com.backpackingmap.backpackingmap.net.Api
 import com.backpackingmap.backpackingmap.net.auth.*
 import retrofit2.HttpException
 import timber.log.Timber
@@ -28,7 +29,7 @@ class Repo(private val sharedPreferences: SharedPreferences, private val userDao
         val request = RegisterRequest(RegisterRequestUser(email, password))
 
         val out = try {
-            val response = AuthApi.service.register(request)
+            val response = Api.service.register(request)
             when {
                 response.error != null -> {
                     RemoteError.Api(response.error)
@@ -62,7 +63,7 @@ class Repo(private val sharedPreferences: SharedPreferences, private val userDao
         val request = CreateSessionRequest(CreateSessionRequestUser(email, password))
 
         val out = try {
-            val response = AuthApi.service.createSession(request)
+            val response = Api.service.createSession(request)
             when {
                 response.error != null -> {
                     RemoteError.Api(response.error)
