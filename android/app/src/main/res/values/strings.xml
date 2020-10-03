@@ -4,7 +4,7 @@
     <string name="register">Register</string>
     <string name="password">Password</string>
     <string name="email">Email</string>
-    <string name="network_error">Error connecting to the internet: $1%s</string>
-    <string name="server_error">Our systems are having difficulties: $1%s</string>
+    <string name="network_error">Error connecting to the internet</string>
+    <string name="server_error">Our systems are having difficulties</string>
     <string name="unknown">unknown</string>
 </resources>

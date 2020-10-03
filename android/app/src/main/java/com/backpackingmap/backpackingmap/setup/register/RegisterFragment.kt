@@ -1,5 +1,6 @@
 package com.backpackingmap.backpackingmap.setup.register
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.databinding.FragmentRegisterBinding
+import com.backpackingmap.backpackingmap.map.MapActivity
 import com.backpackingmap.backpackingmap.repository.RegisterError
 
 class RegisterFragment : Fragment() {
@@ -27,11 +29,12 @@ class RegisterFragment : Fragment() {
 
         hideInputErrorsOnChange()
         bindErrors()
+        exitWhenFinished()
 
         return binding.root
     }
 
-    private fun cleanInputErrorsOnChange() {
+    private fun hideInputErrorsOnChange() {
         viewModel.email.observe(viewLifecycleOwner, {
             viewModel.hideEmailError()
         })
@@ -41,22 +44,42 @@ class RegisterFragment : Fragment() {
         })
     }
 
-    private fun bindInputErrors() {
+    private fun bindErrors() {
         viewModel.error.observe(viewLifecycleOwner, { error ->
             when (error) {
                 null -> null
-                is RegisterError.Network -> binding.generalError.text =
-                    getString(R.string.network_error, error.cause.localizedMessage)
-                is RegisterError.Server -> binding.generalError.text =
-                    getString(R.string.server_error, error.type)
+                is RegisterError.Network -> {
+                    binding.mainError.text = getString(R.string.network_error)
+                    binding.mainErrorDetail.text = error.cause.localizedMessage
+
+                }
+                is RegisterError.Server -> {
+                    binding.mainError.text = getString(R.string.server_error)
+                    binding.mainErrorDetail.text = error.type
+                }
                 is RegisterError.Api -> {
                     val response = error.response
-                    binding.generalError.text = response.message
-                    response.field_errors.email?.let {
-                        binding.emailLayout.error = it
+                    binding.mainError.text = response.message
+                    response.field_errors.let { errors ->
+                        errors.email?.let { binding.emailLayout.error = it }
+                        errors.password?.let { binding.passwordLayout.error = it }
                     }
                 }
             }!!
+        })
+
+        viewModel.hideEmailError.observe(viewLifecycleOwner,
+            { binding.emailLayout.isErrorEnabled = !it })
+        viewModel.hidePasswordError.observe(viewLifecycleOwner,
+            { binding.passwordLayout.isErrorEnabled = !it })
+    }
+
+    private fun exitWhenFinished() {
+        viewModel.finished.observe(viewLifecycleOwner, { finished ->
+            if (finished) {
+                val intent = Intent(activity, MapActivity::class.java)
+                startActivity(intent)
+            }
         })
     }
 }
