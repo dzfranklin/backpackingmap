@@ -1,14 +1,17 @@
 package com.backpackingmap.backpackingmap.setup_activity.register
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.backpackingmap.backpackingmap.net.RegisterResponseError
 import com.backpackingmap.backpackingmap.repo.RemoteError
 import com.backpackingmap.backpackingmap.repo.Repo
 import kotlinx.coroutines.launch
 
-class RegisterViewModel : ViewModel() {
+class RegisterViewModel(application: Application) : AndroidViewModel(application) {
+    private val repo = Repo.fromApplication(application)
+
     val finished = MutableLiveData(false)
     val error = MutableLiveData<RemoteError<RegisterResponseError>>()
 
@@ -21,7 +24,7 @@ class RegisterViewModel : ViewModel() {
         val email = email.value!!
         val password = password.value!!
         viewModelScope.launch {
-            when (val response = Repo.register(email, password)) {
+            when (val response = repo.register(email, password)) {
                 null -> finished.value = true
                 else -> {
                     error.value = response
