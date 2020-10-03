@@ -22,7 +22,7 @@ defmodule BackpackingmapWeb.Router do
   end
 
   pipeline :api_protected do
-    plug Pow.Plug.RequireAuthenticated, error_handler: BackpackingmapWeb.APIAuth.ErrorHandler
+    plug Pow.Plug.RequireAuthenticated, error_handler: BackpackingmapWeb.APIAuthErrorHandler
   end
 
   scope "/" do
