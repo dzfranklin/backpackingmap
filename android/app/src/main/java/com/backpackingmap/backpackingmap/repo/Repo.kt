@@ -57,6 +57,7 @@ class Repo(private val sharedPreferences: SharedPreferences, private val userDao
     }
 
     private suspend fun setLoggedInUser(info: AuthInfo) {
+        // NOTE: We open the edit first so that if that fails we won't bother writing to the db
         val prefEditor = sharedPreferences.edit()
 
         val user = User(info.user_id, info.access_token, info.renewal_token)
