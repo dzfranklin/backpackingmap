@@ -60,6 +60,7 @@ class RegisterFragment : Fragment() {
                 is RemoteError.Api -> {
                     val response = error.response
                     binding.mainError.text = response.message
+                    binding.mainErrorDetail.text = null
                     response.field_errors.let { errors ->
                         errors.email?.let { binding.emailLayout.error = it }
                         errors.password?.let { binding.passwordLayout.error = it }
