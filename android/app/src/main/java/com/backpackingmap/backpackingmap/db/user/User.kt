@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 data class User(
     // By having a primary key with the value of zero we enforce that only
     // one User can exist in the database
-    @PrimaryKey private val __enforceIsSingleton: Int,
+    @PrimaryKey val __enforceIsSingleton: Int,
     val id: Int,
     val access_token: String,
     val renewal_token: String
