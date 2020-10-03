@@ -49,14 +49,20 @@ defmodule Backpackingmap.Os.Auth do
 
   def create(%{username: username, password: password}) do
     {:ok, {headers, body}} =
-      Client.request(:post, "https://osmaps.ordnancesurvey.co.uk/user/login.json", {
-        "application/x-www-form-urlencoded; charset=UTF-8",
-        URI.encode_query([
-          {"username", username},
-          {"password", password},
-          {"createSession", "true"}
-        ])
-      })
+      Client.request(
+        :post,
+        "https://osmaps.ordnancesurvey.co.uk/user/login.json",
+        {
+          "application/x-www-form-urlencoded; charset=UTF-8",
+          URI.encode_query(
+            [
+              {"username", username},
+              {"password", password},
+              {"createSession", "true"}
+            ]
+          )
+        }
+      )
 
     decode_login_response(headers, body)
   end
@@ -82,7 +88,12 @@ defmodule Backpackingmap.Os.Auth do
 
   defp decode_login_response(headers, body) do
     {ident, token} = get_refresher(headers)
-    %{"Expiry" => expiry, "tokens" => %{"leisure" => leisure_token}} = Jason.decode!(body)
+    %{
+      "Expiry" => expiry,
+      "tokens" => %{
+        "leisure" => leisure_token
+      }
+    } = Jason.decode!(body)
     expiry = parse_expiry(expiry)
 
     %{
@@ -96,19 +107,24 @@ defmodule Backpackingmap.Os.Auth do
   defp get_refresher(headers) do
     %{profile_mark: ident, remember_me: token} =
       headers
-      |> Enum.filter(fn
-        {"set-cookie", _} -> true
-        _ -> false
-      end)
-      |> Enum.reduce(%{}, fn {_, cookie}, acc ->
-        [_, name, value] = Regex.run(~r/^([^=]+)=(.*?);/, cookie)
+      |> Enum.filter(
+           fn
+             {"set-cookie", _} -> true
+             _ -> false
+           end
+         )
+      |> Enum.reduce(
+           %{},
+           fn {_, cookie}, acc ->
+             [_, name, value] = Regex.run(~r/^([^=]+)=(.*?);/, cookie)
 
-        case name do
-          "PROFILEMARK" -> Map.put(acc, :profile_mark, value)
-          "REMEMBER_ME" -> Map.put(acc, :remember_me, value)
-          _ -> acc
-        end
-      end)
+             case name do
+               "PROFILEMARK" -> Map.put(acc, :profile_mark, value)
+               "REMEMBER_ME" -> Map.put(acc, :remember_me, value)
+               _ -> acc
+             end
+           end
+         )
 
     {ident, token}
   end

@@ -18,10 +18,12 @@ defmodule BackpackingmapWeb.PageLive do
         {:noreply, redirect(socket, external: "https://hexdocs.pm/#{query}/#{vsn}")}
 
       _ ->
-        {:noreply,
-         socket
-         |> put_flash(:error, "No dependencies found matching \"#{query}\"")
-         |> assign(results: %{}, query: query)}
+        {
+          :noreply,
+          socket
+          |> put_flash(:error, "No dependencies found matching \"#{query}\"")
+          |> assign(results: %{}, query: query)
+        }
     end
   end
 

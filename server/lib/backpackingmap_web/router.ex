@@ -13,7 +13,7 @@ defmodule BackpackingmapWeb.Router do
 
   pipeline :protected do
     plug Pow.Plug.RequireAuthenticated,
-      error_handler: Pow.Phoenix.PlugErrorHandler
+         error_handler: Pow.Phoenix.PlugErrorHandler
   end
 
   pipeline :api do

@@ -129,7 +129,7 @@ defmodule BackpackingmapWeb.APIAuth.Plug do
   end
 
   defp verify_token(conn, token, config),
-    do: Plug.verify_token(conn, signing_salt(), token, config)
+       do: Plug.verify_token(conn, signing_salt(), token, config)
 
   defp store_config(config) do
     backend = Config.get(config, :cache_store_backend, Pow.Store.Backend.EtsCache)
