@@ -26,15 +26,16 @@ defmodule Backpackingmap.Os.Auth do
 
     cond do
       token == nil ->
-        Logger.info("User not allowed leisure tiles because token is nil: #{inspect(auth)}")
+        Logger.info("OS username #{username} not allowed leisure tiles because token is nil: #{inspect(auth)}")
         false
 
       NaiveDateTime.utc_now() > expiry ->
-        Logger.info("Refreshing auth to check if user allowed leisure tiles: #{inspect(auth)}")
+        Logger.info("Refreshing auth to check if OS username #{username} allowed leisure tiles: #{inspect(auth)}")
         :ok = refresh(auth)
         allowed_leisure_tiles?(auth)
 
       true ->
+        Logger.info("Allowing OS username #{username} access to leisure tiles")
         true
     end
   end

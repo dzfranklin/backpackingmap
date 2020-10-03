@@ -50,8 +50,11 @@ defmodule Backpackingmap.Os.ExplorerTile do
       {:ok, body}
     else
       {:error, {403, headers, body}} ->
-        Logger.warn("403 fetching Explorer tile. headers: #{inspect(headers)}, body: #{body}")
+        Logger.warn("403 unauthorized fetching Explorer tile. headers: #{inspect(headers)}, body: #{body}")
         {:error, :unauthorized}
+
+      {:error, {204, _headers, _body}} ->
+        Logger.warn("204 nonexistent fetching Explorer tile.")
 
       {:error, error} ->
         Logger.error("Unknown error fetching an Explorer tile: #{inspect(error)}")
