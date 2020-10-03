@@ -7,6 +7,8 @@ import com.backpackingmap.backpackingmap.setup_activity.SetupActivity
 import timber.log.Timber
 
 fun enforceLoggedIn(activity: Activity) {
+    // NOTE: This doesn't "enforce" from a security perspective, it prevents a user from seeing
+    // a broken interface because it requires data the application doesn't have.
     val repo = Repo.fromApplication(activity.application)
 
     if (repo.isLoggedIn) {
