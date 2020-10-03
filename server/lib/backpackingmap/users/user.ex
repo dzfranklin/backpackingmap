@@ -1,6 +1,7 @@
 defmodule Backpackingmap.Users.User do
   use Ecto.Schema
   use Pow.Ecto.Schema
+  import Pow.Ecto.Schema.Changeset, only: [new_password_changeset: 3]
   import Ecto.Changeset
 
   schema "users" do
@@ -10,6 +11,8 @@ defmodule Backpackingmap.Users.User do
 
   def changeset(user_or_changeset, attrs) do
     user_or_changeset
-    |> pow_changeset(attrs)
+    |> pow_user_id_field_changeset(attrs)
+    |> pow_current_password_changeset(attrs)
+    |> new_password_changeset(attrs, @pow_config)
   end
 end
