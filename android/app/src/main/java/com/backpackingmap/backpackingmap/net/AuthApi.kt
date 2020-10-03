@@ -22,16 +22,19 @@ private val retrofit = Retrofit.Builder()
 
 interface AuthApiService {
     @POST("registration")
-    suspend fun register(@Body request: RegisterRequest): RegisterResponse
+    suspend fun register(@Body request: RegisterRequest):
+            Response<AuthTokens, RegisterResponseError>
 
     @POST("session")
-    suspend fun createSession(@Body request: CreateSessionRequest): CreateSessionResponse
+    suspend fun createSession(@Body request: CreateSessionRequest):
+            Response<AuthTokens, CreateSessionResponseError>
 
     @DELETE("session")
     suspend fun deleteSession()
 
     @POST("/session/renew")
-    suspend fun renewSession(): RenewSessionResponse
+    suspend fun renewSession():
+            Response<AuthTokens, RenewSessionResponseError>
 }
 
 object AuthApi {
