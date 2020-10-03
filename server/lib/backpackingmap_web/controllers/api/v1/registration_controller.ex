@@ -9,11 +9,12 @@ defmodule BackpackingmapWeb.API.V1.RegistrationController do
     conn
     |> Pow.Plug.create_user(user_params)
     |> case do
-      {:ok, _user, conn} ->
-        Logger.info("Registered user with email #{user_params["email"]}")
+      {:ok, %{id: id} = _user, conn} ->
+        Logger.info("Registered user #{id}")
 
         json(conn, %{
           data: %{
+            user_id: id,
             access_token: conn.private[:api_access_token],
             renewal_token: conn.private[:api_renewal_token]
           }

@@ -2,14 +2,18 @@ defmodule BackpackingmapWeb.API.V1.SessionController do
   use BackpackingmapWeb, :controller
 
   alias BackpackingmapWeb.APIAuth
+  alias Backpackingmap.Users
 
   def create(conn, %{"user" => user_params}) do
     conn
     |> Pow.Plug.authenticate_user(user_params)
     |> case do
       {:ok, conn} ->
+        %{id: id} = Pow.Plug.current_user(conn)
+
         json(conn, %{
           data: %{
+            user_id: id,
             access_token: conn.private[:api_access_token],
             renewal_token: conn.private[:api_renewal_token]
           }
