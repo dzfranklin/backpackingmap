@@ -24,7 +24,7 @@ class Repo(private val sharedPreferences: SharedPreferences, private val userDao
     }
 
     suspend fun register(email: String, password: String): RemoteError<RegisterResponseError>? {
-        Timber.i("Attempting to register $email")
+        Timber.i("Attempting to register %s", email)
 
         val request = RegisterRequest(RegisterRequestUser(email, password))
 
@@ -58,7 +58,7 @@ class Repo(private val sharedPreferences: SharedPreferences, private val userDao
     }
 
     suspend fun login(email: String, password: String): RemoteError<CreateSessionResponseError>? {
-        Timber.i("Attempting to login $email")
+        Timber.i("Attempting to login %s", email)
 
         val request = CreateSessionRequest(CreateSessionRequestUser(email, password))
 
