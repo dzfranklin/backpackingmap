@@ -36,14 +36,12 @@ defmodule Backpackingmap.Os.Client do
 
   defp handle_response({:ok, {{_, 200, _}, headers, body}}, _auth) do
     headers = parse_response_headers(headers)
-    body = to_string(body)
 
     {:ok, {headers, body}}
   end
 
   defp handle_response({:ok, {{_, 403, _}, headers, body}}, auth) do
     headers = parse_response_headers(headers)
-    body = to_string(body)
 
     if auth do
       Auth.report_unauthorized(auth)
@@ -56,7 +54,6 @@ defmodule Backpackingmap.Os.Client do
 
   defp handle_response({:ok, {{_, status_code, _}, headers, body}}, auth) do
     headers = parse_response_headers(headers)
-    body = to_string(body)
 
     Logger.warn(
       "Status code #{status_code} in response for auth #{inspect(auth)}, headers: #{
