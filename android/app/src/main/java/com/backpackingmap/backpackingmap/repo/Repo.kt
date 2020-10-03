@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import com.backpackingmap.backpackingmap.db.Db
 import com.backpackingmap.backpackingmap.db.user.User
 import com.backpackingmap.backpackingmap.db.user.UserDao
-import com.backpackingmap.backpackingmap.net.*
+import com.backpackingmap.backpackingmap.net.auth.*
 import retrofit2.HttpException
 import timber.log.Timber
 

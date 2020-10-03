@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.net
+package com.backpackingmap.backpackingmap.net.auth
 
 data class CreateSessionRequest(val user: CreateSessionRequestUser)
 

@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.net
+package com.backpackingmap.backpackingmap.net.auth
 
 import com.backpackingmap.backpackingmap.BuildConfig
 import com.squareup.moshi.Moshi

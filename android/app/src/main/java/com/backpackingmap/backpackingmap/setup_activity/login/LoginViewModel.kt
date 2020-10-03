@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.backpackingmap.backpackingmap.net.CreateSessionResponseError
+import com.backpackingmap.backpackingmap.net.auth.CreateSessionResponseError
 import com.backpackingmap.backpackingmap.repo.RemoteError
 import com.backpackingmap.backpackingmap.repo.Repo
 import kotlinx.coroutines.launch
