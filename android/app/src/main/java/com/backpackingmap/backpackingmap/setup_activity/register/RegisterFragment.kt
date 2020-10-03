@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.setup.register
+package com.backpackingmap.backpackingmap.setup_activity.register
 
 import android.content.Intent
 import android.os.Bundle
@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.databinding.FragmentRegisterBinding
-import com.backpackingmap.backpackingmap.map.MapActivity
+import com.backpackingmap.backpackingmap.map_activity.MapActivity
 import com.backpackingmap.backpackingmap.repo.RemoteError
 
 class RegisterFragment : Fragment() {

@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.setup
+package com.backpackingmap.backpackingmap.setup_activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -6,8 +6,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.databinding.ActivitySetupBinding
-import com.backpackingmap.backpackingmap.setup.login.LoginFragment
-import com.backpackingmap.backpackingmap.setup.register.RegisterFragment
+import com.backpackingmap.backpackingmap.setup_activity.login.LoginFragment
+import com.backpackingmap.backpackingmap.setup_activity.register.RegisterFragment
 import com.google.android.material.tabs.TabLayout
 
 class SetupActivity : AppCompatActivity() {

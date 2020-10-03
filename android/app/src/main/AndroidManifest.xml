@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BackpackingMap">
 
-        <activity android:name=".setup.SetupActivity">
+        <activity android:name=".setup_activity.SetupActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

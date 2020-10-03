@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.setup.login
+package com.backpackingmap.backpackingmap.setup_activity.login
 
 import android.os.Bundle
 import android.view.LayoutInflater

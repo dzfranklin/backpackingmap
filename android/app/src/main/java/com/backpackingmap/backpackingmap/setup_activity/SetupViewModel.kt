@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.setup
+package com.backpackingmap.backpackingmap.setup_activity
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
