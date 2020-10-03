@@ -1,5 +1,6 @@
 defmodule BackpackingmapWeb.API.V1.RegistrationController do
   use BackpackingmapWeb, :controller
+  require Logger
 
   alias Ecto.Changeset
   alias BackpackingmapWeb.ErrorHelpers
@@ -9,6 +10,8 @@ defmodule BackpackingmapWeb.API.V1.RegistrationController do
     |> Pow.Plug.create_user(user_params)
     |> case do
       {:ok, _user, conn} ->
+        Logger.info("Registered user with email #{user_params["email"]}")
+
         json(conn, %{
           data: %{
             access_token: conn.private[:api_access_token],
@@ -18,6 +21,7 @@ defmodule BackpackingmapWeb.API.V1.RegistrationController do
 
       {:error, changeset, conn} ->
         errors = ErrorHelpers.translate_changeset(changeset)
+        Logger.warn("Refused to register user because #{inspect(errors)}")
 
         conn
         |> put_status(200)
