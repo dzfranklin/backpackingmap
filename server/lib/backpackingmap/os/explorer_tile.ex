@@ -15,15 +15,15 @@ defmodule Backpackingmap.Os.ExplorerTile do
   end
 
   @doc """
-  get({row, col}, %Auth{})
+  get(%{row: 10, col: 20}, %Auth{})
   """
   def get(loc, %Auth{} = auth) do
     with {:ok, png} <- get_without_unauthorized_report(loc, auth) do
       {:ok, png}
     else
       {:error, :unauthorized} ->
-         Auth.report_unauthorized(auth)
-         {:error, :unauthorized}
+        Auth.report_unauthorized(auth)
+        {:error, :unauthorized}
     end
   end
 
@@ -35,7 +35,7 @@ defmodule Backpackingmap.Os.ExplorerTile do
     end
   end
 
-  defp fetch_stored_tile({row, col}, auth) do
+  defp fetch_stored_tile(%{row: row, col: col}, auth) do
     if Auth.allowed_leisure_tiles?(auth) do
       case Repo.get_by(__MODULE__, %{row: row, col: col}) do
         %__MODULE__{png: png} -> {:ok, png}
@@ -46,17 +46,20 @@ defmodule Backpackingmap.Os.ExplorerTile do
     end
   end
 
-  defp fetch_from_os_and_store({row, col} = loc, auth) do
-    {:ok, png} = fetch_from_os(loc, auth)
+  defp fetch_from_os_and_store(%{row: row, col: col} = loc, auth) do
+    with {:ok, png} <- fetch_from_os(loc, auth) do
+      insertion_changeset(%{png: png, row: row, col: col})
+      |> Repo.insert!()
 
-    insertion_changeset(%{png: png, row: row, col: col})
-    |> Repo.insert!()
-
-    {:ok, png}
+      {:ok, png}
+    end
   end
 
   def fetch_from_os(loc, auth) do
-    with {:ok, {_headers, body}} <- Client.request(:get, tile_url(loc, auth)) do
+    url = tile_url(loc, auth)
+    Logger.info("Fetching tile from #{url}")
+
+    with {:ok, {_headers, body}} <- Client.request(:get, url) do
       {:ok, body}
     else
       {:error, {403, headers, body}} ->
@@ -65,6 +68,7 @@ defmodule Backpackingmap.Os.ExplorerTile do
 
       {:error, {204, _headers, _body}} ->
         Logger.warn("204 nonexistent fetching Explorer tile.")
+        {:error, :nonexistent}
 
       {:error, error} ->
         Logger.error("Unknown error fetching an Explorer tile: #{inspect(error)}")
@@ -95,7 +99,7 @@ defmodule Backpackingmap.Os.ExplorerTile do
   #   Paid, included
   #   See <https://www.ordnancesurvey.co.uk/business-government/products/25k-raster>
 
-  defp tile_params({row, col}) do
+  defp tile_params(%{row: row, col: col}) do
     # From <https://osmaps.ordnancesurvey.co.uk/bundles/app/js/osmaps.js?version=f85e874aa>
     # this.mapLayers.push(new OpenLayers.Layer.WMTS({
     #   name: '25k',
