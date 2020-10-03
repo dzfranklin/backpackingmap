@@ -27,7 +27,7 @@ defmodule Backpackingmap.Os.ExplorerTile do
 
   defp fetch_stored_tile({row, col}, auth) do
     if Auth.allowed_leisure_tiles?(auth) do
-      case Repo.get(__MODULE__, {row, col}) do
+      case Repo.get_by(__MODULE__, %{row: row, col: col}) do
         %__MODULE__{png: png} -> {:ok, png}
         nil -> {:error, :not_stored}
       end
@@ -42,7 +42,7 @@ defmodule Backpackingmap.Os.ExplorerTile do
     insertion_changeset(%{png: png, row: row, col: col})
     |> Repo.insert!()
 
-    png
+    {:ok, png}
   end
 
   def fetch_from_os(loc, auth) do
