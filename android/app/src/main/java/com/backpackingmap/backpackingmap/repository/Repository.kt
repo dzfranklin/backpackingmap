@@ -3,11 +3,12 @@ package com.backpackingmap.backpackingmap.repository
 import com.backpackingmap.backpackingmap.net.AuthApi
 import com.backpackingmap.backpackingmap.net.RegisterRequest
 import com.backpackingmap.backpackingmap.net.RegisterRequestUser
+import com.backpackingmap.backpackingmap.net.RegisterResponseError
 import retrofit2.HttpException
 import timber.log.Timber
 
 object Repository {
-    suspend fun register(email: String, password: String): RegisterError? {
+    suspend fun register(email: String, password: String): RemoteError<RegisterResponseError>? {
         Timber.i("Attempting to register $email")
 
         val request = RegisterRequest(RegisterRequestUser(email, password))
@@ -16,23 +17,23 @@ object Repository {
             val response = AuthApi.service.register(request)
              when {
                 response.error != null -> {
-                    RegisterError.Api(response.error)
+                    RemoteError.Api(response.error)
                 }
                 response.data != null -> {
                     null
                 }
                 else -> {
-                    RegisterError.Server("Neither error nor data", IllegalStateException())
+                    RemoteError.Server("Neither error nor data", IllegalStateException())
                 }
             }
         } catch (throwable: HttpException) {
-            RegisterError.Server("Status code: ${throwable.code()}", throwable)
+            RemoteError.Server("Status code: ${throwable.code()}", throwable)
         } catch (throwable: Throwable) {
-            RegisterError.Network(throwable)
+            RemoteError.Network(throwable)
         }
 
         if (out != null) {
-            Timber.w(out)
+            Timber.w("Failed to register: %s", out)
         } else {
             Timber.i("Successfully registered")
         }

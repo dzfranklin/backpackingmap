@@ -3,13 +3,14 @@ package com.backpackingmap.backpackingmap.setup.register
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.backpackingmap.backpackingmap.repository.RegisterError
+import com.backpackingmap.backpackingmap.net.RegisterResponseError
+import com.backpackingmap.backpackingmap.repository.RemoteError
 import com.backpackingmap.backpackingmap.repository.Repository
 import kotlinx.coroutines.launch
 
 class RegisterViewModel : ViewModel() {
     val finished = MutableLiveData(false)
-    val error = MutableLiveData<RegisterError>()
+    val error = MutableLiveData<RemoteError<RegisterResponseError>>()
 
     val email = MutableLiveData("")
     val hideEmailError = MutableLiveData(true)
