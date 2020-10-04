@@ -53,11 +53,12 @@ defmodule BackpackingmapWeb.API.V1.SessionController do
                 }
               )
 
-         {conn, _user} ->
+         {conn, user} ->
            json(
              conn,
              %{
                data: %{
+                 user_id: user.id,
                  access_token: conn.private[:api_access_token],
                  renewal_token: conn.private[:api_renewal_token]
                }
