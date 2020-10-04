@@ -1,12 +1,12 @@
 package com.backpackingmap.backpackingmap.repo
 
 import android.app.Application
+import arrow.core.Either
 import com.backpackingmap.backpackingmap.db.Db
 import com.backpackingmap.backpackingmap.db.user.DbUser
 import com.backpackingmap.backpackingmap.db.user.UserDao
 import com.backpackingmap.backpackingmap.net.UnauthenticatedApi
 import com.backpackingmap.backpackingmap.net.auth.*
-import retrofit2.HttpException
 import timber.log.Timber
 
 class UnauthenticatedRepo(
@@ -20,33 +20,19 @@ class UnauthenticatedRepo(
 
         val request = RegisterRequest(RegisterRequestUser(email, password))
 
-        val out = try {
-            val response = api.register(request)
-            when {
-                response.error != null -> {
-                    RemoteError.Api(response.error)
-                }
-                response.data != null -> {
-                    setLoggedInUser(response.data)
-                    null
-                }
-                else -> {
-                    RemoteError.Server("Neither error nor data", IllegalStateException())
-                }
+        return when (val result = makeRemoteRequest {
+            api.register(request)
+        }) {
+            is Either.Left -> {
+                Timber.w("Failed to register email $email with error: ${result.a}")
+                result.a
             }
-        } catch (throwable: HttpException) {
-            RemoteError.Server("Status code: ${throwable.code()}", throwable)
-        } catch (throwable: Throwable) {
-            RemoteError.Network(throwable)
+            is Either.Right -> {
+                setLoggedInUser(result.b)
+                Timber.i("Registered as user ${result.b.user_id} with email $email")
+                null
+            }
         }
-
-        if (out != null) {
-            Timber.w("Failed to register: %s", out)
-        } else {
-            Timber.i("Successfully registered")
-        }
-
-        return out
     }
 
     suspend fun login(email: String, password: String): RemoteError<CreateSessionResponseError>? {
@@ -54,33 +40,19 @@ class UnauthenticatedRepo(
 
         val request = CreateSessionRequest(CreateSessionRequestUser(email, password))
 
-        val out = try {
-            val response = api.createSession(request)
-            when {
-                response.error != null -> {
-                    RemoteError.Api(response.error)
-                }
-                response.data != null -> {
-                    setLoggedInUser(response.data)
-                    null
-                }
-                else -> {
-                    RemoteError.Server("Neither error nor data", IllegalStateException())
-                }
+        return when (val result = makeRemoteRequest {
+            api.createSession(request)
+        }) {
+            is Either.Left -> {
+                Timber.w("Failed to login email $email with error: ${result.a}")
+                result.a
             }
-        } catch (throwable: HttpException) {
-            RemoteError.Server("Status code: ${throwable.code()}", throwable)
-        } catch (throwable: Throwable) {
-            RemoteError.Network(throwable)
+            is Either.Right -> {
+                setLoggedInUser(result.b)
+                Timber.i("Logged in user ${result.b.user_id} with email $email")
+                null
+            }
         }
-
-        if (out != null) {
-            Timber.w("Failed to login in: %s", out)
-        } else {
-            Timber.i("Successfully logged in")
-        }
-
-        return out
     }
 
     private suspend fun setLoggedInUser(info: AuthInfo) {
