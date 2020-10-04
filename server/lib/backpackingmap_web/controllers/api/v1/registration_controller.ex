@@ -28,7 +28,6 @@ defmodule BackpackingmapWeb.API.V1.RegistrationController do
            Logger.warn("Refused to register user because #{inspect(errors)}")
 
            conn
-           |> put_status(200)
            |> json(
                 %{
                   error: %{

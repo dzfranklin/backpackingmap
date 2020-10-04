@@ -24,11 +24,9 @@ defmodule BackpackingmapWeb.API.V1.SessionController do
 
          {:error, conn} ->
            conn
-           |> put_status(200)
            |> json(
                 %{
                   error: %{
-                    status: 200,
                     message: "Incorrect email or password"
                   }
                 }
@@ -44,7 +42,6 @@ defmodule BackpackingmapWeb.API.V1.SessionController do
     |> case do
          {conn, nil} ->
            conn
-           |> put_status(401)
            |> json(
                 %{
                   error: %{
