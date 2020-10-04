@@ -1,6 +1,8 @@
 package com.backpackingmap.backpackingmap.repo
 
 import android.app.Application
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import com.backpackingmap.backpackingmap.db.Db
 import com.backpackingmap.backpackingmap.db.user.User
 import com.backpackingmap.backpackingmap.db.user.UserDao
@@ -35,10 +37,12 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
                 Api.createService(tokens)
             }
 
-    suspend fun getTile(type: TileType, row: Int, col: Int) {
+    suspend fun getTile(type: TileType, row: Int, col: Int): Bitmap {
+        // TODO cache
         Timber.i("Attempting to get tile with, %s row: %d col: %d", type, row, col)
 
-        getApi().getTile(type, row, col)
+        val response = getApi().getTile(type, row, col)
+        return BitmapFactory.decodeStream(response.byteStream())
     }
 
     companion object {
