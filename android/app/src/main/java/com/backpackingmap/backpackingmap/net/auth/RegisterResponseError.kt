@@ -1,6 +1,8 @@
 package com.backpackingmap.backpackingmap.net.auth
 
+import com.backpackingmap.backpackingmap.net.ResponseErrorWithMessage
+
 data class RegisterResponseError(
-    val message: String,
+    override val message: String,
     val field_errors: RegisterResponseFieldErrors
-)
+): ResponseErrorWithMessage
