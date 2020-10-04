@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.net
+package com.backpackingmap.backpackingmap.repo
 
 data class RenewalToken(val token: String) {
     override fun toString() = token
