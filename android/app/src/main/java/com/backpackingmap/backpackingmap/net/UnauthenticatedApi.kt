@@ -8,7 +8,6 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body
-import retrofit2.http.Header
 import retrofit2.http.POST
 
 private const val AUTHORIZATION = "Authorization"
@@ -22,11 +21,6 @@ interface UnauthenticatedApiService {
     @POST("session")
     suspend fun createSession(@Body request: CreateSessionRequest):
             Response<AuthInfo, CreateSessionResponseError>
-
-    // This is in UnauthenticatedApi because it takes a renewal token, not an access token
-    @POST("/session/renew")
-    suspend fun renewSession(@Header("Authorization") token: RenewalToken):
-            Response<AuthInfo, RenewSessionResponseError>
 }
 
 object UnauthenticatedApi {
