@@ -9,7 +9,7 @@ data class User(
     // one User can exist in the database
     @PrimaryKey val __enforceIsSingleton: Int,
     val id: Int,
-    val renewal_token: String
+    val renewalToken: String
 ) {
-    constructor(id: Int, renewal_token: String) : this(0, id, renewal_token)
+    constructor(id: Int, renewalToken: String) : this(0, id, renewalToken)
 }

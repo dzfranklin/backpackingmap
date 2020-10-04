@@ -18,10 +18,15 @@ val MIGRATIONS: Array<Migration> = arrayOf(
             database.execSQL("DROP TABLE users")
             database.execSQL("ALTER TABLE users_new RENAME TO users")
         }
+    },
+    object : Migration(2, 3) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE users RENAME COLUMN renewal_token TO renewalToken")
+        }
     }
 )
 
-@Database(entities = [User::class], version = 2)
+@Database(entities = [User::class], version = 3)
 abstract class Db : RoomDatabase() {
     abstract fun userDao(): UserDao
 
