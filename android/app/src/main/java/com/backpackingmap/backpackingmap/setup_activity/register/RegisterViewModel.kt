@@ -6,11 +6,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.backpackingmap.backpackingmap.net.auth.RegisterResponseError
 import com.backpackingmap.backpackingmap.repo.RemoteError
-import com.backpackingmap.backpackingmap.repo.Repo
+import com.backpackingmap.backpackingmap.repo.UnauthenticatedRepo
 import kotlinx.coroutines.launch
 
 class RegisterViewModel(application: Application) : AndroidViewModel(application) {
-    private val repo = Repo.fromApplication(application)
+    private val repo = UnauthenticatedRepo.fromApplication(application)
 
     val finished = MutableLiveData(false)
     val error = MutableLiveData<RemoteError<RegisterResponseError>>()
