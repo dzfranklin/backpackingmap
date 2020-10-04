@@ -1,6 +1,5 @@
 package com.backpackingmap.backpackingmap.net
 
-import arrow.syntax.function.memoize
 import com.backpackingmap.backpackingmap.BuildConfig
 import com.backpackingmap.backpackingmap.net.auth.*
 import com.squareup.moshi.Moshi
@@ -24,9 +23,7 @@ interface UnauthenticatedApiService {
 }
 
 object UnauthenticatedApi {
-    val createService = ::createServiceUnmemoized.memoize()
-
-    private fun createServiceUnmemoized(): UnauthenticatedApiService {
+    val service: UnauthenticatedApiService by lazy {
         val moshi = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()
@@ -36,6 +33,6 @@ object UnauthenticatedApi {
             .baseUrl(BASE_URL)
             .build()
 
-        return retrofit.create(UnauthenticatedApiService::class.java)
+        retrofit.create(UnauthenticatedApiService::class.java)
     }
 }

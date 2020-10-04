@@ -13,7 +13,7 @@ class UnauthenticatedRepo(
     private val prefs: BackpackingmapSharedPrefs,
     private val userDao: UserDao,
 ) {
-    val api = UnauthenticatedApi.createService()
+    val api = UnauthenticatedApi.service
 
     suspend fun register(email: String, password: String): RemoteError<RegisterResponseError>? {
         Timber.i("Attempting to register %s", email)
