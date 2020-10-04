@@ -32,8 +32,8 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
     private suspend fun getApi(): ApiService =
         apiServiceCache
             ?: getUser().let { user ->
-                val tokens = RenewalToken(user.renewal_token)
-                Api.createService(tokens)
+                val token = RenewalToken(user.renewal_token)
+                Api.createService(token)
             }
 
     suspend fun getTile(type: TileType, row: Int, col: Int): Bitmap {
