@@ -29,7 +29,6 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
     }
 
     private val apiServiceCache: ApiService? = null
-
     private suspend fun getApi(): ApiService =
         apiServiceCache
             ?: getUser().let { user ->
