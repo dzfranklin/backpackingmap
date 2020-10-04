@@ -2,7 +2,7 @@ package com.backpackingmap.backpackingmap.repo
 
 import android.app.Application
 import com.backpackingmap.backpackingmap.db.Db
-import com.backpackingmap.backpackingmap.db.user.User
+import com.backpackingmap.backpackingmap.db.user.DbUser
 import com.backpackingmap.backpackingmap.db.user.UserDao
 import com.backpackingmap.backpackingmap.net.UnauthenticatedApi
 import com.backpackingmap.backpackingmap.net.auth.*
@@ -87,7 +87,7 @@ class UnauthenticatedRepo(
         // NOTE: We open the edit first so that if that fails we won't bother writing to the db
         val prefEditor = prefs.edit()
 
-        val user = User(info.user_id, info.renewal_token)
+        val user = DbUser(info.user_id, info.renewal_token)
         userDao.insertUser(user)
 
         prefs.setIsLoggedIn(prefEditor, true)

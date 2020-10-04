@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import arrow.syntax.function.memoize
-import com.backpackingmap.backpackingmap.db.user.User
+import com.backpackingmap.backpackingmap.db.user.DbUser
 import com.backpackingmap.backpackingmap.db.user.UserDao
 
 val MIGRATIONS: Array<Migration> = arrayOf(
@@ -26,7 +26,7 @@ val MIGRATIONS: Array<Migration> = arrayOf(
     }
 )
 
-@Database(entities = [User::class], version = 3)
+@Database(entities = [DbUser::class], version = 3)
 abstract class Db : RoomDatabase() {
     abstract fun userDao(): UserDao
 

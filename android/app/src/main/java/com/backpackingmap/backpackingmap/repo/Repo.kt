@@ -4,8 +4,9 @@ import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.backpackingmap.backpackingmap.db.Db
-import com.backpackingmap.backpackingmap.db.user.User
+import com.backpackingmap.backpackingmap.db.user.DbUser
 import com.backpackingmap.backpackingmap.db.user.UserDao
+import com.backpackingmap.backpackingmap.net.AccessToken
 import com.backpackingmap.backpackingmap.net.Api
 import com.backpackingmap.backpackingmap.net.ApiService
 import com.backpackingmap.backpackingmap.net.RenewalToken
@@ -22,7 +23,8 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
     private suspend fun getUser(): User {
         val users = userDao.getUsers()
         if (users.size == 1) {
-            return users[0]
+            val dbUser = users[0]
+            return User(dbUser.id, RenewalToken(dbUser.renewalToken))
         } else {
             throw IllegalStateException("Exactly one user must exist")
         }
