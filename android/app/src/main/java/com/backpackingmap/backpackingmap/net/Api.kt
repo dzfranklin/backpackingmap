@@ -16,14 +16,14 @@ import retrofit2.http.*
 private const val BASE_URL = BuildConfig.API_BASE_URL
 
 interface ApiService {
-    @POST("/session/renew")
     suspend fun renewSession(@Header("Authorization") token: RenewalToken):
+    @POST("session/renew")
             Response<AuthInfo, RenewSessionResponseError>
 
     @DELETE("session")
     suspend fun deleteSession()
 
-    @GET("/tile/{type}")
+    @GET("tile/{type}")
     suspend fun getTile(
         @Path("type") type: TileType,
         @Query("row") row: Int,
