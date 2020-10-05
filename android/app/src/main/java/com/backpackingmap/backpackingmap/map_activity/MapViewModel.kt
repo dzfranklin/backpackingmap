@@ -9,14 +9,21 @@ import com.backpackingmap.backpackingmap.net.tile.TileType
 import com.backpackingmap.backpackingmap.repo.Repo
 import kotlinx.coroutines.launch
 
-class MapViewModel(application: Application): AndroidViewModel(application) {
+class MapViewModel(application: Application) : AndroidViewModel(application) {
     private val repo: Repo? = Repo.fromApplication(application)
 
     val tile = MutableLiveData<Bitmap>()
 
     init {
         viewModelScope.launch {
-            tile.value = repo?.getTile(TileType.Explorer, 2025, 773)
+            repo
+                ?.getTile(TileType.Explorer, 2025, 773)
+                ?.map {
+                    tile.value = it
+                }
+                ?.mapLeft {
+                    throw Exception(it.toString())
+                }
         }
     }
 }

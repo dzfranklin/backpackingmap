@@ -2,6 +2,7 @@ package com.backpackingmap.backpackingmap.repo
 
 import arrow.core.Either
 import com.backpackingmap.backpackingmap.net.Response
+import okhttp3.ResponseBody
 import retrofit2.HttpException
 import timber.log.Timber
 
@@ -19,6 +20,25 @@ suspend fun <ApiData, ApiError> makeRemoteRequest(
                 Either.left(RemoteError.Server("Invalid response format",
                     IllegalStateException("Response has neither error nor data")))
         }
+    } catch (throwable: HttpException) {
+        Either.left(RemoteError.Server("Status ${throwable.code()}", throwable))
+    } catch (throwable: Throwable) {
+        Either.left(RemoteError.Network(throwable))
+    }
+
+    if (out is Either.Left) {
+        Timber.w("Got RemoteError: %s:", out.a)
+    }
+
+    return out
+}
+
+suspend fun makeRemoteRequestForBody(
+    requester: suspend () -> ResponseBody,
+): Either<RemoteError<Nothing>, ResponseBody> {
+    val out = try {
+        val response = requester()
+        Either.right(response)
     } catch (throwable: HttpException) {
         Either.left(RemoteError.Server("Status ${throwable.code()}", throwable))
     } catch (throwable: Throwable) {
