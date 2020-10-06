@@ -15,7 +15,7 @@
 
         <activity android:name=".setup_activity.SetupActivity" />
 
-        <activity android:name=".map_activity.MapActivity">
+        <activity android:name=".main_activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

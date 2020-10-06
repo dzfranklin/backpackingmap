@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.map_activity
+package com.backpackingmap.backpackingmap.main_activity
 
 import android.app.Application
 import android.graphics.Bitmap
@@ -9,7 +9,7 @@ import com.backpackingmap.backpackingmap.net.tile.TileType
 import com.backpackingmap.backpackingmap.repo.Repo
 import kotlinx.coroutines.launch
 
-class MapViewModel(application: Application) : AndroidViewModel(application) {
+class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
     private val repo: Repo? = Repo.fromApplication(application)
 
     val tile = MutableLiveData<Bitmap>()

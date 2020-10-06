@@ -1,23 +1,23 @@
-package com.backpackingmap.backpackingmap.map_activity
+package com.backpackingmap.backpackingmap.main_activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.backpackingmap.backpackingmap.R
-import com.backpackingmap.backpackingmap.databinding.ActivityMapBinding
+import com.backpackingmap.backpackingmap.databinding.ActivityMainBinding
 import com.backpackingmap.backpackingmap.enforceLoggedIn
 
-class MapActivity: AppCompatActivity() {
-    lateinit var binding: ActivityMapBinding
-    lateinit var model: MapViewModel
+class MainActivity: AppCompatActivity() {
+    lateinit var binding: ActivityMainBinding
+    lateinit var model: MainActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enforceLoggedIn(this)
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_map)
-        model = ViewModelProvider(this).get(MapViewModel::class.java)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        model = ViewModelProvider(this).get(MainActivityViewModel::class.java)
 
         model.tile.observe(this, {
             it?.let {

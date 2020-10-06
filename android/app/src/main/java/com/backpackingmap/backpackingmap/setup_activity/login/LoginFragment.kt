@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.databinding.FragmentLoginBinding
-import com.backpackingmap.backpackingmap.map_activity.MapActivity
+import com.backpackingmap.backpackingmap.main_activity.MainActivity
 import com.backpackingmap.backpackingmap.repo.RemoteError
 
 class LoginFragment : Fragment() {
@@ -58,7 +58,7 @@ class LoginFragment : Fragment() {
     private fun exitWhenFinished() {
         model.finished.observe(viewLifecycleOwner, { finished ->
             if (finished) {
-                val intent = Intent(activity, MapActivity::class.java)
+                val intent = Intent(activity, MainActivity::class.java)
                 startActivity(intent)
             }
         })
