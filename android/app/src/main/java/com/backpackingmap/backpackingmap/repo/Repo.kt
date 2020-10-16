@@ -8,12 +8,12 @@ import arrow.core.flatMap
 import com.backpackingmap.backpackingmap.db.Db
 import com.backpackingmap.backpackingmap.db.user.DbUser
 import com.backpackingmap.backpackingmap.db.user.UserDao
+import com.backpackingmap.backpackingmap.map.wmts.*
 import com.backpackingmap.backpackingmap.net.AccessToken
 import com.backpackingmap.backpackingmap.net.Api
-import com.backpackingmap.backpackingmap.net.ResponseErrorWithMessage
 import com.backpackingmap.backpackingmap.net.auth.RenewSessionResponseError
-import com.backpackingmap.backpackingmap.net.tile.TileType
-import timber.log.Timber
+import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
+import com.backpackingmap.backpackingmap.net.tile.TileRequestPosition
 
 class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: UserDao) {
     val api = Api.service
@@ -72,18 +72,33 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
     }
 
     suspend fun getTile(
-        type: TileType,
-        row: Int,
-        col: Int,
-    ): Either<RemoteError<ResponseErrorWithMessage>, Bitmap> {
+        service: WmtsServiceConfig,
+        layer: WmtsLayerConfig,
+        set: WmtsTileMatrixSetConfig,
+        matrix: WmtsTileMatrixConfig,
+        position: WmtsTilePosition,
+    ): Either<GetTileError, Bitmap> {
         // TODO cache
-        Timber.i("Attempting to get tile with, %s row: %d col: %d", type, row, col)
+        val request = GetTileRequest(
+            serviceIdentifier = service.identifier,
+            layerIdentifier = layer.identifier,
+            setIdentifier = set.identifier,
+            matrixIdentifier = matrix.identifier,
+            position = TileRequestPosition(row = position.row, col = position.col)
+        )
 
         return getAccessToken()
             .flatMap { accessToken ->
-                makeRemoteRequestForBody { api.getTile(accessToken, type, row, col) }
+                makeRemoteRequestForBody { api.getTile(accessToken, request) }
             }
             .map { BitmapFactory.decodeStream(it.byteStream()) }
+            .mapLeft {
+                when (it) {
+                    is RemoteError.Network -> GetTileError.Network(it.cause)
+                    is RemoteError.Server -> GetTileError.Server(it.type, it.cause)
+                    is RemoteError.Api -> GetTileError.ApiAuth(it.response)
+                }
+            }
     }
 
     companion object {

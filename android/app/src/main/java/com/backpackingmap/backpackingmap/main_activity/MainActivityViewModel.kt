@@ -3,27 +3,25 @@ package com.backpackingmap.backpackingmap.main_activity
 import android.app.Application
 import android.graphics.Bitmap
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
-import com.backpackingmap.backpackingmap.net.tile.TileType
+import com.backpackingmap.backpackingmap.map.wmts.*
+import com.backpackingmap.backpackingmap.map.wmts.os.OsServiceConfig
 import com.backpackingmap.backpackingmap.repo.Repo
-import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
-    private val repo: Repo? = Repo.fromApplication(application)
+    val repo: Repo? = Repo.fromApplication(application)
 
-    val tile = MutableLiveData<Bitmap>()
+    val mapService = OsServiceConfig()
+    val mapLayerConfigs = arrayOf(mapService.layers.last())
 
-    init {
-        viewModelScope.launch {
-            repo
-                ?.getTile(TileType.Explorer, 2025, 773)
-                ?.map {
-                    tile.value = it
-                }
-                ?.mapLeft {
-                    throw Exception(it.toString())
-                }
-        }
-    }
+    suspend fun getTile(
+        service: WmtsServiceConfig,
+        layer: WmtsLayerConfig,
+        set: WmtsTileMatrixSetConfig,
+        matrix: WmtsTileMatrixConfig,
+        position: WmtsTilePosition,
+    ): Bitmap = repo!!.getTile(service, layer, set, matrix, position).mapLeft{
+        Timber.w("Got error instead of tile: %s", it)
+        null
+    }.orNull()!!
 }

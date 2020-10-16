@@ -1,13 +1,45 @@
 defmodule BackpackingmapWeb.API.V1.TileController do
   use BackpackingmapWeb, :controller
   alias Backpackingmap.Os
+  require Logger
 
-  def get(conn, %{"type" => "explorer", "col" => col, "row" => row}) do
-    col = String.to_integer(col)
-    row = String.to_integer(row)
+  defp get_api_key, do:
+    Application.get_env(:backpackingmap, :os_api_key)
 
-    {:ok, os_auth} = Os.get_auth_for_user(conn.assigns.current_user)
-    {:ok, png} = Os.ExplorerTile.get(%{row: row, col: col}, os_auth)
+  def post(
+        conn,
+        %{
+          "serviceIdentifier" => "OS 1.0.0",
+          "layerIdentifier" => layerIdentifier,
+          "setIdentifier" => setIdentifier,
+          "matrixIdentifier" => matrixIdentifier,
+          "position" => %{
+            "row" => row,
+            "col" => col
+          }
+        }
+      ) do
+
+    {:ok, %{status_code: 200, body: png}} =
+      "https://api.os.uk/maps/raster/v1/wmts?"
+      |> Kernel.<>(URI.encode_query(
+        [
+          key: get_api_key(),
+          service: "wmts",
+          request: "gettile",
+          version: "1.0.0",
+          style: "default",
+          layer: layerIdentifier,
+          tilematrixset: setIdentifier,
+          tilematrix: matrixIdentifier,
+          format: "image/png",
+          tilerow: row,
+          tilecol: col
+        ]
+      ))
+      |> HTTPoison.get()
+
+    Logger.info("Sent tile")
 
     conn
     |> put_resp_content_type("image/png")
