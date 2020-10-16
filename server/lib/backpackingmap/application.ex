@@ -14,7 +14,8 @@ defmodule Backpackingmap.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Backpackingmap.PubSub},
       # Start the Endpoint (http/https)
-      {SiteEncrypt.Phoenix, BackpackingmapWeb.Endpoint}
+      {SiteEncrypt.Phoenix, BackpackingmapWeb.Endpoint},
+      Pow.Store.Backend.MnesiaCache
       # Start a worker by calling: Backpackingmap.Worker.start_link(arg)
       # {Backpackingmap.Worker, arg}
     ]

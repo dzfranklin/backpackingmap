@@ -16,7 +16,9 @@ config :backpackingmap,
 config :backpackingmap, :pow,
   user: Backpackingmap.Users.User,
   repo: Backpackingmap.Repo,
-  web_module: BackpackingmapWeb
+  web_module: BackpackingmapWeb,
+  extensions: [PowPersistentSession],
+  cache_store_backend: Pow.Store.Backend.MnesiaCache
 
 # Configures the endpoint
 config :backpackingmap, BackpackingmapWeb.Endpoint,
