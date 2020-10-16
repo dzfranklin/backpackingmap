@@ -92,13 +92,7 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
                 makeRemoteRequestForBody { api.getTile(accessToken, request) }
             }
             .map { BitmapFactory.decodeStream(it.byteStream()) }
-            .mapLeft {
-                when (it) {
-                    is RemoteError.Network -> GetTileError.Network(it.cause)
-                    is RemoteError.Server -> GetTileError.Server(it.type, it.cause)
-                    is RemoteError.Api -> GetTileError.ApiAuth(it.response)
-                }
-            }
+            .mapLeft(::getTileErrorFromRemoteError)
     }
 
     companion object {

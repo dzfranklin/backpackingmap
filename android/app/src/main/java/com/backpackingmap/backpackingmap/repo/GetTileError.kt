@@ -11,3 +11,10 @@ sealed class GetTileError {
 
     // TODO: Add errrors for caching when that's added
 }
+
+fun <T : ResponseErrorWithMessage> getTileErrorFromRemoteError(error: RemoteError<T>): GetTileError =
+    when (error) {
+        is RemoteError.Network -> GetTileError.Network(error.cause)
+        is RemoteError.Server -> GetTileError.Server(error.type, error.cause)
+        is RemoteError.Api -> GetTileError.ApiAuth(error.response)
+    }
