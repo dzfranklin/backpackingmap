@@ -6,10 +6,10 @@ import android.content.SharedPreferences
 
 class BackpackingmapSharedPrefs(private val prefs: SharedPreferences) {
     constructor(activity: Activity) :
-            this(activity.getSharedPreferences(BACKPACKINGMAP_PREFS, 0))
+            this(activity.getSharedPreferences(BACKPACKINGMAP_PREFS, PREFS_MODE))
 
     constructor(application: Application) :
-            this(application.getSharedPreferences(BACKPACKINGMAP_PREFS, 0))
+            this(application.getSharedPreferences(BACKPACKINGMAP_PREFS, PREFS_MODE))
 
     fun edit(): SharedPreferences.Editor = prefs.edit()
 
