@@ -9,7 +9,7 @@ import timber.log.Timber
 fun enforceLoggedIn(activity: Activity) {
     // NOTE: This doesn't "enforce" from a security perspective, it prevents a user from seeing
     // a broken interface because it requires data the application doesn't have.
-    val prefs = BackpackingmapSharedPrefs(activity)
+    val prefs = BackpackingmapSharedPrefs.fromActivity(activity)
 
     if (prefs.isLoggedIn) {
         Timber.i("User is logged in")

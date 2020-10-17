@@ -96,12 +96,24 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
     }
 
     companion object {
+        @Volatile
+        private var INSTANCE: Repo? = null
+
         fun fromApplication(application: Application): Repo? {
-            val db = Db.getDatabase(application)
-            val prefs = BackpackingmapSharedPrefs(application)
+            val prefs = BackpackingmapSharedPrefs.fromApplication(application)
 
             return if (prefs.isLoggedIn) {
-                Repo(prefs, db.userDao())
+                val tempInstance = INSTANCE
+                if (tempInstance != null) {
+                    return tempInstance
+                }
+                synchronized(this) {
+                    val db = Db.getDatabase(application)
+                    val instance = Repo(prefs, db.userDao())
+
+                    INSTANCE = instance
+                    return instance
+                }
             } else {
                 null
             }

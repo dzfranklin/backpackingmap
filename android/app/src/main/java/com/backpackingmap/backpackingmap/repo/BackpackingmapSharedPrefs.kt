@@ -5,12 +5,6 @@ import android.app.Application
 import android.content.SharedPreferences
 
 class BackpackingmapSharedPrefs(private val prefs: SharedPreferences) {
-    constructor(activity: Activity) :
-            this(activity.getSharedPreferences(BACKPACKINGMAP_PREFS, PREFS_MODE))
-
-    constructor(application: Application) :
-            this(application.getSharedPreferences(BACKPACKINGMAP_PREFS, PREFS_MODE))
-
     fun edit(): SharedPreferences.Editor = prefs.edit()
 
     val isLoggedIn
@@ -27,5 +21,36 @@ class BackpackingmapSharedPrefs(private val prefs: SharedPreferences) {
         // Mode 0 is application-private. Accessing the constant requires a Context
         // <https://developer.android.com/reference/android/content/Context#MODE_PRIVATE>
         const val PREFS_MODE = 0
+
+        @Volatile
+        private var INSTANCE: BackpackingmapSharedPrefs? = null
+
+        fun fromActivity(activity: Activity): BackpackingmapSharedPrefs {
+            val tempInstance = INSTANCE
+            if (tempInstance != null) {
+                return tempInstance
+            }
+            synchronized(this) {
+                val instance = BackpackingmapSharedPrefs(activity.getSharedPreferences(
+                    BACKPACKINGMAP_PREFS,
+                    PREFS_MODE))
+                INSTANCE = instance
+                return instance
+            }
+        }
+
+        fun fromApplication(application: Application): BackpackingmapSharedPrefs {
+            val tempInstance = INSTANCE
+            if (tempInstance != null) {
+                return tempInstance
+            }
+            synchronized(this) {
+                val instance = BackpackingmapSharedPrefs(application.getSharedPreferences(
+                    BACKPACKINGMAP_PREFS,
+                    PREFS_MODE))
+                INSTANCE = instance
+                return instance
+            }
+        }
     }
 }

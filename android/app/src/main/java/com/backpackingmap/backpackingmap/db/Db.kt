@@ -6,7 +6,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import arrow.syntax.function.memoize
 import com.backpackingmap.backpackingmap.db.user.DbUser
 import com.backpackingmap.backpackingmap.db.user.UserDao
 
@@ -31,16 +30,25 @@ abstract class Db : RoomDatabase() {
     abstract fun userDao(): UserDao
 
     companion object {
-        val getDatabase = ::getDatabaseUnmemoized.memoize()
+        @Volatile
+        private var INSTANCE: Db? = null
 
-        private fun getDatabaseUnmemoized(context: Context): Db {
-            return Room.databaseBuilder(
-                context.applicationContext,
-                Db::class.java,
-                "backpackingmap_database"
-            )
-                .addMigrations(*MIGRATIONS)
-                .build()
+        fun getDatabase(context: Context): Db {
+            val tempInstance = INSTANCE
+            if (tempInstance != null) {
+                return tempInstance
+            }
+            synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    Db::class.java,
+                    "backpackingmap_database"
+                )
+                    .addMigrations(*MIGRATIONS)
+                    .build()
+                INSTANCE = instance
+                return instance
+            }
         }
     }
 }

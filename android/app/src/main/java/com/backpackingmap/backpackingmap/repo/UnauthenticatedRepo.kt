@@ -70,11 +70,22 @@ class UnauthenticatedRepo(
     }
 
     companion object {
-        fun fromApplication(application: Application): UnauthenticatedRepo {
-            val db = Db.getDatabase(application)
-            val prefs = BackpackingmapSharedPrefs(application)
+        @Volatile
+        private var INSTANCE: UnauthenticatedRepo? = null
 
-            return UnauthenticatedRepo(prefs, db.userDao())
+        fun fromApplication(application: Application): UnauthenticatedRepo {
+            val tempInstance = INSTANCE
+            if (tempInstance != null) {
+                return tempInstance
+            }
+            synchronized(this) {
+                val db = Db.getDatabase(application)
+                val prefs = BackpackingmapSharedPrefs.fromApplication(application)
+                val instance = UnauthenticatedRepo(prefs, db.userDao())
+
+                INSTANCE = instance
+                return instance
+            }
         }
     }
 }
