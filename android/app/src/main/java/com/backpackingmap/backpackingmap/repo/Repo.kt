@@ -11,9 +11,9 @@ import com.backpackingmap.backpackingmap.db.user.UserDao
 import com.backpackingmap.backpackingmap.map.wmts.*
 import com.backpackingmap.backpackingmap.net.AccessToken
 import com.backpackingmap.backpackingmap.net.Api
-import com.backpackingmap.backpackingmap.net.auth.RenewSessionResponseError
 import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
 import com.backpackingmap.backpackingmap.net.tile.TileRequestPosition
+import timber.log.Timber
 
 class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: UserDao) {
     val api = Api.service
@@ -47,28 +47,23 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
         }
     }
 
-    private var accessTokenCache: AccessToken? = null
-    private suspend fun getAccessToken(): Either<RemoteError<RenewSessionResponseError>, AccessToken> {
-        val cached = accessTokenCache
-        return if (cached != null) {
-            Either.right(cached)
-        } else {
-            renewAccessToken()
-        }
-    }
+    private val accessTokenCache = AccessTokenCache {
+        Timber.i("Renewing access token")
 
-    private suspend fun renewAccessToken(): Either<RemoteError<RenewSessionResponseError>, AccessToken> {
         val user = getUser()
 
-        return makeRemoteRequest { api.renewSession(user.renewalToken) }
+        makeRemoteRequest { api.renewSession(user.renewalToken) }
             .map {
                 val accessToken = AccessToken(it.access_token)
                 val renewalToken = RenewalToken(it.renewal_token)
 
                 updateUserRenewalToken(renewalToken)
-                accessTokenCache = accessToken
                 accessToken
             }
+    }
+
+    init {
+        accessTokenCache.prime()
     }
 
     suspend fun getTile(
@@ -87,7 +82,7 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
             position = TileRequestPosition(row = position.row, col = position.col)
         )
 
-        return getAccessToken()
+        return accessTokenCache.get()
             .flatMap { accessToken ->
                 makeRemoteRequestForBody { api.getTile(accessToken, request) }
             }
