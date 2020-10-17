@@ -1,6 +1,6 @@
 defmodule BackpackingmapWeb.API.V1.SessionController do
   use BackpackingmapWeb, :controller
-
+  require Logger
   alias BackpackingmapWeb.APIAuth
   alias Backpackingmap.Users
 
@@ -41,6 +41,8 @@ defmodule BackpackingmapWeb.API.V1.SessionController do
     |> APIAuth.Plug.renew(config)
     |> case do
          {conn, nil} ->
+           Logger.warn("Refusing to renew due to incorrect authentication token")
+
            conn
            |> json(
                 %{
@@ -51,6 +53,8 @@ defmodule BackpackingmapWeb.API.V1.SessionController do
               )
 
          {conn, user} ->
+           Logger.info("Renewed authentication token for user #{user.id}")
+
            json(
              conn,
              %{
