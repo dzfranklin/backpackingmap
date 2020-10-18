@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.databinding.FragmentRegisterBinding
 import com.backpackingmap.backpackingmap.main_activity.MainActivity
-import com.backpackingmap.backpackingmap.repo.RemoteError
+import com.backpackingmap.backpackingmap.repo.UnauthenticatedRemoteError
 
 class RegisterFragment : Fragment() {
     lateinit var binding: FragmentRegisterBinding
@@ -48,16 +48,16 @@ class RegisterFragment : Fragment() {
         model.error.observe(viewLifecycleOwner, { error ->
             when (error) {
                 null -> null
-                is RemoteError.Network -> {
+                is UnauthenticatedRemoteError.Network -> {
                     binding.mainError.text = getString(R.string.network_error)
                     binding.mainErrorDetail.text = error.cause.localizedMessage
 
                 }
-                is RemoteError.Server -> {
+                is UnauthenticatedRemoteError.Server -> {
                     binding.mainError.text = getString(R.string.server_error)
                     binding.mainErrorDetail.text = error.type
                 }
-                is RemoteError.Api -> {
+                is UnauthenticatedRemoteError.Api -> {
                     val response = error.response
                     binding.mainError.text = response.message
                     binding.mainErrorDetail.text = null

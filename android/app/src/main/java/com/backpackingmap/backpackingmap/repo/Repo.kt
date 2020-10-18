@@ -4,7 +4,6 @@ import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import arrow.core.Either
-import arrow.core.flatMap
 import com.backpackingmap.backpackingmap.db.Db
 import com.backpackingmap.backpackingmap.db.user.DbUser
 import com.backpackingmap.backpackingmap.db.user.UserDao
@@ -52,7 +51,11 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
 
         val user = getUser()
 
-        makeRemoteRequest { api.renewSession(user.renewalToken) }
+        makeUnauthenticatedRemoteRequest() { api.renewSession(user.renewalToken) }
+            .mapLeft {
+                Timber.w("Failed to renew access token: %s", it)
+                it
+            }
             .map {
                 val accessToken = AccessToken(it.access_token)
                 val renewalToken = RenewalToken(it.renewal_token)
@@ -82,12 +85,11 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
             position = TileRequestPosition(row = position.row, col = position.col)
         )
 
-        return accessTokenCache.get()
-            .flatMap { accessToken ->
-                makeRemoteRequestForBody { api.getTile(accessToken, request) }
-            }
+        return makeRemoteRequestForBody(accessTokenCache) { token ->
+            api.getTile(token, request)
+        }
             .map { BitmapFactory.decodeStream(it.byteStream()) }
-            .mapLeft(::getTileErrorFromRemoteError)
+            .mapLeft { GetTileError.Remote(it) }
     }
 
     companion object {

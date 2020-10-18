@@ -5,7 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.backpackingmap.backpackingmap.net.auth.CreateSessionResponseError
-import com.backpackingmap.backpackingmap.repo.RemoteError
+import com.backpackingmap.backpackingmap.repo.UnauthenticatedRemoteError
 import com.backpackingmap.backpackingmap.repo.UnauthenticatedRepo
 import kotlinx.coroutines.launch
 
@@ -13,7 +13,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val repo = UnauthenticatedRepo.fromApplication(application)
 
     val finished = MutableLiveData(false)
-    val error = MutableLiveData<RemoteError<CreateSessionResponseError>>()
+    val error = MutableLiveData<UnauthenticatedRemoteError<CreateSessionResponseError>>()
 
     val email = MutableLiveData("")
     val password = MutableLiveData("")

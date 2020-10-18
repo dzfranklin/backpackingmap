@@ -15,12 +15,12 @@ class UnauthenticatedRepo(
 ) {
     val api = UnauthenticatedApi.service
 
-    suspend fun register(email: String, password: String): RemoteError<RegisterResponseError>? {
+    suspend fun register(email: String, password: String): UnauthenticatedRemoteError<RegisterResponseError>? {
         Timber.i("Attempting to register %s", email)
 
         val request = RegisterRequest(RegisterRequestUser(email, password))
 
-        return when (val result = makeRemoteRequest {
+        return when (val result = makeUnauthenticatedRemoteRequest() {
             api.register(request)
         }) {
             is Either.Left -> {
@@ -35,12 +35,12 @@ class UnauthenticatedRepo(
         }
     }
 
-    suspend fun login(email: String, password: String): RemoteError<CreateSessionResponseError>? {
+    suspend fun login(email: String, password: String): UnauthenticatedRemoteError<CreateSessionResponseError>? {
         Timber.i("Attempting to login %s", email)
 
         val request = CreateSessionRequest(CreateSessionRequestUser(email, password))
 
-        return when (val result = makeRemoteRequest {
+        return when (val result = makeUnauthenticatedRemoteRequest() {
             api.createSession(request)
         }) {
             is Either.Left -> {

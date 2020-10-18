@@ -7,15 +7,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.datetime.*
 
-typealias AccessTokenResponse = Either<RemoteError<RenewSessionResponseError>, AccessToken>
+typealias AccessTokenResponse = Either<UnauthenticatedRemoteError<RenewSessionResponseError>, AccessToken>
 
 // NOTE: Implementation developed with help from Marc Knaup
 // <https://kotlinlang.slack.com/archives/C0922A726/p1602866129274400>
 class AccessTokenCache(private val renew: suspend () -> AccessTokenResponse) {
     private var cache: AccessToken? = null
+    private var cacheLastUpdated: Instant? = null
 
     private val getMutex = Mutex()
+    private val refreshMutex = Mutex()
 
     suspend fun get(): AccessTokenResponse {
         val tempInstance = cache
@@ -30,10 +33,25 @@ class AccessTokenCache(private val renew: suspend () -> AccessTokenResponse) {
             return if (instance != null) {
                 Either.right(instance)
             } else {
-                renew().map {
-                    cache = it
-                    it
+                renewAndCache()
+            }
+        }
+    }
+
+    suspend fun refresh(): Either<UnauthenticatedRemoteError<RenewSessionResponseError>, Unit> {
+        refreshMutex.withLock {
+            val now = Clock.System.now()
+            val tempInstance = cacheLastUpdated
+            if (tempInstance == null ||
+                tempInstance.until(now, DateTimeUnit.MINUTE, TimeZone.UTC)
+                > MAX_MINUTES_BETWEEN_REFRESHES
+            ) {
+                return renewAndCache().map {
+                    cacheLastUpdated = Clock.System.now()
+                    Unit
                 }
+            } else {
+                return Either.right(Unit)
             }
         }
     }
@@ -44,5 +62,16 @@ class AccessTokenCache(private val renew: suspend () -> AccessTokenResponse) {
                 get()
             }
         }
+    }
+
+    private suspend fun renewAndCache(): AccessTokenResponse =
+        renew().map {
+            cache = it
+            it
+        }
+
+    companion object {
+        private const val MAX_MINUTES_BETWEEN_REFRESHES = 1
+//        private const val MAX_MINUTES_BETWEEN_REFRESHES = 15
     }
 }
