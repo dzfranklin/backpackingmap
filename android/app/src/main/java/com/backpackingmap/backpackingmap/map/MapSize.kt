@@ -1,8 +1,6 @@
 package com.backpackingmap.backpackingmap.map
 
-data class MapExtents(
+data class MapSize(
     val screenWidth: Pixel,
     val screenHeight: Pixel,
-    val center: Coordinate,
-    val zoom: ZoomLevel,
 )

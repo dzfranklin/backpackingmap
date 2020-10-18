@@ -26,9 +26,12 @@ class MainActivity : AppCompatActivity() {
         model.repo?.let { repo ->
             val displayMetrics = resources.displayMetrics
 
-            val extents = MapExtents(
+            val extents = MapSize(
                 screenWidth = Pixel(displayMetrics.widthPixels),
-                screenHeight = Pixel(displayMetrics.heightPixels),
+                screenHeight = Pixel(displayMetrics.heightPixels)
+            )
+
+            val initialPosition = MapPosition(
                 center = Coordinate(
                     CRSFactory().createFromName("EPSG:4326"),
                     -2.804904, 56.340259
@@ -41,7 +44,8 @@ class MainActivity : AppCompatActivity() {
                 parent = binding.mapParent,
                 service = model.mapService,
                 layerConfigs = model.mapLayerConfigs,
-                extents = extents,
+                size = extents,
+                initialPosition = initialPosition,
                 repo = repo
             )
         }
