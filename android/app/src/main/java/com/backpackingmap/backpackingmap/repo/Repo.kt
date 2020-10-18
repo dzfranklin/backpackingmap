@@ -39,8 +39,7 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
     private suspend fun getDbUser(): DbUser {
         val users = userDao.getUsers()
         if (users.size == 1) {
-            val dbUser = users[0]
-            return dbUser
+            return users[0]
         } else {
             throw IllegalStateException("Exactly one user must exist")
         }
