@@ -68,6 +68,8 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
         accessTokenCache.prime()
     }
 
+    private val tileCache = TileCache()
+
     suspend fun getTile(
         service: WmtsServiceConfig,
         layer: WmtsLayerConfig,
@@ -75,7 +77,11 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
         matrix: WmtsTileMatrixConfig,
         position: WmtsTilePosition,
     ): Either<GetTileError, Bitmap> {
-        // TODO cache
+        val cached = tileCache.get(service, layer, set, matrix, position)
+        if (cached != null) {
+            return Either.right(cached)
+        }
+
         val request = GetTileRequest(
             serviceIdentifier = service.identifier,
             layerIdentifier = layer.identifier,
@@ -88,6 +94,10 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
             api.getTile(token, request)
         }
             .map { BitmapFactory.decodeStream(it.byteStream()) }
+            .map {
+                tileCache.insert(service, layer, set, matrix, position, it)
+                it
+            }
             .mapLeft { GetTileError.Remote(it) }
     }
 
