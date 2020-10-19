@@ -1,20 +1,22 @@
 package com.backpackingmap.backpackingmap.repo
 
 import android.app.Application
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import arrow.core.Either
 import com.backpackingmap.backpackingmap.db.Db
 import com.backpackingmap.backpackingmap.db.user.DbUser
 import com.backpackingmap.backpackingmap.db.user.UserDao
-import com.backpackingmap.backpackingmap.map.wmts.*
 import com.backpackingmap.backpackingmap.net.AccessToken
 import com.backpackingmap.backpackingmap.net.Api
-import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
-import com.backpackingmap.backpackingmap.net.tile.TileRequestPosition
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
+import kotlin.coroutines.CoroutineContext
 
-class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: UserDao) {
+class Repo(
+    override val coroutineContext: CoroutineContext,
+    private val prefs: BackpackingmapSharedPrefs,
+    private val userDao: UserDao,
+) : CoroutineScope {
+
     val api = Api.service
 
     init {
@@ -68,38 +70,8 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
         accessTokenCache.prime()
     }
 
-    private val tileCache = TileCache()
+    val tileRepo = TileRepo(coroutineContext, accessTokenCache, api)
 
-    suspend fun getTile(
-        service: WmtsServiceConfig,
-        layer: WmtsLayerConfig,
-        set: WmtsTileMatrixSetConfig,
-        matrix: WmtsTileMatrixConfig,
-        position: WmtsTilePosition,
-    ): Either<GetTileError, Bitmap> {
-        val cached = tileCache.get(service, layer, set, matrix, position)
-        if (cached != null) {
-            return Either.right(cached)
-        }
-
-        val request = GetTileRequest(
-            serviceIdentifier = service.identifier,
-            layerIdentifier = layer.identifier,
-            setIdentifier = set.identifier,
-            matrixIdentifier = matrix.identifier,
-            position = TileRequestPosition(row = position.row, col = position.col)
-        )
-
-        return makeRemoteRequestForBody(accessTokenCache) { token ->
-            api.getTile(token, request)
-        }
-            .map { BitmapFactory.decodeStream(it.byteStream()) }
-            .map {
-                tileCache.insert(service, layer, set, matrix, position, it)
-                it
-            }
-            .mapLeft { GetTileError.Remote(it) }
-    }
 
     companion object {
         @Volatile
@@ -115,7 +87,8 @@ class Repo(private val prefs: BackpackingmapSharedPrefs, private val userDao: Us
                 }
                 synchronized(this) {
                     val db = Db.getDatabase(application)
-                    val instance = Repo(prefs, db.userDao())
+                    val scope = CoroutineScope(Dispatchers.Default)
+                    val instance = Repo(scope.coroutineContext, prefs, db.userDao())
 
                     INSTANCE = instance
                     return instance

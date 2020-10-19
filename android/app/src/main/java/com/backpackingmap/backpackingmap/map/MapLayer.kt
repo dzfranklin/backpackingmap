@@ -3,175 +3,156 @@ package com.backpackingmap.backpackingmap.map
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
-import android.view.SurfaceHolder
-import android.view.SurfaceView
-import android.view.ViewGroup
+import android.view.View
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
 import com.backpackingmap.backpackingmap.map.wmts.WmtsServiceConfig
-import com.backpackingmap.backpackingmap.map.wmts.WmtsTilePosition
-import com.backpackingmap.backpackingmap.repo.Repo
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
+import com.backpackingmap.backpackingmap.repo.GetTileError
+import com.backpackingmap.backpackingmap.repo.TileRepo
+import kotlinx.coroutines.CancellationException
 import timber.log.Timber
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.round
 
-class MapLayer(
-    private val context: Context,
-    parent: ViewGroup,
-    private val service: WmtsServiceConfig,
-    private val config: WmtsLayerConfig,
-    private val size: MapSize,
-    private val position: Flow<MapPosition>,
-    private val repo: Repo,
-) {
-    private val surface = SurfaceView(context)
-    private val holder: SurfaceHolder = surface.holder
-    private lateinit var scope: CoroutineScope
+class MapLayer constructor(context: Context): View(context) {
+    data class Attrs(
+        val service: WmtsServiceConfig,
+        val config: WmtsLayerConfig,
+        val size: MapSize,
+        val initialPosition: MapPosition,
+        val repo: TileRepo,
+    )
 
-    init {
-        parent.addView(surface, parent.layoutParams)
-        holder.setFixedSize(size.screenWidth.toInt(), size.screenHeight.toInt())
+    var attrs: Attrs? = null
+    var position: MapPosition? = null
 
-        holder.addCallback(object : SurfaceHolder.Callback {
-            override fun surfaceCreated(holder: SurfaceHolder) {
-                Timber.i("Surface created")
-
-                scope = CoroutineScope(Dispatchers.IO)
-                scope.launch {
-                    drawOnChange()
-                }
-            }
-
-            override fun surfaceChanged(
-                holder: SurfaceHolder,
-                format: Int,
-                width: Int,
-                height: Int,
-            ) {
-            }
-
-            override fun surfaceDestroyed(holder: SurfaceHolder) {
-                Timber.i("Surface destroyed")
-
-                scope.cancel()
-            }
-        })
+    fun onReceiveAttrs(newAttrs: Attrs) {
+        attrs = newAttrs
+        invalidate()
     }
 
-    private val tiles: MutableMap<WmtsTilePosition, Bitmap> = mutableMapOf()
-    private val pendingTiles: MutableMap<WmtsTilePosition, Int> = mutableMapOf()
-    private var lastDraw = AtomicInteger(0)
+    fun onChangePosition(newPosition: MapPosition) {
+        position = newPosition
+        invalidate()
+    }
 
-    private suspend fun drawOnChange() {
-        position.collect { mapPosition ->
-            val currentDraw = lastDraw.incrementAndGet()
+    val requested = HashSet<Int>()
 
-            val activeMatrix = config.matrices.keys.last() // TODO: Set based on zoom
+    override fun onDraw(canvas: Canvas?) {
+        if (canvas == null) {
+            Timber.w("onDraw with null canvas")
+            return
+        }
 
-            val (_, centerX, centerY) = mapPosition.center.convertTo(config.set.crs)
-            val pixelSpan = config.set.pixelSpan(activeMatrix)
-            val screenWidth = size.screenWidth.toDouble() * pixelSpan
-            val screenHeight = size.screenHeight.toDouble() * pixelSpan
+        val cachedAttrs = attrs ?: return
+        val service = cachedAttrs.service
+        val config = cachedAttrs.config
+        val size = cachedAttrs.size
+        val repo = cachedAttrs.repo
 
-            val minX = centerX - floor(screenWidth / 2.0)
-            val maxX = centerX + ceil(screenWidth / 2.0)
-            val minY = centerY - floor(screenHeight / 2.0)
-            val maxY = centerY + ceil(screenHeight / 2.0)
+        val position = position ?: cachedAttrs.initialPosition
 
-            val tileRange = config.set.tileIndices(activeMatrix,
-                maxCrsX = maxX,
-                minCrsX = minX,
-                maxCrsY = maxY,
-                minCrsY = minY
-            )
+        val activeMatrix = config.matrices.keys.last() // TODO: Set based on zoom
+        val serviceLayerMatrixIdentifier =
+            repo.serviceLayerMatrixIdentifier(service, config, activeMatrix)
 
-            val overageX = round(tileRange.minColOverageInCrs / pixelSpan).toInt()
-            val overageY = round(tileRange.minRowOverageInCrs / pixelSpan).toInt()
+        val (_, centerX, centerY) = position.center.convertTo(config.set.crs)
+        val pixelSpan = config.set.pixelSpan(activeMatrix)
+        val screenWidth = size.screenWidth.toDouble() * pixelSpan
+        val screenHeight = size.screenHeight.toDouble() * pixelSpan
 
-            val canvas =
-                withContext(Dispatchers.Main) { holder.lockCanvas() }
+        val minX = centerX - floor(screenWidth / 2.0)
+        val maxX = centerX + ceil(screenWidth / 2.0)
+        val minY = centerY - floor(screenHeight / 2.0)
+        val maxY = centerY + ceil(screenHeight / 2.0)
 
-            // TODO: delete old tiles
+        val tileRange = config.set.tileIndices(activeMatrix,
+            maxCrsX = maxX,
+            minCrsX = minX,
+            maxCrsY = maxY,
+            minCrsY = minY
+        )
 
-            for (col in tileRange.minColInclusive..tileRange.maxColInclusive) {
-                val offsetX = (col - tileRange.minColInclusive) * activeMatrix.tileWidth.toInt()
-                for (row in tileRange.minRowInclusive..tileRange.maxRowInclusive) {
-                    val offsetY =
-                        (row - tileRange.minRowInclusive) * activeMatrix.tileHeight.toInt()
-                    val position = WmtsTilePosition(row = row, col = col)
+        val overageX = round(tileRange.minColOverageInCrs / pixelSpan).toInt()
+        val overageY = round(tileRange.minRowOverageInCrs / pixelSpan).toInt()
 
-                    val placement = TilePlacement(
-                        topLeftX = offsetX - overageX,
-                        topLeftY = offsetY - overageY,
-                        width = activeMatrix.tileWidth,
-                        height = activeMatrix.tileHeight
-                    )
+        for (col in tileRange.minColInclusive..tileRange.maxColInclusive) {
+            val offsetX = (col - tileRange.minColInclusive) * activeMatrix.tileWidth.toInt()
+            for (row in tileRange.minRowInclusive..tileRange.maxRowInclusive) {
+                val offsetY =
+                    (row - tileRange.minRowInclusive) * activeMatrix.tileHeight.toInt()
 
-                    val cached = tiles[position]
-                    if (cached != null) {
-                        drawTile(canvas, placement, cached)
-                    } else {
-                        drawPlaceholder(canvas, placement)
-                        if (pendingTiles[position] != null) {
-                            pendingTiles[position] = currentDraw
-                        } else {
-                            pendingTiles[position] = currentDraw
+                val topLeftX = offsetX - overageX
+                val topLeftY = offsetY - overageY
+                val width = activeMatrix.tileWidth
+                val height = activeMatrix.tileHeight
 
-                            scope.launch {
-                                repo.getTile(service, config, config.set, activeMatrix, position)
-                                    .map {
-                                        val scheduledForDraw = pendingTiles[position]
-                                        if (scheduledForDraw != null && scheduledForDraw == lastDraw.get()) {
-                                            withContext(Dispatchers.Main) {
-                                                val canvas = holder.lockCanvas(placement.toRect())
-                                                if (canvas != null) {
-                                                    drawTile(canvas, placement, it)
-                                                } else {
-                                                    Timber.w("Failed to lock canvas to draw received tile")
-                                                }
-                                            }
-                                        }
-                                        tiles[position] = it
-                                    }
-                                    .mapLeft {
-                                        Timber.w("Error fetching tile: %s", position)
-                                    }
-                            }
+                val cached = repo.getCached(serviceLayerMatrixIdentifier, row, col)
+                if (cached != null) {
+                    drawTile(canvas, cached, topLeftX, topLeftY)
+                } else {
+                    drawPlaceholder(canvas, topLeftX, topLeftY, width, height)
+
+                    val identifier = repo.tileIdentifier(serviceLayerMatrixIdentifier, row, col)
+                    if (!requested.contains(identifier)) {
+                        repo.requestCaching(service, config, activeMatrix, row, col) {
+                            invalidate()
                         }
+                        Timber.i("Requesting tile")
+                        requested.add(identifier)
                     }
-
-
                 }
             }
-
-            withContext(Dispatchers.Main) { holder.unlockCanvasAndPost(canvas) }
         }
     }
 
-    private suspend fun drawPlaceholder(canvas: Canvas, placement: TilePlacement) =
-        withContext(Dispatchers.Main) {
-            val paint = Paint()
-            paint.style = Paint.Style.FILL
-            paint.color = context.getColor(R.color.unloadedTile)
-
-            canvas.drawRect(placement.toRect(), paint)
-        }
-
-    private suspend fun drawTile(
-        canvas: Canvas,
-        placement: TilePlacement,
-        tile: Bitmap,
-    ) = withContext(Dispatchers.Main) {
-        canvas.drawBitmap(tile,
-            placement.topLeftX.toFloat(),
-            placement.topLeftY.toFloat(),
+    private fun drawTile(canvas: Canvas, bitmap: Bitmap, topLeftX: Int, topLeftY: Int) {
+        canvas.drawBitmap(
+            bitmap,
+            topLeftX.toFloat(),
+            topLeftY.toFloat(),
             null
         )
     }
+
+    private val placeholderPaint = Paint().apply {
+        style = Paint.Style.FILL
+        color = context.getColor(R.color.unloadedTile)
+    }
+
+    private val errorPaint = Paint().apply {
+        color = Color.RED
+    }
+
+    private fun drawPlaceholder(
+        canvas: Canvas,
+        topLeftX: Int,
+        topLeftY: Int,
+        width: Pixel,
+        height: Pixel,
+    ) {
+
+
+        canvas.drawRect(
+            topLeftX.toFloat(),
+            topLeftY.toFloat(),
+            (topLeftX + width.toInt()).toFloat(),
+            (topLeftY + height.toInt()).toFloat(),
+            placeholderPaint
+        )
+    }
+
+    private fun drawError(canvas: Canvas, error: GetTileError, topLeftX: Int, topLeftY: Int) {
+        canvas.drawText(error.toString(), topLeftX.toFloat(), topLeftY.toFloat(), errorPaint)
+    }
+
+    companion object {
+        private const val MAX_ENQUEUED_DRAWS = 20
+    }
 }
+
+// TODO: use
+class TileNoLongerNeeded() : CancellationException("Tile no longer needed")

@@ -1,13 +1,18 @@
 package com.backpackingmap.backpackingmap.map
 
 import android.content.Context
+import android.view.View
 import android.view.ViewGroup
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
 import com.backpackingmap.backpackingmap.map.wmts.WmtsServiceConfig
 import com.backpackingmap.backpackingmap.repo.Repo
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class MapView(
     private val context: Context,
     private val parent: ViewGroup,
@@ -16,33 +21,56 @@ class MapView(
     private val size: MapSize,
     private val initialPosition: MapPosition,
     private val repo: Repo,
-) {
-    private val position = flow {
-        var last = initialPosition
-        while (true) {
-            delay(1000 / 60)
-            val position = MapPosition(
-                zoom = last.zoom,
-                center = Coordinate(
-                    crs = last.center.crs,
-                    x = last.center.x - 0.0001,
-                    y = last.center.y
-                )
-            )
-            emit(position)
-            last = position
-        }
-    }
+) : CoroutineScope {
+    override val coroutineContext = CoroutineScope(Dispatchers.Main).coroutineContext
 
     private val layers = layerConfigs.map { config ->
-        MapLayer(
-            context = context,
-            parent = parent,
+        val view = addView(MapLayer(context))
+        view.onReceiveAttrs(MapLayer.Attrs(
             service = service,
             config = config,
             size = size,
-            position = position,
-            repo = repo
-        )
+            initialPosition = initialPosition,
+            repo = repo.tileRepo,
+        ))
+        view
+    }
+
+    private val touchHandler = TouchHandler(coroutineContext, addView(View(context)))
+
+    init {
+        var last = initialPosition
+
+        launch {
+            setLayerPositions(initialPosition)
+
+            touchHandler.events.collect { event ->
+                when (event) {
+                    is TouchHandler.TouchEvent.Move -> {
+                        val current = MapPosition(
+                            zoom = last.zoom,
+                            center = Coordinate(
+                                crs = last.center.crs,
+                                x = last.center.x - (event.delta.x / 1000000),
+                                y = last.center.y + (event.delta.y / 1000000)
+                            )
+                        )
+                        setLayerPositions(current)
+                        last = current
+                    }
+                }!!
+            }
+        }
+    }
+
+    private fun setLayerPositions(position: MapPosition) {
+        for (layer in layers) {
+            layer.onChangePosition(position)
+        }
+    }
+
+    private fun <T : View> addView(view: T): T {
+        parent.addView(view, parent.layoutParams)
+        return view
     }
 }
