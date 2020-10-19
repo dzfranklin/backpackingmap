@@ -1,14 +1,15 @@
 package com.backpackingmap.backpackingmap.map
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
+import android.graphics.*
+import android.text.StaticLayout
+import android.text.TextPaint
 import android.view.View
+import androidx.core.graphics.withTranslation
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
 import com.backpackingmap.backpackingmap.map.wmts.WmtsServiceConfig
+import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
 import com.backpackingmap.backpackingmap.repo.GetTileError
 import com.backpackingmap.backpackingmap.repo.TileRepo
 import kotlinx.coroutines.CancellationException
@@ -39,7 +40,7 @@ class MapLayer constructor(context: Context) : View(context) {
         invalidate()
     }
 
-    private val requested = HashSet<Int>()
+    private val requested = HashSet<GetTileRequest>()
 
     override fun onDraw(canvas: Canvas?) {
         if (canvas == null) {
@@ -56,8 +57,6 @@ class MapLayer constructor(context: Context) : View(context) {
         val position = position ?: cachedAttrs.initialPosition
 
         val activeMatrix = config.matrices.keys.last() // TODO: Set based on zoom
-        val serviceLayerMatrixIdentifier =
-            repo.serviceLayerMatrixIdentifier(service, config, activeMatrix)
 
         val (_, centerX, centerY) = position.center.convertTo(config.set.crs)
         val pixelSpan = config.set.pixelSpan(activeMatrix)
@@ -79,6 +78,8 @@ class MapLayer constructor(context: Context) : View(context) {
         val overageX = round(tileRange.minColOverageInCrs / pixelSpan).toInt()
         val overageY = round(tileRange.minRowOverageInCrs / pixelSpan).toInt()
 
+        val requestBuilder = GetTileRequest.Builder.from(service, config, activeMatrix)
+
         for (col in tileRange.minColInclusive..tileRange.maxColInclusive) {
             val offsetX = (col - tileRange.minColInclusive) * activeMatrix.tileWidth.toInt()
             for (row in tileRange.minRowInclusive..tileRange.maxRowInclusive) {
@@ -90,24 +91,32 @@ class MapLayer constructor(context: Context) : View(context) {
                 val width = activeMatrix.tileWidth
                 val height = activeMatrix.tileHeight
 
-                val cached = repo.getCached(serviceLayerMatrixIdentifier, row, col)
+                val request = requestBuilder.build(row, col)
+
+                val cached = repo.getCached(request)
                 if (cached != null) {
-                    drawTile(canvas, cached, topLeftX, topLeftY)
+                    cached
+                        .map {
+                            drawTile(canvas, it, topLeftX, topLeftY)
+                        }
+                        .mapLeft {
+                            drawError(canvas, it, topLeftX, topLeftY, width, height)
+                        }
                 } else {
                     drawPlaceholder(canvas, topLeftX, topLeftY, width, height)
 
-                    val identifier = repo.tileIdentifier(serviceLayerMatrixIdentifier, row, col)
-                    if (!requested.contains(identifier)) {
-                        repo.requestCaching(service, config, activeMatrix, row, col) {
+                    if (!requested.contains(request)) {
+                        repo.requestCaching(request) {
                             invalidate()
                         }
-                        Timber.i("Requesting tile")
-                        requested.add(identifier)
+                        requested.add(request)
                     }
                 }
             }
         }
     }
+
+    private val density = resources.displayMetrics.density
 
     private fun drawTile(canvas: Canvas, bitmap: Bitmap, topLeftX: Int, topLeftY: Int) {
         canvas.drawBitmap(
@@ -123,9 +132,12 @@ class MapLayer constructor(context: Context) : View(context) {
         color = context.getColor(R.color.unloadedTile)
     }
 
-    private val errorPaint = Paint().apply {
+    private val errorPaint = TextPaint().apply {
         color = Color.RED
+        textSize = 20F * density
     }
+
+    private val errorPadding = 5F * density
 
     private fun drawPlaceholder(
         canvas: Canvas,
@@ -134,8 +146,6 @@ class MapLayer constructor(context: Context) : View(context) {
         width: Pixel,
         height: Pixel,
     ) {
-
-
         canvas.drawRect(
             topLeftX.toFloat(),
             topLeftY.toFloat(),
@@ -145,8 +155,33 @@ class MapLayer constructor(context: Context) : View(context) {
         )
     }
 
-    private fun drawError(canvas: Canvas, error: GetTileError, topLeftX: Int, topLeftY: Int) {
-        canvas.drawText(error.toString(), topLeftX.toFloat(), topLeftY.toFloat(), errorPaint)
+    private fun drawError(
+        canvas: Canvas,
+        error: GetTileError,
+        topLeftX: Int,
+        topLeftY: Int,
+        width: Pixel,
+        height: Pixel,
+    ) {
+        val text = error.toString()
+
+        val axisPadding = (2 * errorPadding).toInt()
+
+        val internalWidth = width.toInt() - axisPadding.toInt()
+
+        val rect = Rect()
+        errorPaint.getTextBounds(text, 0, text.length, rect)
+        val textLineHeight = rect.height()
+        val internalHeightInLines =
+            floor((height.toFloat() - axisPadding) / textLineHeight).toInt()
+
+        val layout = StaticLayout.Builder
+            .obtain(text, 0, text.length, errorPaint, internalWidth)
+            .setMaxLines(internalHeightInLines)
+            .build()
+        canvas.withTranslation(topLeftX + errorPadding, topLeftY + errorPadding) {
+            layout.draw(this)
+        }
     }
 }
 
