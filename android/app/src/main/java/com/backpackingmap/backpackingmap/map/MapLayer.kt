@@ -17,7 +17,7 @@ import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.round
 
-class MapLayer constructor(context: Context): View(context) {
+class MapLayer constructor(context: Context) : View(context) {
     data class Attrs(
         val service: WmtsServiceConfig,
         val config: WmtsLayerConfig,
@@ -39,7 +39,7 @@ class MapLayer constructor(context: Context): View(context) {
         invalidate()
     }
 
-    val requested = HashSet<Int>()
+    private val requested = HashSet<Int>()
 
     override fun onDraw(canvas: Canvas?) {
         if (canvas == null) {
