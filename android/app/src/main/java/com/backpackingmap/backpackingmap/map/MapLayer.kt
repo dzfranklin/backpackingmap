@@ -148,10 +148,6 @@ class MapLayer constructor(context: Context) : View(context) {
     private fun drawError(canvas: Canvas, error: GetTileError, topLeftX: Int, topLeftY: Int) {
         canvas.drawText(error.toString(), topLeftX.toFloat(), topLeftY.toFloat(), errorPaint)
     }
-
-    companion object {
-        private const val MAX_ENQUEUED_DRAWS = 20
-    }
 }
 
 // TODO: use
