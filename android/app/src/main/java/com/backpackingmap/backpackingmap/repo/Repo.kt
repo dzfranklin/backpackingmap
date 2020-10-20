@@ -17,7 +17,8 @@ class Repo(
     override val coroutineContext: CoroutineContext,
     private val prefs: BackpackingmapSharedPrefs,
     private val userDao: UserDao,
-    private val api: ApiService
+    private val api: ApiService,
+    private val memoryClass: Int,
 ) : CoroutineScope {
     init {
         if (!prefs.isLoggedIn) {
@@ -70,10 +71,13 @@ class Repo(
         accessTokenCache.prime()
     }
 
-    val tileRepo = TileRepo(coroutineContext, accessTokenCache, api)
+    private val tileRepoSize = ((memoryClass.toDouble() * MB_TO_BYTES) * 0.75).toInt()
+    val tileRepo = TileRepo(coroutineContext, accessTokenCache, api, tileRepoSize)
 
 
     companion object {
+        private val MB_TO_BYTES = 1e6
+
         @Volatile
         private var INSTANCE: Repo? = null
 
@@ -89,7 +93,13 @@ class Repo(
                     val db = Db.getDatabase(context)
                     val scope = CoroutineScope(Dispatchers.Default)
                     val api = Api.fromContext(context)
-                    val instance = Repo(scope.coroutineContext, prefs, db.userDao(), api)
+
+                    val activityManager =
+                        context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                    val memoryClass = activityManager.memoryClass
+
+                    val instance =
+                        Repo(scope.coroutineContext, prefs, db.userDao(), api, memoryClass)
 
                     INSTANCE = instance
                     return instance

@@ -16,10 +16,8 @@ class TileRepo(
     override val coroutineContext: CoroutineContext,
     private val accessTokenCache: AccessTokenCache,
     private val api: ApiService,
+    private val size: Int
 ) : CoroutineScope {
-    private val appMaxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
-    private val size = appMaxMemory / 4
-
     private val cache = object : LruCache<GetTileRequest, GetTileResponse>(size) {
         override fun sizeOf(key: GetTileRequest, value: GetTileResponse) = when (value) {
             is Either.Right -> value.b.byteCount / 1024
