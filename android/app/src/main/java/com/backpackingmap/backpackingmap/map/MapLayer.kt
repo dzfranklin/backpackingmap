@@ -13,7 +13,6 @@ import com.backpackingmap.backpackingmap.map.wmts.WmtsTileMatrixConfig
 import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
 import com.backpackingmap.backpackingmap.repo.GetTileError
 import com.backpackingmap.backpackingmap.repo.TileRepo
-import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -187,8 +186,6 @@ class MapLayer constructor(context: Context) : View(context) {
 
         val tiles = cachedToDraw.tiles
         val scaleFactor = cachedToDraw.scaleFactor
-
-        Timber.i("Drawing %s tiles at scale factor %s", tiles.size, scaleFactor)
 
         canvas.scale(scaleFactor, scaleFactor)
 
