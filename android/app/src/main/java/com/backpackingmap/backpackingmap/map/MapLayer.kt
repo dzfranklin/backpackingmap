@@ -75,7 +75,7 @@ class MapLayer constructor(context: Context) : View(context) {
         val activeMatrix = config.matrices.keys.last() // TODO: Set based on zoom
 
         val (_, centerX, centerY) = position.center.convertTo(config.set.crs)
-        val pixelSpan = config.set.pixelSpan(activeMatrix)
+        val pixelSpan = config.set.pixelsPerMeter(activeMatrix)
 
         val screenWidth = cachedScreenWidth.toDouble() * pixelSpan
         val screenHeight = cachedScreenHeight.toDouble() * pixelSpan
