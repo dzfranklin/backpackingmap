@@ -23,7 +23,7 @@ private const val BASE_URL = BuildConfig.API_BASE_URL
 interface ApiService {
     @POST("session/renew")
     suspend fun renewSession(@Header(AUTH) token: RenewalToken):
-            Response<AuthInfo, RenewSessionResponseError>
+            Response<RenewSessionResponseError, AuthInfo>
 
     @DELETE("session")
     suspend fun deleteSession(@Header(AUTH) token: AccessToken)

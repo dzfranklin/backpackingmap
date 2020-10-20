@@ -15,11 +15,11 @@ private const val BASE_URL = BuildConfig.API_BASE_URL
 interface UnauthenticatedApiService {
     @POST("registration")
     suspend fun register(@Body request: RegisterRequest):
-            Response<AuthInfo, RegisterResponseError>
+            Response<RegisterResponseError, AuthInfo>
 
     @POST("session")
     suspend fun createSession(@Body request: CreateSessionRequest):
-            Response<AuthInfo, CreateSessionResponseError>
+            Response<CreateSessionResponseError, AuthInfo>
 }
 
 object UnauthenticatedApi {

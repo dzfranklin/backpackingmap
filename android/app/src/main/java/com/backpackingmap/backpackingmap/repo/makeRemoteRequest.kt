@@ -11,7 +11,7 @@ import timber.log.Timber
 private const val CODE_NOT_AUTHENTICATED = 401
 
 suspend fun <ApiData, ApiError> makeUnauthenticatedRemoteRequest(
-    requester: suspend () -> Response<ApiData, ApiError>,
+    requester: suspend () -> Response<ApiError, ApiData>,
 ): Either<UnauthenticatedRemoteError<ApiError>, ApiData> =
     mapThrownErrorsUnauthenticated {
         val response = requester()

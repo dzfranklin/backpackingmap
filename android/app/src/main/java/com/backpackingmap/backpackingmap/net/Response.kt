@@ -1,3 +1,3 @@
 package com.backpackingmap.backpackingmap.net
 
-data class Response<Data, Error>(val data: Data?, val error: Error?)
+data class Response<Error, Data>(val error: Error?, val data: Data?)
