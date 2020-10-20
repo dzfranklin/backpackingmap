@@ -1,10 +1,15 @@
 package com.backpackingmap.backpackingmap.map
 
+import org.locationtech.proj4j.CRSFactory
 import org.locationtech.proj4j.CoordinateReferenceSystem
 import org.locationtech.proj4j.CoordinateTransformFactory
 import org.locationtech.proj4j.ProjCoordinate
+import org.locationtech.proj4j.units.Units
+import org.locationtech.proj4j.util.ProjectionMath
+import kotlin.math.cos
 
 val transformFactory = CoordinateTransformFactory()
+val wgs84 = CRSFactory().createFromName("EPSG:4326")
 
 data class Coordinate(
     val crs: CoordinateReferenceSystem,
@@ -24,11 +29,32 @@ data class Coordinate(
         return Coordinate(newCrs, target.x, target.y)
     }
 
-    fun movedBy(metersX: Double, metersY: Double): Coordinate {
-        // NOTE: Does not wrap x & y
-        val unitsPerMeter = 1.0 / crs.projection.fromMetres
-        val newX = x + (metersX * unitsPerMeter)
-        val newY = y + (metersY * unitsPerMeter)
-        return Coordinate(crs, newX, newY)
+    fun movedBy(metersEast: Double, metersNorth: Double): Coordinate {
+        if (crs.projection.units != Units.DEGREES) {
+            return this.convertTo(wgs84).movedBy(metersEast, metersNorth)
+        }
+
+        val normalizedCoords = ProjCoordinate(x, y)
+        // ENU means East, North, Up
+        crs.projection.axisOrder.toENU(normalizedCoords)
+        val easting = normalizedCoords.x
+        val northing = normalizedCoords.y
+
+        // Approximation, see <https://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters/2964#2964>
+        val newEastingUnnormalized = easting + metersEast / (111_111 * cos(northing))
+        val newNorthingUnnormalized = northing + metersNorth / 111_111.0
+
+        val newEasting = ProjectionMath.radToDeg(
+            ProjectionMath.normalizeLongitude(
+                ProjectionMath.degToRad(newEastingUnnormalized)))
+
+        val newNorthing = ProjectionMath.radToDeg(
+            ProjectionMath.normalizeLatitude(
+                ProjectionMath.degToRad(newNorthingUnnormalized)))
+
+        val denormalizedCoords = ProjCoordinate(newEasting, newNorthing)
+        crs.projection.axisOrder.fromENU(denormalizedCoords)
+
+        return Coordinate(crs, denormalizedCoords.x, denormalizedCoords.y)
     }
 }
