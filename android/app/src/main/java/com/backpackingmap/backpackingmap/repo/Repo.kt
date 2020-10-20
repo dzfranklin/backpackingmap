@@ -67,10 +67,6 @@ class Repo(
             }
     }
 
-    init {
-        accessTokenCache.prime()
-    }
-
     private val tileRepoSize = ((memoryClass.toDouble() * MB_TO_BYTES) * 0.75).toInt()
     val tileRepo = TileRepo(coroutineContext, accessTokenCache, api, tileRepoSize)
 

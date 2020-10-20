@@ -3,8 +3,6 @@ package com.backpackingmap.backpackingmap.repo
 import arrow.core.Either
 import com.backpackingmap.backpackingmap.net.AccessToken
 import com.backpackingmap.backpackingmap.net.auth.RenewSessionResponseError
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.*
@@ -52,14 +50,6 @@ class AccessTokenCache(private val renew: suspend () -> AccessTokenResponse) {
                 }
             } else {
                 return Either.right(Unit)
-            }
-        }
-    }
-
-    fun prime() {
-        runBlocking {
-            launch {
-                get()
             }
         }
     }
