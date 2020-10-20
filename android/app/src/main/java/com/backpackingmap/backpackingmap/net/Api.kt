@@ -1,12 +1,15 @@
 package com.backpackingmap.backpackingmap.net
 
+import android.content.Context
 import com.backpackingmap.backpackingmap.BuildConfig
 import com.backpackingmap.backpackingmap.net.auth.AuthInfo
 import com.backpackingmap.backpackingmap.net.auth.RenewSessionResponseError
 import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
 import com.backpackingmap.backpackingmap.repo.RenewalToken
+import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -37,16 +40,30 @@ interface ApiService {
 }
 
 object Api {
-    val service: ApiService by lazy {
-        val moshi = Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
+    @Volatile
+    private var INSTANCE: ApiService? = null
 
-        val retrofit = Retrofit.Builder()
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .baseUrl(BASE_URL)
-            .build()
+    fun fromContext(context: Context): ApiService {
+        val tempInstance = INSTANCE
+        if (tempInstance != null) {
+            return tempInstance
+        }
+        synchronized(this) {
+            val moshi = Moshi.Builder()
+                .add(KotlinJsonAdapterFactory())
+                .build()
 
-        retrofit.create(ApiService::class.java)
+            val client = OkHttpClient.Builder()
+                .addInterceptor(ChuckerInterceptor(context))
+                .build()
+
+            val retrofit = Retrofit.Builder()
+                .addConverterFactory(MoshiConverterFactory.create(moshi))
+                .baseUrl(BASE_URL)
+                .client(client)
+                .build()
+
+            return retrofit.create(ApiService::class.java)
+        }
     }
 }

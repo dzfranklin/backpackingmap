@@ -6,6 +6,7 @@ import com.backpackingmap.backpackingmap.db.user.DbUser
 import com.backpackingmap.backpackingmap.db.user.UserDao
 import com.backpackingmap.backpackingmap.net.AccessToken
 import com.backpackingmap.backpackingmap.net.Api
+import com.backpackingmap.backpackingmap.net.ApiService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
@@ -15,10 +16,8 @@ class Repo(
     override val coroutineContext: CoroutineContext,
     private val prefs: BackpackingmapSharedPrefs,
     private val userDao: UserDao,
+    private val api: ApiService
 ) : CoroutineScope {
-
-    val api = Api.service
-
     init {
         if (!prefs.isLoggedIn) {
             throw IllegalStateException("Cannot create Repo when not logged in")
@@ -88,7 +87,8 @@ class Repo(
                 synchronized(this) {
                     val db = Db.getDatabase(application)
                     val scope = CoroutineScope(Dispatchers.Default)
-                    val instance = Repo(scope.coroutineContext, prefs, db.userDao())
+                    val api = Api.fromContext(application)
+                    val instance = Repo(scope.coroutineContext, prefs, db.userDao(), api)
 
                     INSTANCE = instance
                     return instance
