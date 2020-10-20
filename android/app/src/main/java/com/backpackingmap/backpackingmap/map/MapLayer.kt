@@ -77,7 +77,6 @@ class MapLayer constructor(context: Context) : View(context) {
         val (_, centerX, centerY) = position.center.convertTo(config.set.crs)
         val pixelSpan = config.set.pixelSpan(activeMatrix)
 
-
         val screenWidth = cachedScreenWidth.toDouble() * pixelSpan
         val screenHeight = cachedScreenHeight.toDouble() * pixelSpan
 
