@@ -11,12 +11,12 @@ data class ScreenCoordinate(val x: Float, val y: Float) {
     companion object {
         fun fromEvent(event: MotionEvent, pointerId: Int): ScreenCoordinate? {
             // See <https://developer.android.com/training/gestures/multi>
-            val pointerIndex = try {
-                event.findPointerIndex(pointerId)
+            try {
+                val pointerIndex = event.findPointerIndex(pointerId)
+                return ScreenCoordinate(event.getX(pointerIndex), event.getY(pointerIndex))
             } catch (_: IllegalArgumentException) {
                 return null
             }
-            return ScreenCoordinate(event.getX(pointerIndex), event.getY(pointerIndex))
         }
     }
 }
