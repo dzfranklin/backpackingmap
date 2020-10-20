@@ -18,7 +18,6 @@ class MapView(
     private val parent: ViewGroup,
     private val service: WmtsServiceConfig,
     layerConfigs: Array<WmtsLayerConfig>,
-    private val size: MapSize,
     private val initialPosition: MapPosition,
     private val repo: Repo,
 ) : CoroutineScope {
@@ -29,7 +28,6 @@ class MapView(
         view.onReceiveAttrs(MapLayer.Attrs(
             service = service,
             config = config,
-            size = size,
             initialPosition = initialPosition,
             repo = repo.tileRepo,
         ))

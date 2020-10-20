@@ -13,7 +13,6 @@ import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
 import com.backpackingmap.backpackingmap.repo.GetTileError
 import com.backpackingmap.backpackingmap.repo.TileRepo
 import kotlinx.coroutines.CancellationException
-import timber.log.Timber
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.round
@@ -22,35 +21,54 @@ class MapLayer constructor(context: Context) : View(context) {
     data class Attrs(
         val service: WmtsServiceConfig,
         val config: WmtsLayerConfig,
-        val size: MapSize,
         val initialPosition: MapPosition,
         val repo: TileRepo,
     )
 
     var attrs: Attrs? = null
-    var position: MapPosition? = null
+
+    private var position: MapPosition? = null
+    private var screenHeight: Int? = null
+    private var screenWidth: Int? = null
 
     fun onReceiveAttrs(newAttrs: Attrs) {
         attrs = newAttrs
-        invalidate()
+        invalidateData()
     }
 
     fun onChangePosition(newPosition: MapPosition) {
         position = newPosition
-        invalidate()
+        invalidateData()
     }
 
-    override fun onDraw(canvas: Canvas?) {
-        if (canvas == null) {
-            Timber.w("onDraw with null canvas")
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        screenWidth = w
+        screenHeight = h
+        invalidateData()
+    }
+
+    private data class TileToDraw(
+        val topLeftX: Float,
+        val topLeftY: Float,
+        val width: Float,
+        val height: Float,
+        val request: GetTileRequest,
+    )
+
+    private var tilesToDraw: Array<TileToDraw>? = null
+
+    private fun invalidateData() {
+        val cachedScreenWidth = screenWidth
+        val cachedScreenHeight = screenHeight
+
+        if (cachedScreenWidth == null || cachedScreenHeight == null) {
             return
         }
 
         val cachedAttrs = attrs ?: return
         val service = cachedAttrs.service
         val config = cachedAttrs.config
-        val size = cachedAttrs.size
-        val repo = cachedAttrs.repo
 
         val position = position ?: cachedAttrs.initialPosition
 
@@ -58,8 +76,10 @@ class MapLayer constructor(context: Context) : View(context) {
 
         val (_, centerX, centerY) = position.center.convertTo(config.set.crs)
         val pixelSpan = config.set.pixelSpan(activeMatrix)
-        val screenWidth = size.screenWidth.toDouble() * pixelSpan
-        val screenHeight = size.screenHeight.toDouble() * pixelSpan
+
+
+        val screenWidth = cachedScreenWidth.toDouble() * pixelSpan
+        val screenHeight = cachedScreenHeight.toDouble() * pixelSpan
 
         val minX = centerX - floor(screenWidth / 2.0)
         val maxX = centerX + ceil(screenWidth / 2.0)
@@ -78,6 +98,8 @@ class MapLayer constructor(context: Context) : View(context) {
 
         val requestBuilder = GetTileRequest.Builder.from(service, config, activeMatrix)
 
+        val newTilesToDraw = mutableListOf<TileToDraw>()
+
         for (col in tileRange.minColInclusive..tileRange.maxColInclusive) {
             val offsetX = (col - tileRange.minColInclusive) * activeMatrix.tileWidth.toInt()
             for (row in tileRange.minRowInclusive..tileRange.maxRowInclusive) {
@@ -91,20 +113,51 @@ class MapLayer constructor(context: Context) : View(context) {
 
                 val request = requestBuilder.build(row, col)
 
-                val cached = repo.getCached(request)
-                if (cached != null) {
-                    cached
-                        .map {
-                            drawTile(canvas, it, topLeftX, topLeftY)
-                        }
-                        .mapLeft {
-                            drawError(canvas, it, topLeftX, topLeftY, width, height)
-                        }
-                } else {
-                    drawPlaceholder(canvas, topLeftX, topLeftY, width, height)
+                newTilesToDraw.add(TileToDraw(
+                    topLeftX = topLeftX.toFloat(),
+                    topLeftY = topLeftY.toFloat(),
+                    width = width.toFloat(),
+                    height = height.toFloat(),
+                    request = request
+                ))
+            }
+        }
 
-                    repo.requestCaching(this, request) {
-                        invalidate()
+        tilesToDraw = newTilesToDraw.toTypedArray()
+
+        invalidate()
+    }
+
+    override fun onDraw(canvas: Canvas?) {
+        val repo = attrs?.repo
+        val cachedTilesToDraw = tilesToDraw
+        if (canvas == null || cachedTilesToDraw == null || repo == null) {
+            return
+        }
+
+        for (tile in cachedTilesToDraw) {
+            val cached = repo.getCached(tile.request)
+            if (cached != null) {
+                cached
+                    .map {
+                        drawTile(canvas, it, tile.topLeftX, tile.topLeftY)
+                    }
+                    .mapLeft {
+                        drawError(canvas, it, tile.topLeftX, tile.topLeftY, tile.width, tile.height)
+                    }
+            } else {
+                drawPlaceholder(canvas, tile.topLeftX, tile.topLeftY, tile.width, tile.height)
+
+                repo.requestCaching(this, tile.request) {
+                    // If the tile that just loaded would be visible, redraw
+                    val cachedTilesToDraw = tilesToDraw
+                    if (cachedTilesToDraw != null) {
+                        for (tileToDraw in cachedTilesToDraw) {
+                            if (tileToDraw.request == tile.request) {
+                                invalidate()
+                                break
+                            }
+                        }
                     }
                 }
             }
@@ -113,11 +166,11 @@ class MapLayer constructor(context: Context) : View(context) {
 
     private val density = resources.displayMetrics.density
 
-    private fun drawTile(canvas: Canvas, bitmap: Bitmap, topLeftX: Int, topLeftY: Int) {
+    private fun drawTile(canvas: Canvas, bitmap: Bitmap, topLeftX: Float, topLeftY: Float) {
         canvas.drawBitmap(
             bitmap,
-            topLeftX.toFloat(),
-            topLeftY.toFloat(),
+            topLeftX,
+            topLeftY,
             null
         )
     }
@@ -136,16 +189,16 @@ class MapLayer constructor(context: Context) : View(context) {
 
     private fun drawPlaceholder(
         canvas: Canvas,
-        topLeftX: Int,
-        topLeftY: Int,
-        width: Pixel,
-        height: Pixel,
+        topLeftX: Float,
+        topLeftY: Float,
+        width: Float,
+        height: Float,
     ) {
         canvas.drawRect(
-            topLeftX.toFloat(),
-            topLeftY.toFloat(),
-            (topLeftX + width.toInt()).toFloat(),
-            (topLeftY + height.toInt()).toFloat(),
+            topLeftX,
+            topLeftY,
+            topLeftX + width,
+            topLeftY + height,
             placeholderPaint
         )
     }
@@ -153,27 +206,28 @@ class MapLayer constructor(context: Context) : View(context) {
     private fun drawError(
         canvas: Canvas,
         error: GetTileError,
-        topLeftX: Int,
-        topLeftY: Int,
-        width: Pixel,
-        height: Pixel,
+        topLeftX: Float,
+        topLeftY: Float,
+        width: Float,
+        height: Float,
     ) {
         val text = error.toString()
 
-        val axisPadding = (2 * errorPadding).toInt()
+        val axisPadding = 2 * errorPadding
 
-        val internalWidth = width.toInt() - axisPadding.toInt()
+        val internalWidth = (width - axisPadding).toInt()
 
         val rect = Rect()
         errorPaint.getTextBounds(text, 0, text.length, rect)
         val textLineHeight = rect.height()
         val internalHeightInLines =
-            floor((height.toFloat() - axisPadding) / textLineHeight).toInt()
+            floor((height - axisPadding) / textLineHeight).toInt()
 
         val layout = StaticLayout.Builder
             .obtain(text, 0, text.length, errorPaint, internalWidth)
             .setMaxLines(internalHeightInLines)
             .build()
+
         canvas.withTranslation(topLeftX + errorPadding, topLeftY + errorPadding) {
             layout.draw(this)
         }

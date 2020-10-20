@@ -7,7 +7,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.databinding.ActivityMainBinding
 import com.backpackingmap.backpackingmap.enforceLoggedIn
-import com.backpackingmap.backpackingmap.map.*
+import com.backpackingmap.backpackingmap.map.Coordinate
+import com.backpackingmap.backpackingmap.map.MapPosition
+import com.backpackingmap.backpackingmap.map.MapView
+import com.backpackingmap.backpackingmap.map.ZoomLevel
 import org.locationtech.proj4j.CRSFactory
 
 class MainActivity : AppCompatActivity() {
@@ -26,11 +29,6 @@ class MainActivity : AppCompatActivity() {
         model.repo?.let { repo ->
             val displayMetrics = resources.displayMetrics
 
-            val extents = MapSize(
-                screenWidth = Pixel(displayMetrics.widthPixels),
-                screenHeight = Pixel(displayMetrics.heightPixels)
-            )
-
             val initialPosition = MapPosition(
                 center = Coordinate(
                     CRSFactory().createFromName("EPSG:4326"),
@@ -44,7 +42,6 @@ class MainActivity : AppCompatActivity() {
                 parent = binding.mapParent,
                 service = model.mapService,
                 layerConfigs = model.mapLayerConfigs,
-                size = extents,
                 initialPosition = initialPosition,
                 repo = repo
             )
