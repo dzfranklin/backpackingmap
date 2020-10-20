@@ -51,8 +51,8 @@ class MapView(
                             zoom = last.zoom,
                             center = Coordinate(
                                 crs = last.center.crs,
-                                x = last.center.x - (event.delta.x / 1000000),
-                                y = last.center.y + (event.delta.y / 1000000)
+                                x = last.center.x - (event.delta.x / 10000),
+                                y = last.center.y + (event.delta.y / 10000)
                             )
                         )
                         setLayerPositions(current)

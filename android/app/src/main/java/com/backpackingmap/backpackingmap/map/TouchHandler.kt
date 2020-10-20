@@ -7,7 +7,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -27,13 +26,13 @@ class TouchHandler(override val coroutineContext: CoroutineContext, private val 
         touchView.setOnTouchListener { view, event ->
             when (event.action) {
                 MotionEvent.ACTION_MOVE -> {
-                    last?.let { last ->
+                    last?.let { currentLast ->
                         val now = ScreenCoordinate.fromEvent(event)
-                        val delta = now - last
+                        val delta = now - currentLast
+                        last = now
                         launch {
                             _events.emit(TouchEvent.Move(delta))
                         }
-                        Timber.i("Moved by %s", delta)
                     }
                 }
 
