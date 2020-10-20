@@ -31,7 +31,7 @@ interface ApiService {
     @POST("tile")
     suspend fun getTile(
         @Header(AUTH) token: AccessToken,
-        @Body request: GetTileRequest
+        @Body request: GetTileRequest,
     ): ResponseBody
 
     companion object {
