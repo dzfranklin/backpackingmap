@@ -165,6 +165,12 @@ class MapLayer constructor(context: Context) : View(context) {
 
     private val density = resources.displayMetrics.density
 
+    private val tileDebugBoxPaint = Paint().apply {
+        style = Paint.Style.STROKE
+        color = Color.DKGRAY
+        strokeWidth = 2f * density
+    }
+
     private fun drawTile(canvas: Canvas, bitmap: Bitmap, topLeftX: Float, topLeftY: Float) {
         canvas.drawBitmap(
             bitmap,
@@ -172,6 +178,16 @@ class MapLayer constructor(context: Context) : View(context) {
             topLeftY,
             null
         )
+
+        if (DRAW_DEBUG_TILE_BOXES) {
+            canvas.drawRect(
+                topLeftX,
+                topLeftY,
+                topLeftX + bitmap.width,
+                topLeftY + bitmap.height,
+                tileDebugBoxPaint
+            )
+        }
     }
 
     private val placeholderPaint = Paint().apply {
@@ -230,5 +246,9 @@ class MapLayer constructor(context: Context) : View(context) {
         canvas.withTranslation(topLeftX + errorPadding, topLeftY + errorPadding) {
             layout.draw(this)
         }
+    }
+
+    companion object {
+        private const val DRAW_DEBUG_TILE_BOXES = false
     }
 }
