@@ -18,7 +18,7 @@ class TileRepo(
     private val api: ApiService,
 ) : CoroutineScope {
     private val appMaxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
-    val size = appMaxMemory / 4
+    private val size = appMaxMemory / 4
 
     private val cache = object : LruCache<GetTileRequest, GetTileResponse>(size) {
         override fun sizeOf(key: GetTileRequest, value: GetTileResponse) = when (value) {
