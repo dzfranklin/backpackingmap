@@ -15,12 +15,12 @@ class BackpackingmapSharedPrefs(private val prefs: SharedPreferences) {
     }
 
     companion object {
-        const val IS_LOGGED_IN = "is_logged_in"
-        const val BACKPACKINGMAP_PREFS = "backpackingmap_prefs"
+        private const val IS_LOGGED_IN = "is_logged_in"
+        private const val BACKPACKINGMAP_PREFS = "backpackingmap_prefs"
 
         // Mode 0 is application-private. Accessing the constant requires a Context
         // <https://developer.android.com/reference/android/content/Context#MODE_PRIVATE>
-        const val PREFS_MODE = 0
+        private const val PREFS_MODE = 0
 
         @Volatile
         private var INSTANCE: BackpackingmapSharedPrefs? = null
