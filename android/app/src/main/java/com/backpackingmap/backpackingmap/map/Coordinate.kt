@@ -23,4 +23,12 @@ data class Coordinate(
 
         return Coordinate(newCrs, target.x, target.y)
     }
+
+    fun movedBy(metersX: Double, metersY: Double): Coordinate {
+        // NOTE: Does not wrap x & y
+        val unitsPerMeter = 1.0 / crs.projection.fromMetres
+        val newX = x + (metersX * unitsPerMeter)
+        val newY = y + (metersY * unitsPerMeter)
+        return Coordinate(crs, newX, newY)
+    }
 }
