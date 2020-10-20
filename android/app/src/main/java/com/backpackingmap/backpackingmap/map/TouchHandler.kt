@@ -20,34 +20,44 @@ class TouchHandler(override val coroutineContext: CoroutineContext, private val 
     private val _events = MutableSharedFlow<TouchEvent>()
     val events = _events.asSharedFlow()
 
-    private var last: ScreenCoordinate? = null
+    // Int represents pointer id
+    private var dragLast: Pair<Int, ScreenCoordinate>? = null
 
     init {
         touchView.setOnTouchListener { view, event ->
             when (event.action) {
                 MotionEvent.ACTION_MOVE -> {
-                    last?.let { currentLast ->
-                        val now = ScreenCoordinate.fromEvent(event)
-                        val delta = now - currentLast
-                        last = now
-                        launch {
-                            _events.emit(TouchEvent.Move(delta))
+                    dragLast?.let { (lastPointerId, lastCoordinate) ->
+                        ScreenCoordinate.fromEvent(event, lastPointerId)?.let { now ->
+                            val delta = now - lastCoordinate
+                            dragLast = lastPointerId to now
+
+                            launch {
+                                _events.emit(TouchEvent.Move(delta))
+                            }
                         }
                     }
                 }
 
                 MotionEvent.ACTION_DOWN -> {
-                    last = ScreenCoordinate.fromEvent(event)
+                    val pointerId = event.getPointerId(FIRST_POINTER)
+                    ScreenCoordinate.fromEvent(event, pointerId)?.let {
+                        dragLast = pointerId to it
+                    }
                     // required for accessibility
                     view.performClick()
                 }
 
                 MotionEvent.ACTION_UP ->
-                    last = null
+                    dragLast = null
             }
 
             // return value is whether the event was handled
             true
         }
+    }
+
+    companion object {
+        private const val FIRST_POINTER = 0
     }
 }
