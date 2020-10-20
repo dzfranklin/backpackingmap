@@ -31,7 +31,7 @@ data class WmtsTileMatrixSetConfig(
         tileSpanX = tileWidth × pixelSpan;
         tileSpanY = tileHeight × pixelSpan;
         */
-        val pixelSpan = pixelsPerMeter(matrix)
+        val pixelSpan = metersPerPixel(matrix)
         val tileSpanX = matrix.tileWidth.toInt() * pixelSpan
         val tileSpanY = matrix.tileHeight.toInt() * pixelSpan
 
@@ -108,7 +108,7 @@ data class WmtsTileMatrixSetConfig(
         )
     }
 
-    fun pixelsPerMeter(matrix: WmtsTileMatrixConfig): Double {
+    fun metersPerPixel(matrix: WmtsTileMatrixConfig): Double {
         /* 6.1 Tile matrix set – the geometry of the tiled space
         From OGC 07-057r7 (WMTS standard version 1.0.0) page 8
 

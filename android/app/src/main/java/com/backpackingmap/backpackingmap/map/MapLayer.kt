@@ -99,7 +99,7 @@ class MapLayer constructor(context: Context) : View(context) {
         var closestMatrix: Pair<Double, WmtsTileMatrixConfig>? = null
         val targetMetersPerPixel = position.zoom.metersPerPixel
         for (matrix in config.matrices.keys) {
-            val possibility = config.set.pixelsPerMeter(matrix)
+            val possibility = config.set.metersPerPixel(matrix)
 
             if (closestMatrix == null) {
                 closestMatrix = possibility to matrix
@@ -119,7 +119,7 @@ class MapLayer constructor(context: Context) : View(context) {
         val scaleFactor = 1 / metersPerPixelScaleFactor
 
         val (_, centerX, centerY) = position.center.convertTo(config.set.crs)
-        val pixelSpan = config.set.pixelsPerMeter(activeMatrix)
+        val pixelSpan = config.set.metersPerPixel(activeMatrix)
 
         val effectiveWidth = cachedScreenWidth.toDouble() * pixelSpan / scaleFactor
         val effectiveHeight = cachedScreenHeight.toDouble() * pixelSpan / scaleFactor
