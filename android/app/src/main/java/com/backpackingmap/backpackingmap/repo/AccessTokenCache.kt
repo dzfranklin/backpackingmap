@@ -61,7 +61,6 @@ class AccessTokenCache(private val renew: suspend () -> AccessTokenResponse) {
         }
 
     companion object {
-        private const val MAX_MINUTES_BETWEEN_REFRESHES = 1
-//        private const val MAX_MINUTES_BETWEEN_REFRESHES = 15
+        private const val MAX_MINUTES_BETWEEN_REFRESHES = 15
     }
 }
