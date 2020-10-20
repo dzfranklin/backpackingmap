@@ -232,6 +232,3 @@ class MapLayer constructor(context: Context) : View(context) {
         }
     }
 }
-
-// TODO: use
-class TileNoLongerNeeded() : CancellationException("Tile no longer needed")
