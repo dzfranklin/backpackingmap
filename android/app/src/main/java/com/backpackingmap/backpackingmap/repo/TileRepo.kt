@@ -36,6 +36,7 @@ class TileRepo(
      * onCached will be called, and no other onCached will be called.
      */
     fun requestCaching(requesterIdentifier: Any, request: GetTileRequest, onCached: () -> Unit) {
+        // TODO: Don't request tiles that don't exist
         launch {
             val identifier = requesterIdentifier to request
             val alreadyRequested = toNotify.contains(identifier)
