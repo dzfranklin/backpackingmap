@@ -56,6 +56,16 @@ class MapView(
                         setLayerPositions(current)
                         last = current
                     }
+
+                    is GestureHandler.TouchEvent.Scale -> {
+                        // TODO: Cap max and min scale
+                        val current = MapPosition(
+                            center = last.center,
+                            zoom = last.zoom.scaledBy(event.factor)
+                        )
+                        setLayerPositions(current)
+                        last = current
+                    }
                 }!!
             }
         }

@@ -34,7 +34,8 @@ class MainActivity : AppCompatActivity() {
                     CRSFactory().createFromName("EPSG:4326"),
                     -2.804904, 56.340259
                 ),
-                zoom = ZoomLevel(42.0)
+                // Chosen because it's very close to the most zoomed in OS Leisure
+                zoom = ZoomLevel(1.7)
             )
 
             map = MapView(

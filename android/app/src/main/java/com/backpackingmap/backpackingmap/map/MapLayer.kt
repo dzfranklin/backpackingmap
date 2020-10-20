@@ -9,10 +9,12 @@ import androidx.core.graphics.withTranslation
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
 import com.backpackingmap.backpackingmap.map.wmts.WmtsServiceConfig
+import com.backpackingmap.backpackingmap.map.wmts.WmtsTileMatrixConfig
 import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
 import com.backpackingmap.backpackingmap.repo.GetTileError
 import com.backpackingmap.backpackingmap.repo.TileRepo
-import kotlinx.coroutines.CancellationException
+import timber.log.Timber
+import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.round
@@ -56,7 +58,30 @@ class MapLayer constructor(context: Context) : View(context) {
         val request: GetTileRequest,
     )
 
-    private var tilesToDraw: Array<TileToDraw>? = null
+    private data class ToDraw(
+        val tiles: Array<TileToDraw>,
+        val scaleFactor: Float
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as ToDraw
+
+            if (!tiles.contentEquals(other.tiles)) return false
+            if (scaleFactor != other.scaleFactor) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = tiles.contentHashCode()
+            result = 31 * result + scaleFactor.hashCode()
+            return result
+        }
+    }
+
+    private var toDraw: ToDraw? = null
 
     private fun invalidateData() {
         val cachedScreenWidth = screenWidth
@@ -72,18 +97,38 @@ class MapLayer constructor(context: Context) : View(context) {
 
         val position = position ?: cachedAttrs.initialPosition
 
-        val activeMatrix = config.matrices.keys.last() // TODO: Set based on zoom
+        var closestMatrix: Pair<Double, WmtsTileMatrixConfig>? = null
+        val targetMetersPerPixel = position.zoom.metersPerPixel
+        for (matrix in config.matrices.keys) {
+            val possibility = config.set.pixelsPerMeter(matrix)
+
+            if (closestMatrix == null) {
+                closestMatrix = possibility to matrix
+                continue
+            }
+
+            val (closestSoFar, _) = closestMatrix
+            if (abs(targetMetersPerPixel - possibility) < abs(targetMetersPerPixel - closestSoFar)) {
+                closestMatrix = possibility to matrix
+            }
+        }
+        if (closestMatrix == null) {
+            throw IllegalStateException("No possible matrix")
+        }
+        val (activeMatrixMetersPerPixel, activeMatrix) = closestMatrix
+        val metersPerPixelScaleFactor = targetMetersPerPixel / activeMatrixMetersPerPixel
+        val scaleFactor = 1 / metersPerPixelScaleFactor
 
         val (_, centerX, centerY) = position.center.convertTo(config.set.crs)
         val pixelSpan = config.set.pixelsPerMeter(activeMatrix)
 
-        val screenWidth = cachedScreenWidth.toDouble() * pixelSpan
-        val screenHeight = cachedScreenHeight.toDouble() * pixelSpan
+        val effectiveWidth = cachedScreenWidth.toDouble() * pixelSpan / scaleFactor
+        val effectiveHeight = cachedScreenHeight.toDouble() * pixelSpan / scaleFactor
 
-        val minX = centerX - floor(screenWidth / 2.0)
-        val maxX = centerX + ceil(screenWidth / 2.0)
-        val minY = centerY - floor(screenHeight / 2.0)
-        val maxY = centerY + ceil(screenHeight / 2.0)
+        val minX = centerX - floor(effectiveWidth / 2.0)
+        val maxX = centerX + ceil(effectiveWidth / 2.0)
+        val minY = centerY - floor(effectiveHeight / 2.0)
+        val maxY = centerY + ceil(effectiveHeight / 2.0)
 
         val tileRange = config.set.tileIndices(activeMatrix,
             maxCrsX = maxX,
@@ -122,19 +167,32 @@ class MapLayer constructor(context: Context) : View(context) {
             }
         }
 
-        tilesToDraw = newTilesToDraw.toTypedArray()
+        toDraw = ToDraw(newTilesToDraw.toTypedArray(), scaleFactor.toFloat())
 
         invalidate()
     }
 
     override fun onDraw(canvas: Canvas?) {
         val repo = attrs?.repo
-        val cachedTilesToDraw = tilesToDraw
-        if (canvas == null || cachedTilesToDraw == null || repo == null) {
+        val cachedToDraw = toDraw
+
+        if (canvas == null || cachedToDraw == null || repo == null) {
+            // TODO: remove this, added for debugging the hang
+            canvas?.drawRect(0f, 0f, width.toFloat(), height.toFloat(), Paint().apply {
+                style = Paint.Style.FILL
+                color = Color.RED
+            })
             return
         }
 
-        for (tile in cachedTilesToDraw) {
+        val tiles = cachedToDraw.tiles
+        val scaleFactor = cachedToDraw.scaleFactor
+
+        Timber.i("Drawing %s tiles at scale factor %s", tiles.size, scaleFactor)
+
+        canvas.scale(scaleFactor, scaleFactor)
+
+        for (tile in tiles) {
             val cached = repo.getCached(tile.request)
             if (cached != null) {
                 cached
@@ -149,9 +207,9 @@ class MapLayer constructor(context: Context) : View(context) {
 
                 repo.requestCaching(this, tile.request) {
                     // If the tile that just loaded would be visible, redraw
-                    val cachedTilesToDraw = tilesToDraw
-                    if (cachedTilesToDraw != null) {
-                        for (tileToDraw in cachedTilesToDraw) {
+                    val cachedTiles = toDraw?.tiles
+                    if (cachedTiles != null) {
+                        for (tileToDraw in cachedTiles) {
                             if (tileToDraw.request == tile.request) {
                                 invalidate()
                                 break
