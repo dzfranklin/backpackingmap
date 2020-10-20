@@ -271,6 +271,16 @@ class MapLayer constructor(context: Context) : View(context) {
             topLeftY + height,
             placeholderPaint
         )
+
+        if (DRAW_DEBUG_TILE_BOXES) {
+            canvas.drawRect(
+                topLeftX,
+                topLeftY,
+                topLeftX + width,
+                topLeftY + height,
+                tileDebugBoxPaint
+            )
+        }
     }
 
     private fun drawError(
