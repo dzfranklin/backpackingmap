@@ -180,7 +180,7 @@ class MapLayer constructor(context: Context) : View(context) {
     }
 
     private val errorPaint = TextPaint().apply {
-        color = Color.RED
+        color = context.getColor(R.color.tileErrorText)
         textSize = 20F * density
     }
 
