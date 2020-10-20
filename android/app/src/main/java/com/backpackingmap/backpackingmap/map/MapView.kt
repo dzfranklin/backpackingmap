@@ -34,7 +34,7 @@ class MapView(
         view
     }
 
-    private val touchHandler = TouchHandler(coroutineContext, parent)
+    private val touchHandler = GestureHandler(coroutineContext, context, parent)
 
     init {
         var last = initialPosition
@@ -44,13 +44,13 @@ class MapView(
 
             touchHandler.events.collect { event ->
                 when (event) {
-                    is TouchHandler.TouchEvent.Move -> {
+                    is GestureHandler.TouchEvent.Move -> {
+                        val zoom = last.zoom
                         val current = MapPosition(
-                            zoom = last.zoom,
-                            center = Coordinate(
-                                crs = last.center.crs,
-                                x = last.center.x - (event.delta.x / 10000),
-                                y = last.center.y + (event.delta.y / 10000)
+                            zoom = zoom,
+                            center = last.center.movedBy(
+                                -1 * event.deltaX * zoom.metersPerPixel,
+                                event.deltaY * zoom.metersPerPixel
                             )
                         )
                         setLayerPositions(current)
