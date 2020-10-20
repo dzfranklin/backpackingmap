@@ -36,7 +36,7 @@ class MapView(
         view
     }
 
-    private val touchHandler = TouchHandler(coroutineContext, addView(View(context)))
+    private val touchHandler = TouchHandler(coroutineContext, parent)
 
     init {
         var last = initialPosition
