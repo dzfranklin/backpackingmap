@@ -27,19 +27,37 @@ class TileRepo(
 
     fun getCached(key: GetTileRequest): GetTileResponse? = cache.get(key)
 
-    fun requestCaching(request: GetTileRequest, onCached: () -> Unit) {
+    private val toNotify = HashMap<Pair<Any, GetTileRequest>, () -> Unit>()
+
+    /**
+     * A call with the same requestIdentifier and request to a previous call made before the
+     * onCached provided in the previous call was called will cause the new onCached to replace
+     * the previous onCached such that when the previously started request is completed the new
+     * onCached will be called, and no other onCached will be called.
+     */
+    fun requestCaching(requesterIdentifier: Any, request: GetTileRequest, onCached: () -> Unit) {
         launch {
-            val result = makeRemoteRequestForBody(accessTokenCache) { token ->
-                api.getTile(token, request)
-            }
-                .map {
-                    BitmapFactory.decodeStream(it.byteStream())
+            val identifier = requesterIdentifier to request
+            val alreadyRequested = toNotify.contains(identifier)
+            toNotify[identifier] = onCached
+
+            if (!alreadyRequested) {
+                val result = makeRemoteRequestForBody(accessTokenCache) { token ->
+                    api.getTile(token, request)
                 }
-                .mapLeft { GetTileError.Remote(it) }
+                    .map {
+                        BitmapFactory.decodeStream(it.byteStream())
+                    }
+                    .mapLeft { GetTileError.Remote(it) }
 
-            cache.put(request, result)
+                cache.put(request, result)
 
-            onCached()
+                val notifier = toNotify[identifier]
+                if (notifier != null) {
+                    toNotify.remove(identifier)
+                    notifier()
+                }
+            }
         }
     }
 }

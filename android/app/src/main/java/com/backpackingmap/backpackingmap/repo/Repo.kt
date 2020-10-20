@@ -76,7 +76,7 @@ class Repo(
 
 
     companion object {
-        private val MB_TO_BYTES = 1e6
+        private const val MB_TO_BYTES = 1e6
 
         @Volatile
         private var INSTANCE: Repo? = null

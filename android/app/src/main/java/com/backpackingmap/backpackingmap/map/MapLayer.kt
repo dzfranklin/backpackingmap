@@ -40,8 +40,6 @@ class MapLayer constructor(context: Context) : View(context) {
         invalidate()
     }
 
-    private val requested = HashSet<GetTileRequest>()
-
     override fun onDraw(canvas: Canvas?) {
         if (canvas == null) {
             Timber.w("onDraw with null canvas")
@@ -105,11 +103,8 @@ class MapLayer constructor(context: Context) : View(context) {
                 } else {
                     drawPlaceholder(canvas, topLeftX, topLeftY, width, height)
 
-                    if (!requested.contains(request)) {
-                        repo.requestCaching(request) {
-                            invalidate()
-                        }
-                        requested.add(request)
+                    repo.requestCaching(this, request) {
+                        invalidate()
                     }
                 }
             }
