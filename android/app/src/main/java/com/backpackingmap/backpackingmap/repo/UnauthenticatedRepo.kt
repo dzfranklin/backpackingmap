@@ -80,7 +80,7 @@ class UnauthenticatedRepo(
             }
             synchronized(this) {
                 val db = Db.getDatabase(application)
-                val prefs = BackpackingmapSharedPrefs.fromApplication(application)
+                val prefs = BackpackingmapSharedPrefs.fromContext(application)
                 val instance = UnauthenticatedRepo(prefs, db.userDao())
 
                 INSTANCE = instance

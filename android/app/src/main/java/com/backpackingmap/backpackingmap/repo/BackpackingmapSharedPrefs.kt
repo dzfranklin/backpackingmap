@@ -1,7 +1,7 @@
 package com.backpackingmap.backpackingmap.repo
 
 import android.app.Activity
-import android.app.Application
+import android.content.Context
 import android.content.SharedPreferences
 
 class BackpackingmapSharedPrefs(private val prefs: SharedPreferences) {
@@ -39,13 +39,13 @@ class BackpackingmapSharedPrefs(private val prefs: SharedPreferences) {
             }
         }
 
-        fun fromApplication(application: Application): BackpackingmapSharedPrefs {
+        fun fromContext(context: Context): BackpackingmapSharedPrefs {
             val tempInstance = INSTANCE
             if (tempInstance != null) {
                 return tempInstance
             }
             synchronized(this) {
-                val instance = BackpackingmapSharedPrefs(application.getSharedPreferences(
+                val instance = BackpackingmapSharedPrefs(context.getSharedPreferences(
                     BACKPACKINGMAP_PREFS,
                     PREFS_MODE))
                 INSTANCE = instance

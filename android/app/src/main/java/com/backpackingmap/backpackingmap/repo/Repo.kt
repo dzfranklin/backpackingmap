@@ -1,6 +1,7 @@
 package com.backpackingmap.backpackingmap.repo
 
-import android.app.Application
+import android.app.ActivityManager
+import android.content.Context
 import com.backpackingmap.backpackingmap.db.Db
 import com.backpackingmap.backpackingmap.db.user.DbUser
 import com.backpackingmap.backpackingmap.db.user.UserDao
@@ -76,8 +77,8 @@ class Repo(
         @Volatile
         private var INSTANCE: Repo? = null
 
-        fun fromApplication(application: Application): Repo? {
-            val prefs = BackpackingmapSharedPrefs.fromApplication(application)
+        fun fromContext(context: Context): Repo? {
+            val prefs = BackpackingmapSharedPrefs.fromContext(context)
 
             return if (prefs.isLoggedIn) {
                 val tempInstance = INSTANCE
@@ -85,9 +86,9 @@ class Repo(
                     return tempInstance
                 }
                 synchronized(this) {
-                    val db = Db.getDatabase(application)
+                    val db = Db.getDatabase(context)
                     val scope = CoroutineScope(Dispatchers.Default)
-                    val api = Api.fromContext(application)
+                    val api = Api.fromContext(context)
                     val instance = Repo(scope.coroutineContext, prefs, db.userDao(), api)
 
                     INSTANCE = instance
