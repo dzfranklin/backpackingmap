@@ -73,7 +73,7 @@ class TileRepo(
     )
 
     fun findClosestMatrix(layer: WmtsLayerConfig, position: MapPosition): ClosestMatrixData? {
-        val targetMetersPerPixel = position.zoom.metersPerPixel.toFloat()
+        val targetMetersPerPixel = position.zoom.metersPerPixel
 
         var closestMetersPerPixel: Float? = null
         var closestMatrix: WmtsTileMatrixConfig? = null
