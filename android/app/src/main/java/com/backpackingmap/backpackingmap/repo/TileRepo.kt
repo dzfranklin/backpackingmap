@@ -4,11 +4,15 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.collection.LruCache
 import arrow.core.Either
+import com.backpackingmap.backpackingmap.map.MapPosition
+import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
+import com.backpackingmap.backpackingmap.map.wmts.WmtsTileMatrixConfig
 import com.backpackingmap.backpackingmap.net.ApiService
 import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.abs
 
 typealias GetTileResponse = Either<GetTileError, Bitmap>
 
@@ -59,6 +63,40 @@ class TileRepo(
                     notifier()
                 }
             }
+        }
+    }
+
+    data class ClosestMatrixData(
+        val targetMetersPerPixel: Float,
+        val metersPerPixel: Float,
+        val matrix: WmtsTileMatrixConfig,
+    )
+
+    fun findClosestMatrix(layer: WmtsLayerConfig, position: MapPosition): ClosestMatrixData? {
+        val targetMetersPerPixel = position.zoom.metersPerPixel.toFloat()
+
+        var closestMetersPerPixel: Float? = null
+        var closestMatrix: WmtsTileMatrixConfig? = null
+
+        for (matrix in layer.matrices.keys) {
+            val metersPerPixel = layer.set.metersPerPixel(matrix).toFloat()
+
+            if (closestMatrix == null || closestMetersPerPixel == null) {
+                closestMetersPerPixel = metersPerPixel
+                closestMatrix = matrix
+                continue
+            }
+
+            if (abs(targetMetersPerPixel - metersPerPixel) < abs(targetMetersPerPixel - closestMetersPerPixel)) {
+                closestMetersPerPixel = metersPerPixel
+                closestMatrix = matrix
+            }
+        }
+
+        return if (closestMetersPerPixel != null && closestMatrix != null) {
+            ClosestMatrixData(targetMetersPerPixel, closestMetersPerPixel, closestMatrix)
+        } else {
+            null
         }
     }
 }

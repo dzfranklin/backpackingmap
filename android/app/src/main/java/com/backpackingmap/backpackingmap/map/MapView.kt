@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
-import com.backpackingmap.backpackingmap.repo.Repo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,17 +16,12 @@ class MapView(
     private val parent: ViewGroup,
     layerConfigs: Array<WmtsLayerConfig>,
     private val initialPosition: MapPosition,
-    private val repo: Repo,
 ) : CoroutineScope {
     override val coroutineContext = CoroutineScope(Dispatchers.Main).coroutineContext
 
     private val layers = layerConfigs.map { config ->
         val view = addView(MapLayer(context))
-        view.onReceiveAttrs(MapLayer.Attrs(
-            config = config,
-            initialPosition = initialPosition,
-            repo = repo.tileRepo,
-        ))
+        view.onAttachToMap(config, initialPosition)
         view
     }
 

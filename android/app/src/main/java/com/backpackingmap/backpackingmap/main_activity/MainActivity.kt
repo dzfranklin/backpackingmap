@@ -43,7 +43,6 @@ class MainActivity : AppCompatActivity() {
                 parent = binding.mapParent,
                 layerConfigs = model.mapLayerConfigs,
                 initialPosition = initialPosition,
-                repo = repo
             )
         }
     }
