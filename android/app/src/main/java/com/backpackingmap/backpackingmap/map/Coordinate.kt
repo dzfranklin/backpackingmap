@@ -29,7 +29,7 @@ data class Coordinate(
         return Coordinate(newCrs, target.x, target.y)
     }
 
-    fun movedBy(metersEast: Double, metersNorth: Double): Coordinate {
+    fun movedBy(metersEast: Float, metersNorth: Float): Coordinate {
         if (crs.projection.units != Units.DEGREES) {
             return this.convertTo(wgs84).movedBy(metersEast, metersNorth)
         }
