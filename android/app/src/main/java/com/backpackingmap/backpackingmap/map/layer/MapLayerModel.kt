@@ -11,7 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -77,7 +77,7 @@ class MapLayerModel(
         }
 
         launch {
-            position.collect {
+            position.collectLatest {
                 currentPosition = it
                 computeTiles()
             }
