@@ -5,11 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.backpackingmap.backpackingmap.map.layer.MapLayer
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MapView(
@@ -64,9 +61,11 @@ class MapView(
         }
     }
 
-    private fun setLayerPositions(position: MapPosition) {
+    private suspend fun setLayerPositions(position: MapPosition) = coroutineScope {
         for (layer in layers) {
-            layer.onChangePosition(position)
+            launch {
+                layer.onChangePosition(position)
+            }
         }
     }
 
