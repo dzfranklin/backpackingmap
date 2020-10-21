@@ -37,17 +37,17 @@ class TileRepo(
      * If you make multiple requests in short succession and check the cache before each only one
      * request will be made.
      */
-    fun requestCaching(requests: Collection<GetTileRequest>) {
+    fun requestCaching(requests: Collection<GetTileRequest>, onCacheTile: suspend () -> Unit) {
         launch {
             for (request in requests) {
                 launch {
-                    requestCaching(request)
+                    requestCaching(request, onCacheTile)
                 }
             }
         }
     }
 
-    private suspend fun requestCaching(request: GetTileRequest) {
+    private suspend fun requestCaching(request: GetTileRequest, onCacheTile: suspend () -> Unit) {
         // TODO: Don't request tiles that don't exist
         if (!requesting.contains(request)) {
             requesting.add(request)
@@ -62,6 +62,7 @@ class TileRepo(
 
             cache.put(request, result)
             requesting.remove(request)
+            onCacheTile()
         }
     }
 

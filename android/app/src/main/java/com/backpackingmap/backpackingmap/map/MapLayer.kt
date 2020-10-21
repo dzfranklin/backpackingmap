@@ -148,7 +148,11 @@ class MapLayer constructor(context: Context) : View(context) {
         tiles = newTiles
         scaleFactor = newScaleFactor
 
-        repo.requestCaching(toRequest)
+        repo.requestCaching(toRequest) {
+            computeTiles()
+        }
+
+        postInvalidateOnAnimation()
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -180,8 +184,6 @@ class MapLayer constructor(context: Context) : View(context) {
                     drawPlaceholder(canvas, tile.leftX, tile.topY, tile.width, tile.height)
             }
         }
-
-        postInvalidateOnAnimation()
     }
 
     private val density = resources.displayMetrics.density
@@ -280,6 +282,6 @@ class MapLayer constructor(context: Context) : View(context) {
     }
 
     companion object {
-        private const val DRAW_DEBUG_TILE_BOXES = true
+        private const val DRAW_DEBUG_TILE_BOXES = false
     }
 }
