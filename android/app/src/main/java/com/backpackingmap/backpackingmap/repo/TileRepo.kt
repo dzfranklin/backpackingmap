@@ -31,38 +31,37 @@ class TileRepo(
 
     fun getCached(key: GetTileRequest): GetTileResponse? = cache.get(key)
 
-    private val toNotify = HashMap<Pair<Any, GetTileRequest>, () -> Unit>()
+    private val requesting = HashSet<GetTileRequest>()
 
     /**
-     * A call with the same requestIdentifier and request to a previous call made before the
-     * onCached provided in the previous call was called will cause the new onCached to replace
-     * the previous onCached such that when the previously started request is completed the new
-     * onCached will be called, and no other onCached will be called.
+     * If you make multiple requests in short succession and check the cache before each only one
+     * request will be made.
      */
-    fun requestCaching(requesterIdentifier: Any, request: GetTileRequest, onCached: () -> Unit) {
-        // TODO: Don't request tiles that don't exist
+    fun requestCaching(requests: Collection<GetTileRequest>) {
         launch {
-            val identifier = requesterIdentifier to request
-            val alreadyRequested = toNotify.contains(identifier)
-            toNotify[identifier] = onCached
-
-            if (!alreadyRequested) {
-                val result = makeRemoteRequestForBody(accessTokenCache) { token ->
-                    api.getTile(token, request)
-                }
-                    .map {
-                        BitmapFactory.decodeStream(it.byteStream())
-                    }
-                    .mapLeft { GetTileError.Remote(it) }
-
-                cache.put(request, result)
-
-                val notifier = toNotify[identifier]
-                if (notifier != null) {
-                    toNotify.remove(identifier)
-                    notifier()
+            for (request in requests) {
+                launch {
+                    requestCaching(request)
                 }
             }
+        }
+    }
+
+    private suspend fun requestCaching(request: GetTileRequest) {
+        // TODO: Don't request tiles that don't exist
+        if (!requesting.contains(request)) {
+            requesting.add(request)
+
+            val result = makeRemoteRequestForBody(accessTokenCache) { token ->
+                api.getTile(token, request)
+            }
+                .map {
+                    BitmapFactory.decodeStream(it.byteStream())
+                }
+                .mapLeft { GetTileError.Remote(it) }
+
+            cache.put(request, result)
+            requesting.remove(request)
         }
     }
 

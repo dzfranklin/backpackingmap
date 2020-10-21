@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.map
+package com.backpackingmap.backpackingmap.map.layer
 
 import android.content.Context
 import android.graphics.*
@@ -6,7 +6,9 @@ import android.text.StaticLayout
 import android.text.TextPaint
 import android.view.View
 import androidx.core.graphics.withTranslation
+import arrow.core.Either
 import com.backpackingmap.backpackingmap.R
+import com.backpackingmap.backpackingmap.map.MapPosition
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
 import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
 import com.backpackingmap.backpackingmap.repo.GetTileError
@@ -38,14 +40,33 @@ class MapLayer constructor(context: Context) : View(context) {
         screenWidth = w
         screenHeight = h
         sized = true
+        computeTiles()
     }
 
     fun onChangePosition(newPosition: MapPosition) {
         position = newPosition
+        computeTiles()
     }
 
-    override fun onDraw(canvas: Canvas?) {
-        if (canvas == null || !attached || !sized) {
+    data class Tile(
+        val leftX: Float,
+        val topY: Float,
+        val width: Float,
+        val height: Float,
+        val value: TileType,
+    )
+
+    sealed class TileType {
+        data class Raster(val bitmap: Bitmap) : TileType()
+        object Placeholder : TileType()
+        data class Error(val error: GetTileError) : TileType()
+    }
+
+    private var tiles: List<Tile> = listOf()
+    private var scaleFactor = 1f
+
+    private fun computeTiles() {
+        if (!attached || !sized) {
             return
         }
 
@@ -59,13 +80,13 @@ class MapLayer constructor(context: Context) : View(context) {
             cachedConfig,
             cachedPosition)!!
         val metersPerPixelScaleFactor = targetMetersPerPixel / matrixMetersPerPixel
-        val scaleFactor = 1 / metersPerPixelScaleFactor
+        val newScaleFactor = 1 / metersPerPixelScaleFactor
 
         val (_, centerX, centerY) = cachedPosition.center.convertTo(cachedConfig.set.crs)
         val pixelSpan = cachedConfig.set.metersPerPixel(matrix).toFloat()
 
-        val effectiveWidth = cachedScreenWidth * pixelSpan / scaleFactor
-        val effectiveHeight = cachedScreenHeight * pixelSpan / scaleFactor
+        val effectiveWidth = cachedScreenWidth * pixelSpan / newScaleFactor
+        val effectiveHeight = cachedScreenHeight * pixelSpan / newScaleFactor
 
         val minX = centerX - floor(effectiveWidth / 2.0)
         val maxX = centerX + ceil(effectiveWidth / 2.0)
@@ -84,41 +105,79 @@ class MapLayer constructor(context: Context) : View(context) {
 
         val requestBuilder = GetTileRequest.Builder.from(cachedConfig, matrix)
 
-        canvas.scale(scaleFactor, scaleFactor)
 
         val width = matrix.tileWidth.toFloat()
         val height = matrix.tileHeight.toFloat()
 
+        val size = (tileRange.maxColInclusive - tileRange.minColInclusive) *
+                (tileRange.maxRowInclusive - tileRange.minRowInclusive)
+
+        val toRequest: MutableList<GetTileRequest> = mutableListOf()
+        val newTiles: MutableList<Tile> = mutableListOf()
+
+        var i = 0
         for (col in tileRange.minColInclusive..tileRange.maxColInclusive) {
             val offsetX = (col - tileRange.minColInclusive).toFloat() * matrix.tileWidth.toFloat()
             for (row in tileRange.minRowInclusive..tileRange.maxRowInclusive) {
                 val offsetY =
                     (row - tileRange.minRowInclusive).toFloat() * matrix.tileHeight.toFloat()
+                i++
 
-                val topLeftX = offsetX - overageX
-                val topLeftY = offsetY - overageY
+                val leftX = offsetX - overageX
+                val topY = offsetY - overageY
 
                 val request = requestBuilder.build(row, col)
 
                 val cached = repo.getCached(request)
-                if (cached != null) {
-                    cached
-                        .map {
-                            drawTile(canvas, it, topLeftX, topLeftY)
-                        }
-                        .mapLeft {
-                            drawError(canvas,
-                                it,
-                                topLeftX,
-                                topLeftY,
-                                width,
-                                height)
-                        }
+                val tile = if (cached != null) {
+                    when (cached) {
+                        is Either.Left ->
+                            Tile(leftX, topY, width, height, TileType.Error(cached.a))
+                        is Either.Right ->
+                            Tile(leftX, topY, width, height, TileType.Raster(cached.b))
+                    }
                 } else {
-                    drawPlaceholder(canvas, topLeftX, topLeftY, width, height)
-
-                    repo.requestCaching(this, request) {}
+                    toRequest.add(request)
+                    Tile(leftX, topY, width, height, TileType.Placeholder)
                 }
+
+                newTiles.add(tile)
+            }
+        }
+
+        tiles = newTiles
+        scaleFactor = newScaleFactor
+
+        repo.requestCaching(toRequest)
+    }
+
+    override fun onDraw(canvas: Canvas?) {
+        if (canvas == null || !attached || !sized) {
+            return
+        }
+
+        val cachedScaleFactor = scaleFactor
+        val cachedTiles = tiles
+
+        canvas.scale(cachedScaleFactor, cachedScaleFactor)
+
+        canvas.drawRect(0f, 0f, 100f, 100f, placeholderPaint)
+
+        for (tile in cachedTiles) {
+            when (tile.value) {
+                is TileType.Raster ->
+                    drawTile(canvas, tile.value.bitmap, tile.leftX, tile.topY)
+
+                is TileType.Error ->
+                    drawError(canvas,
+                        tile.value.error,
+                        tile.leftX,
+                        tile.topY,
+                        tile.width,
+                        tile.height)
+
+                is TileType.Placeholder ->
+                    drawPlaceholder(canvas, tile.leftX, tile.topY, tile.width, tile.height)
             }
         }
 

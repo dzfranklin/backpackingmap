@@ -3,6 +3,7 @@ package com.backpackingmap.backpackingmap.map
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import com.backpackingmap.backpackingmap.map.layer.MapLayer
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
