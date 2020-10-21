@@ -20,7 +20,7 @@ class TileRepo(
     override val coroutineContext: CoroutineContext,
     private val accessTokenCache: AccessTokenCache,
     private val api: ApiService,
-    private val size: Int
+    private val size: Int,
 ) : CoroutineScope {
     private val cache = object : LruCache<GetTileRequest, GetTileResponse>(size) {
         override fun sizeOf(key: GetTileRequest, value: GetTileResponse) = when (value) {
