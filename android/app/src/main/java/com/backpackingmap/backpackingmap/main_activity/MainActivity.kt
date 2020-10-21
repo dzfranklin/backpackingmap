@@ -27,8 +27,6 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         model.repo?.let { repo ->
-            val displayMetrics = resources.displayMetrics
-
             val initialPosition = MapPosition(
                 center = Coordinate(
                     CRSFactory().createFromName("EPSG:4326"),
