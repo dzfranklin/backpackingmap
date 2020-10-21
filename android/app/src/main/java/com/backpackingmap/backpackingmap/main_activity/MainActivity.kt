@@ -41,7 +41,6 @@ class MainActivity : AppCompatActivity() {
             map = MapView(
                 context = applicationContext,
                 parent = binding.mapParent,
-                service = model.mapService,
                 layerConfigs = model.mapLayerConfigs,
                 initialPosition = initialPosition,
                 repo = repo

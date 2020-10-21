@@ -1,7 +1,6 @@
 package com.backpackingmap.backpackingmap.net.tile
 
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
-import com.backpackingmap.backpackingmap.map.wmts.WmtsServiceConfig
 import com.backpackingmap.backpackingmap.map.wmts.WmtsTileMatrixConfig
 
 data class GetTileRequest(
@@ -28,11 +27,10 @@ data class GetTileRequest(
 
         companion object {
             fun from(
-                service: WmtsServiceConfig,
                 layer: WmtsLayerConfig,
                 matrix: WmtsTileMatrixConfig
             ) = Builder(
-                service.identifier,
+                layer.service.identifier,
                 layer.identifier,
                 layer.set.identifier,
                 matrix.identifier

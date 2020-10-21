@@ -8,7 +8,6 @@ import android.view.View
 import androidx.core.graphics.withTranslation
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
-import com.backpackingmap.backpackingmap.map.wmts.WmtsServiceConfig
 import com.backpackingmap.backpackingmap.map.wmts.WmtsTileMatrixConfig
 import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
 import com.backpackingmap.backpackingmap.repo.GetTileError
@@ -20,7 +19,6 @@ import kotlin.math.round
 
 class MapLayer constructor(context: Context) : View(context) {
     data class Attrs(
-        val service: WmtsServiceConfig,
         val config: WmtsLayerConfig,
         val initialPosition: MapPosition,
         val repo: TileRepo,
@@ -91,7 +89,6 @@ class MapLayer constructor(context: Context) : View(context) {
         }
 
         val cachedAttrs = attrs ?: return
-        val service = cachedAttrs.service
         val config = cachedAttrs.config
 
         val position = position ?: cachedAttrs.initialPosition
@@ -139,7 +136,7 @@ class MapLayer constructor(context: Context) : View(context) {
         val overageX = round(tileRange.minColOverageInCrs / pixelSpan).toInt()
         val overageY = round(tileRange.minRowOverageInCrs / pixelSpan).toInt()
 
-        val requestBuilder = GetTileRequest.Builder.from(service, config, activeMatrix)
+        val requestBuilder = GetTileRequest.Builder.from(config, activeMatrix)
 
         val newTilesToDraw = mutableListOf<TileToDraw>()
 
@@ -314,6 +311,6 @@ class MapLayer constructor(context: Context) : View(context) {
     }
 
     companion object {
-        private const val DRAW_DEBUG_TILE_BOXES = false
+        private const val DRAW_DEBUG_TILE_BOXES = true
     }
 }

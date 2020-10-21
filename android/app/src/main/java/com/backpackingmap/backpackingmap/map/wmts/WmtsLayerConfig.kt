@@ -1,6 +1,8 @@
 package com.backpackingmap.backpackingmap.map.wmts
 
 data class WmtsLayerConfig(
+    val service: WmtsServiceConfig,
+
     val identifier: String,
 
     val title: String,

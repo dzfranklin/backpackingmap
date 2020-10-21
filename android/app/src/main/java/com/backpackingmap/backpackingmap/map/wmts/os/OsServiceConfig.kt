@@ -16,7 +16,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg27700TileMatrix0 = WmtsTileMatrixConfig(
         identifier = "EPSG:27700:0",
         scaleDenominator = 3199999.999496063,
-        topLeftCorner = NaiveCoordinate( -238375.0, 1376256.0),
+        topLeftCorner = NaiveCoordinate(-238375.0, 1376256.0),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 5,
@@ -26,7 +26,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg27700TileMatrix1 = WmtsTileMatrixConfig(
         identifier = "EPSG:27700:1",
         scaleDenominator = 1599999.9997480316,
-        topLeftCorner = NaiveCoordinate( -238375.0, 1376256.0),
+        topLeftCorner = NaiveCoordinate(-238375.0, 1376256.0),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 10,
@@ -36,7 +36,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg27700TileMatrix2 = WmtsTileMatrixConfig(
         identifier = "EPSG:27700:2",
         scaleDenominator = 799999.9998740158,
-        topLeftCorner = NaiveCoordinate( -238375.0, 1376256.0),
+        topLeftCorner = NaiveCoordinate(-238375.0, 1376256.0),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 20,
@@ -46,7 +46,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg27700TileMatrix3 = WmtsTileMatrixConfig(
         identifier = "EPSG:27700:3",
         scaleDenominator = 399999.9999370079,
-        topLeftCorner = NaiveCoordinate( -238375.0, 1376256.0),
+        topLeftCorner = NaiveCoordinate(-238375.0, 1376256.0),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 40,
@@ -56,7 +56,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg27700TileMatrix4 = WmtsTileMatrixConfig(
         identifier = "EPSG:27700:4",
         scaleDenominator = 199999.99996850395,
-        topLeftCorner = NaiveCoordinate( -238375.0, 1376256.0),
+        topLeftCorner = NaiveCoordinate(-238375.0, 1376256.0),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 80,
@@ -66,7 +66,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg27700TileMatrix5 = WmtsTileMatrixConfig(
         identifier = "EPSG:27700:5",
         scaleDenominator = 99999.99998425198,
-        topLeftCorner = NaiveCoordinate( -238375.0, 1376256.0),
+        topLeftCorner = NaiveCoordinate(-238375.0, 1376256.0),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 159,
@@ -76,7 +76,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg27700TileMatrix6 = WmtsTileMatrixConfig(
         identifier = "EPSG:27700:6",
         scaleDenominator = 49999.99999212599,
-        topLeftCorner = NaiveCoordinate( -238375.0, 1376256.0),
+        topLeftCorner = NaiveCoordinate(-238375.0, 1376256.0),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 318,
@@ -86,7 +86,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg27700TileMatrix7 = WmtsTileMatrixConfig(
         identifier = "EPSG:27700:7",
         scaleDenominator = 24999.999996062994,
-        topLeftCorner = NaiveCoordinate( -238375.0, 1376256.0),
+        topLeftCorner = NaiveCoordinate(-238375.0, 1376256.0),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 636,
@@ -96,7 +96,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg27700TileMatrix8 = WmtsTileMatrixConfig(
         identifier = "EPSG:27700:8",
         scaleDenominator = 12499.999998031497,
-        topLeftCorner = NaiveCoordinate( -238375.0, 1376256.0),
+        topLeftCorner = NaiveCoordinate(-238375.0, 1376256.0),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 1271,
@@ -106,7 +106,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg27700TileMatrix9 = WmtsTileMatrixConfig(
         identifier = "EPSG:27700:9",
         scaleDenominator = 6249.9999990157485,
-        topLeftCorner = NaiveCoordinate( -238375.0, 1376256.0),
+        topLeftCorner = NaiveCoordinate(-238375.0, 1376256.0),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 2542,
@@ -117,8 +117,8 @@ class OsServiceConfig : WmtsServiceConfig {
         identifier = "EPSG:27700",
         title = "TileMatrix for EPSG:27700 using 0.28mm",
         boundingBox = WmtsBoundingBox(
-            lowerCorner = NaiveCoordinate( -238375.0000149319, 0.0),
-            upperCorner = NaiveCoordinate( 900000.00000057, 1376256.0000176653)
+            lowerCorner = NaiveCoordinate(-238375.0000149319, 0.0),
+            upperCorner = NaiveCoordinate(900000.00000057, 1376256.0000176653)
         ),
         tileMatrices = arrayOf(
             epsg27700TileMatrix0,
@@ -134,7 +134,7 @@ class OsServiceConfig : WmtsServiceConfig {
             WmtsTileMatrixConfig(
                 identifier = "EPSG:27700:10",
                 scaleDenominator = 3124.9999995078742,
-                topLeftCorner = NaiveCoordinate( -238375.0, 1376256.0),
+                topLeftCorner = NaiveCoordinate(-238375.0, 1376256.0),
                 tileWidth = Pixel(256),
                 tileHeight = Pixel(256),
                 matrixWidthInTiles = 5083,
@@ -143,7 +143,7 @@ class OsServiceConfig : WmtsServiceConfig {
             WmtsTileMatrixConfig(
                 identifier = "EPSG:27700:11",
                 scaleDenominator = 1562.4999997539371,
-                topLeftCorner = NaiveCoordinate( -238375.0, 1376256.0),
+                topLeftCorner = NaiveCoordinate(-238375.0, 1376256.0),
                 tileWidth = Pixel(256),
                 tileHeight = Pixel(256),
                 matrixWidthInTiles = 10165,
@@ -152,7 +152,7 @@ class OsServiceConfig : WmtsServiceConfig {
             WmtsTileMatrixConfig(
                 identifier = "EPSG:27700:12",
                 scaleDenominator = 781.2499998769686,
-                topLeftCorner = NaiveCoordinate( -238375.0, 1376256.0),
+                topLeftCorner = NaiveCoordinate(-238375.0, 1376256.0),
                 tileWidth = Pixel(256),
                 tileHeight = Pixel(256),
                 matrixWidthInTiles = 20329,
@@ -161,7 +161,7 @@ class OsServiceConfig : WmtsServiceConfig {
             WmtsTileMatrixConfig(
                 identifier = "EPSG:27700:13",
                 scaleDenominator = 390.6249999384843,
-                topLeftCorner = NaiveCoordinate( -238375.0, 1376256.0),
+                topLeftCorner = NaiveCoordinate(-238375.0, 1376256.0),
                 tileWidth = Pixel(256),
                 tileHeight = Pixel(256),
                 matrixWidthInTiles = 40657,
@@ -177,7 +177,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg3857TileMatrix7 = WmtsTileMatrixConfig(
         identifier = "EPSG:3857:7",
         scaleDenominator = 4367830.1870353315,
-        topLeftCorner = NaiveCoordinate( -2.0037508342787E7, 2.0037508342787E7),
+        topLeftCorner = NaiveCoordinate(-2.0037508342787E7, 2.0037508342787E7),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 65,
@@ -187,7 +187,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg3857TileMatrix8 = WmtsTileMatrixConfig(
         identifier = "EPSG:3857:8",
         scaleDenominator = 2183915.0935181477,
-        topLeftCorner = NaiveCoordinate( -2.0037508342787E7, 2.0037508342787E7),
+        topLeftCorner = NaiveCoordinate(-2.0037508342787E7, 2.0037508342787E7),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 130,
@@ -197,7 +197,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg3857TileMatrix9 = WmtsTileMatrixConfig(
         identifier = "EPSG:3857:9",
         scaleDenominator = 1091957.5467586026,
-        topLeftCorner = NaiveCoordinate( -2.0037508342787E7, 2.0037508342787E7),
+        topLeftCorner = NaiveCoordinate(-2.0037508342787E7, 2.0037508342787E7),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 260,
@@ -207,7 +207,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg3857TileMatrix10 = WmtsTileMatrixConfig(
         identifier = "EPSG:3857:10",
         scaleDenominator = 545978.7733797727,
-        topLeftCorner = NaiveCoordinate( -2.0037508342787E7, 2.0037508342787E7),
+        topLeftCorner = NaiveCoordinate(-2.0037508342787E7, 2.0037508342787E7),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 519,
@@ -217,7 +217,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg3857TileMatrix11 = WmtsTileMatrixConfig(
         identifier = "EPSG:3857:11",
         scaleDenominator = 272989.3866894138,
-        topLeftCorner = NaiveCoordinate( -2.0037508342787E7, 2.0037508342787E7),
+        topLeftCorner = NaiveCoordinate(-2.0037508342787E7, 2.0037508342787E7),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 1037,
@@ -227,7 +227,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg3857TileMatrix12 = WmtsTileMatrixConfig(
         identifier = "EPSG:3857:12",
         scaleDenominator = 136494.6933447069,
-        topLeftCorner = NaiveCoordinate( -2.0037508342787E7, 2.0037508342787E7),
+        topLeftCorner = NaiveCoordinate(-2.0037508342787E7, 2.0037508342787E7),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 2073,
@@ -237,7 +237,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg3857TileMatrix13 = WmtsTileMatrixConfig(
         identifier = "EPSG:3857:13",
         scaleDenominator = 68247.34667235345,
-        topLeftCorner = NaiveCoordinate( -2.0037508342787E7, 2.0037508342787E7),
+        topLeftCorner = NaiveCoordinate(-2.0037508342787E7, 2.0037508342787E7),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 4145,
@@ -247,7 +247,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg3857TileMatrix14 = WmtsTileMatrixConfig(
         identifier = "EPSG:3857:14",
         scaleDenominator = 34123.673336176726,
-        topLeftCorner = NaiveCoordinate( -2.0037508342787E7, 2.0037508342787E7),
+        topLeftCorner = NaiveCoordinate(-2.0037508342787E7, 2.0037508342787E7),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 8290,
@@ -257,7 +257,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg3857TileMatrix15 = WmtsTileMatrixConfig(
         identifier = "EPSG:3857:15",
         scaleDenominator = 17061.836668560845,
-        topLeftCorner = NaiveCoordinate( -2.0037508342787E7, 2.0037508342787E7),
+        topLeftCorner = NaiveCoordinate(-2.0037508342787E7, 2.0037508342787E7),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 16580,
@@ -268,7 +268,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg3857TileMatrix16 = WmtsTileMatrixConfig(
         identifier = "EPSG:3857:16",
         scaleDenominator = 8530.918334280406,
-        topLeftCorner = NaiveCoordinate( -2.0037508342787E7, 2.0037508342787E7),
+        topLeftCorner = NaiveCoordinate(-2.0037508342787E7, 2.0037508342787E7),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 33159,
@@ -278,7 +278,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg3857TileMatrix17 = WmtsTileMatrixConfig(
         identifier = "EPSG:3857:17",
         scaleDenominator = 4265.459166667739,
-        topLeftCorner = NaiveCoordinate( -2.0037508342787E7, 2.0037508342787E7),
+        topLeftCorner = NaiveCoordinate(-2.0037508342787E7, 2.0037508342787E7),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 66317,
@@ -288,7 +288,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg3857TileMatrix18 = WmtsTileMatrixConfig(
         identifier = "EPSG:3857:18",
         scaleDenominator = 2132.7295838063405,
-        topLeftCorner = NaiveCoordinate( -2.0037508342787E7, 2.0037508342787E7),
+        topLeftCorner = NaiveCoordinate(-2.0037508342787E7, 2.0037508342787E7),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 132634,
@@ -298,7 +298,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg3857TileMatrix19 = WmtsTileMatrixConfig(
         identifier = "EPSG:3857:19",
         scaleDenominator = 1066.3647914307007,
-        topLeftCorner = NaiveCoordinate( -2.0037508342787E7, 2.0037508342787E7),
+        topLeftCorner = NaiveCoordinate(-2.0037508342787E7, 2.0037508342787E7),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 265267,
@@ -308,7 +308,7 @@ class OsServiceConfig : WmtsServiceConfig {
     private val epsg3857TileMatrix20 = WmtsTileMatrixConfig(
         identifier = "EPSG:3857:20",
         scaleDenominator = 533.1823957153497,
-        topLeftCorner = NaiveCoordinate( -2.0037508342787E7, 2.0037508342787E7),
+        topLeftCorner = NaiveCoordinate(-2.0037508342787E7, 2.0037508342787E7),
         tileWidth = Pixel(256),
         tileHeight = Pixel(256),
         matrixWidthInTiles = 530533,
@@ -320,7 +320,7 @@ class OsServiceConfig : WmtsServiceConfig {
         title = "TileMatrix for EPSG:3857 using 0.28mm",
         boundingBox = WmtsBoundingBox(
             lowerCorner = NaiveCoordinate(-1198263.0364071354, 6365004.037965424),
-            upperCorner = NaiveCoordinate( 213000.0, 8702260.01),
+            upperCorner = NaiveCoordinate(213000.0, 8702260.01),
         ),
         tileMatrices = arrayOf(
             epsg3857TileMatrix7,
@@ -343,6 +343,7 @@ class OsServiceConfig : WmtsServiceConfig {
 
     override val layers = arrayOf(
         WmtsLayerConfig(
+            service = this,
             identifier = "Light_27700",
             title = "OS Light",
             wgs84BoundingBox = WmtsBoundingBox(
@@ -353,6 +354,7 @@ class OsServiceConfig : WmtsServiceConfig {
             matrices = emptyMap()
         ),
         WmtsLayerConfig(
+            service = this,
             identifier = "Light_3857",
             title = "OS Light",
             wgs84BoundingBox = WmtsBoundingBox(
@@ -448,6 +450,7 @@ class OsServiceConfig : WmtsServiceConfig {
             )
         ),
         WmtsLayerConfig(
+            service = this,
             identifier = "Outdoor_27700",
             title = "OS Outdoor",
             wgs84BoundingBox = WmtsBoundingBox(
@@ -458,6 +461,7 @@ class OsServiceConfig : WmtsServiceConfig {
             matrices = emptyMap()
         ),
         WmtsLayerConfig(
+            service = this,
             identifier = "Outdoor_3857",
             title = "OS Outdoor",
             wgs84BoundingBox = WmtsBoundingBox(
@@ -553,6 +557,7 @@ class OsServiceConfig : WmtsServiceConfig {
             )
         ),
         WmtsLayerConfig(
+            service = this,
             identifier = "Road_27700",
             title = "OS Road",
             wgs84BoundingBox = WmtsBoundingBox(
@@ -563,6 +568,7 @@ class OsServiceConfig : WmtsServiceConfig {
             matrices = emptyMap()
         ),
         WmtsLayerConfig(
+            service = this,
             identifier = "Road_3857",
             title = "OS Road",
             wgs84BoundingBox = WmtsBoundingBox(
@@ -658,6 +664,7 @@ class OsServiceConfig : WmtsServiceConfig {
             )
         ),
         WmtsLayerConfig(
+            service = this,
             identifier = "Leisure_27700",
             title = "OS Leisure",
             wgs84BoundingBox = WmtsBoundingBox(
