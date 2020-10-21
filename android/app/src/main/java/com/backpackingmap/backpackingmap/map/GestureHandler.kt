@@ -63,9 +63,12 @@ class GestureHandler(
 
     init {
         touchView.setOnTouchListener { _, event: MotionEvent ->
-            gestureDetector.onTouchEvent(event) ||
-                    scaleDetector.onTouchEvent(event) ||
-                    touchView.onTouchEvent(event)
+            if (event.pointerCount > 1) {
+                scaleDetector.onTouchEvent(event)
+            } else {
+                gestureDetector.onTouchEvent(event)
+            }
+            true
         }
     }
 
