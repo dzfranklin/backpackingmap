@@ -9,7 +9,6 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-private const val AUTHORIZATION = "Authorization"
 private const val BASE_URL = BuildConfig.API_BASE_URL
 
 interface UnauthenticatedApiService {

@@ -8,6 +8,6 @@ import com.backpackingmap.backpackingmap.repo.Repo
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
     val repo: Repo? = Repo.fromContext(application)
 
-    val mapService = OsServiceConfig()
+    private val mapService = OsServiceConfig()
     val mapLayerConfigs = arrayOf(mapService.layers.last())
 }

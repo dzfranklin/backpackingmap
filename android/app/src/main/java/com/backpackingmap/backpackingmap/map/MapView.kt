@@ -40,6 +40,7 @@ class MapView(
             setLayerPositions(initialPosition)
 
             touchHandler.events.collect { event ->
+                @Suppress("UNNECESSARY_NOT_NULL_ASSERTION") // Used for exhaustiveness
                 when (event) {
                     is GestureHandler.TouchEvent.Move -> {
                         val zoom = last.zoom

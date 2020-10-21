@@ -14,7 +14,7 @@ import com.backpackingmap.backpackingmap.map.ZoomLevel
 import org.locationtech.proj4j.CRSFactory
 
 class MainActivity : AppCompatActivity() {
-    lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
     val model: MainActivityViewModel by lazy {
         ViewModelProvider(this).get(MainActivityViewModel::class.java)
     }
@@ -48,7 +48,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
 }

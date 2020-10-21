@@ -13,7 +13,7 @@ import com.backpackingmap.backpackingmap.main_activity.MainActivity
 import com.backpackingmap.backpackingmap.repo.UnauthenticatedRemoteError
 
 class RegisterFragment : Fragment() {
-    lateinit var binding: FragmentRegisterBinding
+    private lateinit var binding: FragmentRegisterBinding
     lateinit var model: RegisterViewModel
 
     override fun onCreateView(

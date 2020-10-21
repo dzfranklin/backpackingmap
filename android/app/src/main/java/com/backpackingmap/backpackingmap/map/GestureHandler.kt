@@ -18,7 +18,7 @@ import kotlin.coroutines.CoroutineContext
 @SuppressLint("ClickableViewAccessibility")
 class GestureHandler(
     override val coroutineContext: CoroutineContext,
-    private val context: Context,
+    context: Context,
     private val touchView: View,
 ) :
     CoroutineScope {

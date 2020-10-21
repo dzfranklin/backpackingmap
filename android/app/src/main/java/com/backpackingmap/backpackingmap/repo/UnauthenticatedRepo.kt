@@ -20,7 +20,7 @@ class UnauthenticatedRepo(
 
         val request = RegisterRequest(RegisterRequestUser(email, password))
 
-        return when (val result = makeUnauthenticatedRemoteRequest() {
+        return when (val result = makeUnauthenticatedRemoteRequest {
             api.register(request)
         }) {
             is Either.Left -> {
@@ -40,7 +40,7 @@ class UnauthenticatedRepo(
 
         val request = CreateSessionRequest(CreateSessionRequestUser(email, password))
 
-        return when (val result = makeUnauthenticatedRemoteRequest() {
+        return when (val result = makeUnauthenticatedRemoteRequest {
             api.createSession(request)
         }) {
             is Either.Left -> {

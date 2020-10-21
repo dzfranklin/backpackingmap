@@ -2,7 +2,7 @@ package com.backpackingmap.backpackingmap.repo
 
 import com.backpackingmap.backpackingmap.net.auth.RenewSessionResponseError
 
-sealed class RemoteError<out ApiErrorResponse>() {
+sealed class RemoteError<out ApiErrorResponse> {
 
     data class Network(val cause: Throwable) :
         RemoteError<Nothing>()

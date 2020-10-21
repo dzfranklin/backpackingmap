@@ -24,7 +24,7 @@ class MapLayer constructor(context: Context) : View(context) {
         val repo: TileRepo,
     )
 
-    var attrs: Attrs? = null
+    private var attrs: Attrs? = null
 
     private var position: MapPosition? = null
     private var screenHeight: Int? = null

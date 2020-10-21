@@ -40,16 +40,16 @@ class AccessTokenCache(private val renew: suspend () -> AccessTokenResponse) {
         refreshMutex.withLock {
             val now = Clock.System.now()
             val tempInstance = cacheLastUpdated
-            if (tempInstance == null ||
+            return if (tempInstance == null ||
                 tempInstance.until(now, DateTimeUnit.MINUTE, TimeZone.UTC)
                 > MAX_MINUTES_BETWEEN_REFRESHES
             ) {
-                return renewAndCache().map {
+                renewAndCache().map {
                     cacheLastUpdated = Clock.System.now()
                     Unit
                 }
             } else {
-                return Either.right(Unit)
+                Either.right(Unit)
             }
         }
     }

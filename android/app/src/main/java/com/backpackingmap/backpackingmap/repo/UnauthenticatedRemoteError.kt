@@ -1,6 +1,6 @@
 package com.backpackingmap.backpackingmap.repo
 
-sealed class UnauthenticatedRemoteError<out ApiErrorResponse>() {
+sealed class UnauthenticatedRemoteError<out ApiErrorResponse> {
 
     data class Network(val cause: Throwable) :
         UnauthenticatedRemoteError<Nothing>()

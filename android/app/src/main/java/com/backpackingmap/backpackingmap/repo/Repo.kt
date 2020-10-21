@@ -15,10 +15,10 @@ import kotlin.coroutines.CoroutineContext
 
 class Repo(
     override val coroutineContext: CoroutineContext,
-    private val prefs: BackpackingmapSharedPrefs,
+    prefs: BackpackingmapSharedPrefs,
     private val userDao: UserDao,
     private val api: ApiService,
-    private val memoryClass: Int,
+    memoryClass: Int,
 ) : CoroutineScope {
     init {
         if (!prefs.isLoggedIn) {
@@ -53,7 +53,7 @@ class Repo(
 
         val user = getUser()
 
-        makeUnauthenticatedRemoteRequest() { api.renewSession(user.renewalToken) }
+        makeUnauthenticatedRemoteRequest { api.renewSession(user.renewalToken) }
             .mapLeft {
                 Timber.w("Failed to renew access token: %s", it)
                 it
