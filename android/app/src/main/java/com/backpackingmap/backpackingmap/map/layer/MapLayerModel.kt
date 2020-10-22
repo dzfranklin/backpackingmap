@@ -5,7 +5,6 @@ import arrow.core.Either
 import com.backpackingmap.backpackingmap.map.MapPosition
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
 import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
-import com.backpackingmap.backpackingmap.repo.GetTileError
 import com.backpackingmap.backpackingmap.repo.TileRepo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +35,7 @@ class MapLayerModel(
     sealed class TileType {
         data class Raster(val bitmap: Bitmap) : TileType()
         object Placeholder : TileType()
-        data class Error(val error: GetTileError) : TileType()
+        data class Error(val errorMessage: String) : TileType()
     }
 
     var tiles: List<Tile> = listOf()
@@ -146,7 +145,7 @@ class MapLayerModel(
                 val tile = if (cached != null) {
                     when (cached) {
                         is Either.Left ->
-                            Tile(leftX, topY, width, height, TileType.Error(cached.a))
+                            Tile(leftX, topY, width, height, TileType.Error(cached.a.toString()))
                         is Either.Right ->
                             Tile(leftX, topY, width, height, TileType.Raster(cached.b))
                     }

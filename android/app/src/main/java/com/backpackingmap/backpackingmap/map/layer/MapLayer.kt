@@ -9,7 +9,6 @@ import androidx.core.graphics.withTranslation
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.map.MapPosition
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
-import com.backpackingmap.backpackingmap.repo.GetTileError
 import com.backpackingmap.backpackingmap.repo.Repo
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharedFlow
@@ -49,7 +48,7 @@ class MapLayer constructor(context: Context) : View(context) {
 
                 is MapLayerModel.TileType.Error ->
                     drawError(canvas,
-                        tile.value.error,
+                        tile.value.errorMessage,
                         tile.leftX,
                         tile.topY,
                         tile.width,
@@ -128,14 +127,12 @@ class MapLayer constructor(context: Context) : View(context) {
 
     private fun drawError(
         canvas: Canvas,
-        error: GetTileError,
+        text: String,
         topLeftX: Float,
         topLeftY: Float,
         width: Float,
         height: Float,
     ) {
-        val text = error.toString()
-
         val axisPadding = 2 * errorPadding
 
         val internalWidth = (width - axisPadding).toInt()
