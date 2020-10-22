@@ -32,9 +32,6 @@ class GestureHandler(
     }
 
     private var lastPosition = initialPosition
-
-    private var minimumFlingVelocity = ViewConfiguration.get(context).scaledMinimumFlingVelocity
-    private var maximumFlingVelocity = ViewConfiguration.get(context).scaledMaximumFlingVelocity
     private var flinger: Job? = null
 
     private val gestureDetector =
@@ -122,8 +119,6 @@ class GestureHandler(
         }
     }
 
-    private fun normalizeFlingVelocity(velocity: Float) =
-        (velocity - minimumFlingVelocity) / maximumFlingVelocity
 
     private fun computeCenterMovedBy(
         lastPosition: MapPosition,
