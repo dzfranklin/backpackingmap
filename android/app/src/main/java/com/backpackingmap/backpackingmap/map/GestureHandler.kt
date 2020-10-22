@@ -87,6 +87,8 @@ class GestureHandler(
 
     private val gestureDetector =
         GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+            var lastPointer: Int? = null
+
             override fun onScroll(
                 initial: MotionEvent,
                 current: MotionEvent,
@@ -95,6 +97,18 @@ class GestureHandler(
             ): Boolean {
                 // NOTE: distances since last call, not initial
                 // See <https://developer.android.com/reference/android/view/GestureDetector.SimpleOnGestureListener#onScroll(android.view.MotionEvent,%20android.view.MotionEvent,%20float,%20float)>
+
+                val lastPointerCached = lastPointer
+                if (lastPointerCached != null) {
+                    if (current.findPointerIndex(lastPointerCached) != 0) {
+                        // If the user switches pointers in the middle of a scroll we throw out the
+                        // first event of the new pointer because its distanceX and distanceY are
+                        // from the other pointer. If we used them the position would jump
+                        lastPointer = current.getPointerId(0)
+                        return true
+                    }
+                }
+                lastPointer = current.getPointerId(0)
 
                 send(Delta(
                     zoomScaleFactor = 1f,
