@@ -78,9 +78,16 @@ class MapLayerModel(
         }
 
         launch {
+            var begun = 0
+            var finished = 0
             position.collectLatest {
+                begun++
                 currentPosition = it
                 computeTiles()
+                finished++
+                if (begun - finished > 0) {
+                    Timber.i("Cancelled: %s", begun - finished)
+                }
             }
         }
     }
