@@ -93,6 +93,9 @@ class MapLayerModel(
             return
         }
 
+        // NOTE: The comments in WmtsTileMatrixSetConfig.tileIndices (called below) will help you
+        // understand how this code works
+
         val (targetMetersPerPixel, matrixMetersPerPixel, matrix) =
             repo.findClosestMatrix(cachedConfig, cachedPosition)!!
         val metersPerPixelScaleFactor = targetMetersPerPixel / matrixMetersPerPixel
