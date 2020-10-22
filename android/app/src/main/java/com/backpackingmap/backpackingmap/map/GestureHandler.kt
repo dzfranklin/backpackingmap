@@ -2,21 +2,25 @@ package com.backpackingmap.backpackingmap.map
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.view.*
+import android.view.GestureDetector
+import android.view.MotionEvent
+import android.view.ScaleGestureDetector
+import android.view.View
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, ObsoleteCoroutinesApi::class)
 // Not applicable, as we just delegate to GestureDetector
 @SuppressLint("ClickableViewAccessibility")
 class GestureHandler(
     override val coroutineContext: CoroutineContext,
     context: Context,
-    private val touchView: View,
+    touchView: View,
     initialPosition: MapPosition,
 ) :
     CoroutineScope {
@@ -25,13 +29,53 @@ class GestureHandler(
         MutableSharedFlow<MapPosition>(1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val events = _events.asSharedFlow()
 
-    init {
-        launch {
-            send(initialPosition)
+    private data class Delta(
+        val zoomScaleFactor: Float,
+        val deltaX: Float,
+        val deltaY: Float,
+    )
+
+    // NOTE: This actor ensures that an event is always based on the previous event, avoiding jumps
+    // if two events both base themselves on the same event they think was the previous event.
+    //
+    // We can't shed because we work with deltas, so this should be relatively fast
+    private val processor = actor<Delta> {
+        var prev = initialPosition
+        _events.emit(initialPosition)
+
+        for (delta in channel) {
+            // We invert because scrolling moves you in the opposite direction to the one your
+            // finger literally moves in
+
+            val metersNorth = -1 * delta.deltaY * prev.zoom.metersPerPixel
+
+            // and then invert deltaX again (so not at all) because east is to the left
+            val metersEast = delta.deltaX * prev.zoom.metersPerPixel
+
+            val next = MapPosition(
+                zoom = prev.zoom.scaledBy(delta.zoomScaleFactor),
+                center = prev.center.movedBy(metersEast, metersNorth),
+            )
+
+            _events.emit(next)
+            prev = next
         }
     }
 
-    private var lastPosition = initialPosition
+    init {
+        touchView.setOnTouchListener { _, event: MotionEvent ->
+            flinger?.cancel("Cancelling fling because of new motion event")
+
+            if (event.pointerCount > 1) {
+                scaleDetector.onTouchEvent(event)
+            } else {
+                gestureDetector.onTouchEvent(event)
+            }
+
+            true
+        }
+    }
+
     private var flinger: Job? = null
 
     private val gestureDetector =
@@ -45,11 +89,12 @@ class GestureHandler(
                 // NOTE: distances since last call, not initial
                 // See <https://developer.android.com/reference/android/view/GestureDetector.SimpleOnGestureListener#onScroll(android.view.MotionEvent,%20android.view.MotionEvent,%20float,%20float)>
 
-                val newPosition = computeCenterMovedBy(lastPosition, distanceX, distanceY)
-                lastPosition = newPosition
-
                 launch {
-                    send(newPosition)
+                    processor.send(Delta(
+                        zoomScaleFactor = 1f,
+                        deltaX = distanceX,
+                        deltaY = distanceY,
+                    ))
                 }
 
                 return true
@@ -66,10 +111,11 @@ class GestureHandler(
                     var deltaY = -velocityY / 15f
 
                     while (abs(deltaX) > 1 || abs(deltaY) > 1) {
-                        val newPosition =
-                            computeCenterMovedBy(lastPosition, deltaX, deltaY)
-                        lastPosition = newPosition
-                        send(newPosition)
+                        processor.send(Delta(
+                            zoomScaleFactor = 1f,
+                            deltaX = deltaX,
+                            deltaY = deltaY,
+                        ))
 
                         deltaX *= 0.8f
                         deltaY *= 0.8f
@@ -90,56 +136,18 @@ class GestureHandler(
                 }
 
                 // TODO: Cap max and min scale
-                val lastCached = lastPosition
-                val newPosition = MapPosition(
-                    center = lastCached.center,
-                    zoom = lastCached.zoom.scaledBy(1 / detector.scaleFactor)
-                )
-                lastPosition = newPosition
+
+                val zoomScaleFactor = 1f / detector.scaleFactor
 
                 launch {
-                    send(newPosition)
+                    processor.send(Delta(
+                        zoomScaleFactor = zoomScaleFactor,
+                        deltaX = 0f,
+                        deltaY = 0f,
+                    ))
                 }
 
                 return true
             }
         })
-
-    init {
-        touchView.setOnTouchListener { _, event: MotionEvent ->
-            flinger?.cancel("Cancelling fling because of new motion event")
-
-            if (event.pointerCount > 1) {
-                scaleDetector.onTouchEvent(event)
-            } else {
-                gestureDetector.onTouchEvent(event)
-            }
-
-            true
-        }
-    }
-
-
-    private fun computeCenterMovedBy(
-        lastPosition: MapPosition,
-        distanceX: Float,
-        distanceY: Float,
-    ): MapPosition {
-        // We invert because scrolling moves you in the opposite direction to the one your
-        // finger literally moves in
-
-        val metersNorth = -1 * distanceY * lastPosition.zoom.metersPerPixel
-
-        // and then invert distanceX again because east is to the left
-        val metersEast = distanceX * lastPosition.zoom.metersPerPixel
-
-        return MapPosition(
-            zoom = lastPosition.zoom,
-            center = lastPosition.center.movedBy(metersEast, metersNorth)
-        )
-    }
-
-    private suspend fun send(newPosition: MapPosition) {
-        _events.emit(newPosition)
-    }
 }
