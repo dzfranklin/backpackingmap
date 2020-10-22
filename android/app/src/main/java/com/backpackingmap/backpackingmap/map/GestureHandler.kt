@@ -2,9 +2,6 @@ package com.backpackingmap.backpackingmap.map
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.view.GestureDetector
-import android.view.MotionEvent
-import android.view.ScaleGestureDetector
 import android.view.View
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
@@ -69,101 +66,55 @@ class GestureHandler(
         }
     }
 
-    init {
-        touchView.setOnTouchListener { _, event: MotionEvent ->
-            flinger?.cancel("Cancelling fling because of new motion event")
+    private var flinger: Job? = null
 
-            if (event.pointerCount > 1) {
-                scaleDetector.onTouchEvent(event)
-            } else {
-                gestureDetector.onTouchEvent(event)
+    private val gestureDetector = OmniGestureDetector(context) { event: OmniGestureDetector.Event ->
+        flinger?.cancel("Cancelling fling because of new motion event")
+
+        when (event) {
+            is OmniGestureDetector.Event.Scroll -> {
+                send(Delta(
+                    zoomScaleFactor = 1f,
+                    deltaX = event.distanceX,
+                    deltaY = event.distanceY,
+                ))
             }
 
-            true
+            is OmniGestureDetector.Event.Fling -> {
+                if (event.velocityX != null && event.velocityY != null) {
+                    flinger = launch {
+                        var deltaX = -event.velocityX / 15f
+                        var deltaY = -event.velocityY / 15f
+
+                        while (abs(deltaX) > 1 || abs(deltaY) > 1) {
+                            send(Delta(
+                                zoomScaleFactor = 1f,
+                                deltaX = deltaX,
+                                deltaY = deltaY,
+                            ))
+
+                            deltaX *= 0.8f
+                            deltaY *= 0.8f
+
+                            delay(1_000 / 60) // 60 fps
+                        }
+                    }
+                }
+            }
+
+            is OmniGestureDetector.Event.Scale -> {
+                if (event.scaleFactor != null) {
+                    send(Delta(
+                        zoomScaleFactor = 1 / event.scaleFactor,
+                        deltaX = 0f,
+                        deltaY = 0f,
+                    ))
+                }
+            }
         }
     }
 
-    private var flinger: Job? = null
-
-    private val gestureDetector =
-        GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
-            var lastPointer: Int? = null
-
-            override fun onScroll(
-                initial: MotionEvent,
-                current: MotionEvent,
-                distanceX: Float,
-                distanceY: Float,
-            ): Boolean {
-                // NOTE: distances since last call, not initial
-                // See <https://developer.android.com/reference/android/view/GestureDetector.SimpleOnGestureListener#onScroll(android.view.MotionEvent,%20android.view.MotionEvent,%20float,%20float)>
-
-                val lastPointerCached = lastPointer
-                if (lastPointerCached != null) {
-                    if (current.findPointerIndex(lastPointerCached) != 0) {
-                        // If the user switches pointers in the middle of a scroll we throw out the
-                        // first event of the new pointer because its distanceX and distanceY are
-                        // from the other pointer. If we used them the position would jump
-                        lastPointer = current.getPointerId(0)
-                        return true
-                    }
-                }
-                lastPointer = current.getPointerId(0)
-
-                send(Delta(
-                    zoomScaleFactor = 1f,
-                    deltaX = distanceX,
-                    deltaY = distanceY,
-                ))
-
-                return true
-            }
-
-            override fun onFling(
-                e1: MotionEvent?,
-                e2: MotionEvent?,
-                velocityX: Float,
-                velocityY: Float,
-            ): Boolean {
-                flinger = launch {
-                    var deltaX = -velocityX / 15f
-                    var deltaY = -velocityY / 15f
-
-                    while (abs(deltaX) > 1 || abs(deltaY) > 1) {
-                        send(Delta(
-                            zoomScaleFactor = 1f,
-                            deltaX = deltaX,
-                            deltaY = deltaY,
-                        ))
-
-                        deltaX *= 0.8f
-                        deltaY *= 0.8f
-
-                        delay(1_000 / 60) // 60 fps
-                    }
-                }
-
-                return true
-            }
-        })
-
-    private val scaleDetector =
-        ScaleGestureDetector(context, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
-            override fun onScale(detector: ScaleGestureDetector?): Boolean {
-                if (detector == null) {
-                    return false
-                }
-
-
-                val zoomScaleFactor = 1f / detector.scaleFactor
-
-                send(Delta(
-                    zoomScaleFactor = zoomScaleFactor,
-                    deltaX = 0f,
-                    deltaY = 0f,
-                ))
-
-                return true
-            }
-        })
+    init {
+        touchView.setOnTouchListener(gestureDetector::onTouchEvent)
+    }
 }
