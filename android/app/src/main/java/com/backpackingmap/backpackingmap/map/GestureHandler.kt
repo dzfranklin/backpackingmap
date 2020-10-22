@@ -52,6 +52,7 @@ class GestureHandler(
             val metersEast = delta.deltaX * prev.zoom.metersPerPixel
 
             val next = MapPosition(
+                received = delta.received,
                 zoom = prev.zoom.scaledBy(delta.zoomScaleFactor),
                 center = prev.center.movedBy(metersEast, metersNorth),
             )

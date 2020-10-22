@@ -13,6 +13,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.round
@@ -161,6 +162,12 @@ class MapLayerModel(
 
         tiles = newTiles
         scaleFactor = newScaleFactor
+
+        val cachedReceived = cachedPosition.received
+        if (cachedReceived != null) {
+            Timber.i("Built tiles for event in ${System.currentTimeMillis() - cachedReceived}")
+            cachedPosition.received = null
+        }
 
         onShouldRedraw()
 
