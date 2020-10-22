@@ -8,8 +8,10 @@ import android.view.View
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class OmniGestureDetector(context: Context, private val onEvent: (Event) -> Unit) {
+class OmniGestureDetector(context: Context, private val onEvent: (Event, Long) -> Unit) {
     fun onTouchEvent(view: View, event: MotionEvent): Boolean {
+        val received = System.currentTimeMillis()
+
         val cornerToCornerDistance =
             sqrt(view.width.toFloat().pow(2) + view.height.toFloat().pow(2))
         gestureListener.cornerToCornerDistance = cornerToCornerDistance
@@ -25,9 +27,9 @@ class OmniGestureDetector(context: Context, private val onEvent: (Event) -> Unit
         val gestureEvent = gestureListener.lastEvent
 
         if (gesturePriority >= scalePriority && gestureEvent != null) {
-            onEvent(gestureEvent)
+            onEvent(gestureEvent, received)
         } else if (scaleEvent != null) {
-            onEvent(scaleEvent)
+            onEvent(scaleEvent, received)
         }
 
         return true

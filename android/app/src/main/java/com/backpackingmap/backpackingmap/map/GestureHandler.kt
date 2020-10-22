@@ -28,6 +28,7 @@ class GestureHandler(
     val events = _events.asSharedFlow()
 
     private data class Delta(
+        val received: Long?,
         val zoomScaleFactor: Float,
         val deltaX: Float,
         val deltaY: Float,
@@ -55,6 +56,10 @@ class GestureHandler(
                 center = prev.center.movedBy(metersEast, metersNorth),
             )
 
+            if (delta.received != null) {
+                Timber.i("Took ${System.currentTimeMillis() - delta.received} to emit")
+            }
+
             _events.emit(next)
             prev = next
         }
@@ -68,12 +73,13 @@ class GestureHandler(
 
     private var flinger: Job? = null
 
-    private val gestureDetector = OmniGestureDetector(context) { event: OmniGestureDetector.Event ->
+    private val gestureDetector = OmniGestureDetector(context) { event: OmniGestureDetector.Event, received: Long ->
         flinger?.cancel("Cancelling fling because of new motion event")
 
         when (event) {
             is OmniGestureDetector.Event.Scroll -> {
                 send(Delta(
+                    received = received,
                     zoomScaleFactor = 1f,
                     deltaX = event.distanceX,
                     deltaY = event.distanceY,
@@ -88,6 +94,7 @@ class GestureHandler(
 
                         while (abs(deltaX) > 1 || abs(deltaY) > 1) {
                             send(Delta(
+                                received = null,
                                 zoomScaleFactor = 1f,
                                 deltaX = deltaX,
                                 deltaY = deltaY,
@@ -105,6 +112,7 @@ class GestureHandler(
             is OmniGestureDetector.Event.Scale -> {
                 if (event.scaleFactor != null) {
                     send(Delta(
+                        received = received,
                         zoomScaleFactor = 1 / event.scaleFactor,
                         deltaX = 0f,
                         deltaY = 0f,
