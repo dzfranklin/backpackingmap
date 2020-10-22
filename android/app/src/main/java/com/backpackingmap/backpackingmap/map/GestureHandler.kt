@@ -11,6 +11,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 
@@ -62,6 +63,12 @@ class GestureHandler(
         }
     }
 
+    private fun send(delta: Delta) {
+        if (!processor.offer(delta)) {
+            Timber.w("Processor refused delta")
+        }
+    }
+
     init {
         touchView.setOnTouchListener { _, event: MotionEvent ->
             flinger?.cancel("Cancelling fling because of new motion event")
@@ -89,13 +96,11 @@ class GestureHandler(
                 // NOTE: distances since last call, not initial
                 // See <https://developer.android.com/reference/android/view/GestureDetector.SimpleOnGestureListener#onScroll(android.view.MotionEvent,%20android.view.MotionEvent,%20float,%20float)>
 
-                launch {
-                    processor.send(Delta(
-                        zoomScaleFactor = 1f,
-                        deltaX = distanceX,
-                        deltaY = distanceY,
-                    ))
-                }
+                send(Delta(
+                    zoomScaleFactor = 1f,
+                    deltaX = distanceX,
+                    deltaY = distanceY,
+                ))
 
                 return true
             }
@@ -111,7 +116,7 @@ class GestureHandler(
                     var deltaY = -velocityY / 15f
 
                     while (abs(deltaX) > 1 || abs(deltaY) > 1) {
-                        processor.send(Delta(
+                        send(Delta(
                             zoomScaleFactor = 1f,
                             deltaX = deltaX,
                             deltaY = deltaY,
@@ -139,13 +144,11 @@ class GestureHandler(
 
                 val zoomScaleFactor = 1f / detector.scaleFactor
 
-                launch {
-                    processor.send(Delta(
-                        zoomScaleFactor = zoomScaleFactor,
-                        deltaX = 0f,
-                        deltaY = 0f,
-                    ))
-                }
+                send(Delta(
+                    zoomScaleFactor = zoomScaleFactor,
+                    deltaX = 0f,
+                    deltaY = 0f,
+                ))
 
                 return true
             }
