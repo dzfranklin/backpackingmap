@@ -154,7 +154,6 @@ class GestureHandler(
                     return false
                 }
 
-                // TODO: Cap max and min scale
 
                 val zoomScaleFactor = 1f / detector.scaleFactor
 
