@@ -7,11 +7,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.databinding.ActivityMainBinding
 import com.backpackingmap.backpackingmap.enforceLoggedIn
-import com.backpackingmap.backpackingmap.map.Coordinate
-import com.backpackingmap.backpackingmap.map.MapPosition
-import com.backpackingmap.backpackingmap.map.MapView
-import com.backpackingmap.backpackingmap.map.ZoomLevel
-import org.locationtech.proj4j.CRSFactory
+import com.backpackingmap.backpackingmap.map.*
+import com.backpackingmap.backpackingmap.map.NaiveCoordinate
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -28,10 +25,7 @@ class MainActivity : AppCompatActivity() {
 
         model.repo?.let { repo ->
             val initialPosition = MapPosition(
-                center = Coordinate(
-                    CRSFactory().createFromName("EPSG:4326"),
-                    -2.804904, 56.340259
-                ),
+                center = NaiveCoordinate(-2.804904, 56.340259).toCoordinate("EPSG:4326"),
                 // Chosen because it's very close to the most zoomed in OS Leisure
                 zoom = ZoomLevel(1.7f)
             )

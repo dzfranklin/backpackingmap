@@ -9,7 +9,8 @@ import org.locationtech.proj4j.util.ProjectionMath
 import kotlin.math.cos
 
 private val transformFactory = CoordinateTransformFactory()
-private val wgs84: CoordinateReferenceSystem = CRSFactory().createFromName("EPSG:4326")
+val crsFactory = CRSFactory()
+private val wgs84: CoordinateReferenceSystem = crsFactory.createFromName("EPSG:4326")
 
 data class Coordinate(
     val crs: CoordinateReferenceSystem,
@@ -57,4 +58,9 @@ data class Coordinate(
 
         return Coordinate(crs, denormalizedCoords.x, denormalizedCoords.y)
     }
+}
+
+fun NaiveCoordinate.toCoordinate(crsName: String): Coordinate {
+    val crs = crsFactory.createFromName(crsName)
+    return Coordinate(crs, this.x, this.y)
 }
