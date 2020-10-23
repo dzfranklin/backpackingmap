@@ -8,8 +8,8 @@ import org.locationtech.proj4j.units.Units
 import org.locationtech.proj4j.util.ProjectionMath
 import kotlin.math.cos
 
-val transformFactory = CoordinateTransformFactory()
-val wgs84: CoordinateReferenceSystem = CRSFactory().createFromName("EPSG:4326")
+private val transformFactory = CoordinateTransformFactory()
+private val wgs84: CoordinateReferenceSystem = CRSFactory().createFromName("EPSG:4326")
 
 data class Coordinate(
     val crs: CoordinateReferenceSystem,
