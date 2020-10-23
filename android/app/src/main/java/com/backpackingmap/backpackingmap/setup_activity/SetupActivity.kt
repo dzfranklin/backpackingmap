@@ -1,9 +1,9 @@
 package com.backpackingmap.backpackingmap.setup_activity
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.databinding.ActivitySetupBinding
 import com.backpackingmap.backpackingmap.setup_activity.login.LoginFragment
@@ -12,12 +12,11 @@ import com.google.android.material.tabs.TabLayout
 
 class SetupActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySetupBinding
-    private lateinit var model: SetupViewModel
+    private val model: SetupViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_setup)
-        model = ViewModelProvider(this).get(SetupViewModel::class.java)
 
         attachTabListener()
         updateOnTabChange()

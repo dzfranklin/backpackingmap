@@ -1,9 +1,9 @@
 package com.backpackingmap.backpackingmap.main_activity
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.databinding.ActivityMainBinding
 import com.backpackingmap.backpackingmap.enforceLoggedIn
@@ -12,9 +12,7 @@ import com.backpackingmap.backpackingmap.map.NaiveCoordinate
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    val model: MainActivityViewModel by lazy {
-        ViewModelProvider(this).get(MainActivityViewModel::class.java)
-    }
+    val model: MainActivityViewModel by viewModels()
     lateinit var map: MapView
 
     override fun onCreate(savedInstanceState: Bundle?) {
