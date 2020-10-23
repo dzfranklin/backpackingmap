@@ -16,6 +16,7 @@ class MapView(
     layerConfigs: Array<WmtsLayerConfig>,
     private val initialPosition: MapPosition,
 ) : CoroutineScope {
+    // TODO: figure out when to cancel to avoid leaks
     override val coroutineContext = CoroutineScope(Dispatchers.Main).coroutineContext
 
     private val gestureHandler = GestureHandler(coroutineContext, context, parent, initialPosition)
