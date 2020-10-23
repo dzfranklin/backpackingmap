@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.collection.LruCache
 import arrow.core.Either
-import com.backpackingmap.backpackingmap.map.MapPosition
+import com.backpackingmap.backpackingmap.map.ZoomLevel
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
 import com.backpackingmap.backpackingmap.map.wmts.WmtsTileMatrixConfig
 import com.backpackingmap.backpackingmap.net.ApiService
@@ -72,8 +72,8 @@ class TileRepo(
         val matrix: WmtsTileMatrixConfig,
     )
 
-    fun findClosestMatrix(layer: WmtsLayerConfig, position: MapPosition): ClosestMatrixData? {
-        val targetMetersPerPixel = position.zoom.metersPerPixel
+    fun findClosestMatrix(layer: WmtsLayerConfig, zoom: ZoomLevel): ClosestMatrixData? {
+        val targetMetersPerPixel = zoom.metersPerPixel
 
         var closestMetersPerPixel: Float? = null
         var closestMatrix: WmtsTileMatrixConfig? = null

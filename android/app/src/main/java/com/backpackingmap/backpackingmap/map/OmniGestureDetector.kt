@@ -5,11 +5,25 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import timber.log.Timber
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class OmniGestureDetector(context: Context, private val onEvent: (Event) -> Unit) {
-    fun onTouchEvent(view: View, event: MotionEvent): Boolean {
+@OptIn(ExperimentalCoroutinesApi::class)
+class OmniGestureDetector(context: Context) {
+    private val _events =
+        MutableSharedFlow<Event>(EVENT_BUFFER_SIZE, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val events get() = _events.asSharedFlow()
+
+    fun onTouchEvent(view: View, event: MotionEvent?): Boolean {
+        if (event == null) {
+            return false
+        }
+
         val cornerToCornerDistance =
             sqrt(view.width.toFloat().pow(2) + view.height.toFloat().pow(2))
         gestureListener.cornerToCornerDistance = cornerToCornerDistance
@@ -25,12 +39,18 @@ class OmniGestureDetector(context: Context, private val onEvent: (Event) -> Unit
         val gestureEvent = gestureListener.lastEvent
 
         if (gesturePriority >= scalePriority && gestureEvent != null) {
-            onEvent(gestureEvent)
+            emit(gestureEvent)
         } else if (scaleEvent != null) {
-            onEvent(scaleEvent)
+            emit(scaleEvent)
         }
 
         return true
+    }
+
+    private fun emit(event: Event) {
+        if (!_events.tryEmit(event)) {
+            Timber.i("Failed to emit event %s", event)
+        }
     }
 
     private val gestureListener = ReportingGestureListener()
@@ -183,5 +203,9 @@ class OmniGestureDetector(context: Context, private val onEvent: (Event) -> Unit
             const val MIN_EVENT_MAGNITUDE = 0f
             const val MAX_EVENT_MAGNITUDE = 1f
         }
+    }
+
+    companion object {
+        const val EVENT_BUFFER_SIZE = 1_000
     }
 }

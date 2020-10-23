@@ -58,6 +58,15 @@ data class Coordinate(
 
         return Coordinate(crs, denormalizedCoords.x, denormalizedCoords.y)
     }
+
+    fun movedBy(zoom: ZoomLevel, deltaX: Float, deltaY: Float): Coordinate {
+        val metersNorth = -1 * deltaY * zoom.metersPerPixel
+
+        // and then invert deltaX again (so not at all) because east is to the left
+        val metersEast = deltaX * zoom.metersPerPixel
+
+        return movedBy(metersEast, metersNorth)
+    }
 }
 
 fun NaiveCoordinate.toCoordinate(crsName: String): Coordinate {

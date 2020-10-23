@@ -3,9 +3,12 @@
     <words>
       <w>backpackingmap</w>
       <w>epsg</w>
+      <w>flinger</w>
       <w>kotlinx</w>
       <w>moshi</w>
       <w>omni</w>
+      <w>rerender</w>
+      <w>rerenderer</w>
       <w>unmemoized</w>
     </words>
   </dictionary>

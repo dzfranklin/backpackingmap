@@ -1,34 +1,81 @@
 package com.backpackingmap.backpackingmap.map
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Canvas
+import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
-import com.backpackingmap.backpackingmap.map.layer.MapLayer
-import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
+// Supporting construction from just context & params would complicate the state without
+// much benefit
+@SuppressLint("ViewConstructor")
 @OptIn(ExperimentalCoroutinesApi::class)
 class MapView(
-    private val context: Context,
-    private val parent: ViewGroup,
-    layerConfigs: Array<WmtsLayerConfig>,
-    private val initialPosition: MapPosition,
-) : CoroutineScope {
+    context: Context,
+    layers: Collection<MapLayer>,
+    initialCenter: Coordinate,
+    initialZoom: ZoomLevel,
+) : View(context), CoroutineScope {
     // TODO: figure out when to cancel to avoid leaks
     override val coroutineContext = CoroutineScope(Dispatchers.Main).coroutineContext
 
-    private val gestureHandler = GestureHandler(coroutineContext, context, parent, initialPosition)
+    private val gestureDetector = OmniGestureDetector(context)
 
-    private val layers = layerConfigs.map { config ->
-        val view = addView(MapLayer(context))
-        view.onAttachToMap(config, gestureHandler.events)
-        view
+    // Not applicable, as we just delegate to platform GestureDetectors
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        return gestureDetector.onTouchEvent(this, event)
     }
 
-    private fun <T : View> addView(view: T): T {
-        parent.addView(view, parent.layoutParams)
-        return view
+    private val initialState = MapState(
+        center = initialCenter,
+        zoom = initialZoom,
+        MapSize(width, height)
+    )
+    private val processor = MapProcessor(coroutineContext, initialState, layers)
+
+    init {
+        // Process gestures
+        gestureDetector.events
+            .onEach {
+                processor.send(MapProcessor.Event.Gesture(it))
+            }
+            .launchIn(this)
+    }
+
+    private val renderer = MapRenderer(coroutineContext, processor.state, layers)
+
+    init {
+        // Redraw on new render
+        launch {
+            renderer.operations.collect {
+                postInvalidateOnAnimation()
+            }
+        }
+    }
+
+    override fun onSizeChanged(width: Int, height: Int, oldw: Int, oldh: Int) {
+        launch {
+            processor.send(MapProcessor.Event.SizeChanged(MapSize(width, height)))
+        }
+    }
+
+    override fun onDraw(canvas: Canvas?) {
+        if (canvas == null) {
+            return
+        }
+
+        for ((_, operations) in renderer.operations.value) {
+            for (operation in operations) {
+                operation.renderTo(canvas)
+            }
+        }
     }
 }

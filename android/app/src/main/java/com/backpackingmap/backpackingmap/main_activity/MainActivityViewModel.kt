@@ -9,5 +9,5 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     val repo: Repo? = Repo.fromContext(application)
 
     private val mapService = OsServiceConfig()
-    val mapLayerConfigs = arrayOf(mapService.layers.last())
+    val explorerLayerConfig = mapService.layers.last()
 }

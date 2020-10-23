@@ -8,7 +8,6 @@ import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.databinding.ActivityMainBinding
 import com.backpackingmap.backpackingmap.enforceLoggedIn
 import com.backpackingmap.backpackingmap.map.*
-import com.backpackingmap.backpackingmap.map.NaiveCoordinate
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -22,18 +21,20 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         model.repo?.let { repo ->
-            val initialPosition = MapPosition(
-                center = NaiveCoordinate(-2.804904, 56.340259).toCoordinate("EPSG:4326"),
-                // Chosen because it's very close to the most zoomed in OS Leisure
-                zoom = ZoomLevel(1.7f)
+            val layers = listOf(
+                WmtsLayer(this, model.explorerLayerConfig, repo.tileRepo)
             )
 
             map = MapView(
                 context = applicationContext,
-                parent = binding.mapParent,
-                layerConfigs = model.mapLayerConfigs,
-                initialPosition = initialPosition,
+                layers = layers,
+                initialCenter = NaiveCoordinate(-2.804904, 56.340259)
+                    .toCoordinate("EPSG:4326"),
+                // Chosen because it's very close to the most zoomed in OS Leisure
+                initialZoom = ZoomLevel(1.7f)
             )
+
+            binding.mapParent.addView(map, binding.mapParent.layoutParams)
         }
     }
 
