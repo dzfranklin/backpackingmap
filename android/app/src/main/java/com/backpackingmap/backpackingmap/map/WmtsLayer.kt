@@ -4,15 +4,9 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.Rect
-import android.text.StaticLayout
-import android.text.TextPaint
-import androidx.core.graphics.withTranslation
-import arrow.core.Either
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
 import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
-import com.backpackingmap.backpackingmap.repo.GetTileError
 import com.backpackingmap.backpackingmap.repo.TileRepo
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -73,12 +67,7 @@ class WmtsLayer(context: Context, private val config: WmtsLayerConfig, private v
 
                 val cached = repo.getCached(request)
                 val operation = if (cached != null) {
-                    when (cached) {
-                        is Either.Left ->
-                            createRenderError(cached.a, leftX, topY, width, height)
-                        is Either.Right ->
-                            RenderBitmap(leftX, topY, cached.b)
-                    }
+                    RenderBitmap(leftX, topY, cached)
                 } else {
                     toRequest.add(request)
                     createRenderPlaceholder(leftX, topY, width, height)
@@ -110,8 +99,6 @@ class WmtsLayer(context: Context, private val config: WmtsLayerConfig, private v
         }
     }
 
-    private val density = context.resources.displayMetrics.density
-
     private fun createRenderPlaceholder(leftX: Float, topY: Float, width: Float, height: Float) =
         RenderPlaceholder(leftX, topY, width, height, placeholderPaint)
 
@@ -135,51 +122,6 @@ class WmtsLayer(context: Context, private val config: WmtsLayerConfig, private v
                 topY + height,
                 placeholderPaint
             )
-        }
-    }
-
-    private fun createRenderError(
-        error: GetTileError,
-        leftX: Float,
-        topY: Float,
-        width: Float,
-        height: Float,
-    ): RenderError {
-        val text = error.toString()
-
-        val axisPadding = 2 * errorPadding
-        val internalWidth = (width - axisPadding).toInt()
-
-        val rect = Rect()
-        errorPaint.getTextBounds(text, 0, text.length, rect)
-        val textLineHeight = rect.height()
-        val internalHeightInLines =
-            floor((height - axisPadding) / textLineHeight).toInt()
-
-        val layout = StaticLayout.Builder
-            .obtain(text, 0, text.length, errorPaint, internalWidth)
-            .setMaxLines(internalHeightInLines)
-            .build()
-
-        return RenderError(leftX, topY, layout)
-    }
-
-    private val errorPaint = TextPaint().apply {
-        color = context.getColor(R.color.tileErrorText)
-        textSize = 20F * density
-    }
-
-    private val errorPadding = 5F * density
-
-    data class RenderError(
-        private val leftX: Float, // includes padding
-        private val topY: Float, // includes padding
-        private val layout: StaticLayout,
-    ) : RenderOperation {
-        override fun renderTo(canvas: Canvas) {
-            canvas.withTranslation(leftX, topY) {
-                layout.draw(this)
-            }
         }
     }
 }

@@ -22,14 +22,11 @@ class TileRepo(
     private val api: ApiService,
     private val size: Int,
 ) : CoroutineScope {
-    private val cache = object : LruCache<GetTileRequest, GetTileResponse>(size) {
-        override fun sizeOf(key: GetTileRequest, value: GetTileResponse) = when (value) {
-            is Either.Right -> value.b.byteCount / 1024
-            is Either.Left -> 0
-        }
+    private val cache = object : LruCache<GetTileRequest, Bitmap>(size) {
+        override fun sizeOf(key: GetTileRequest, value: Bitmap) = value.byteCount / 1024
     }
 
-    fun getCached(key: GetTileRequest): GetTileResponse? = cache.get(key)
+    fun getCached(key: GetTileRequest): Bitmap? = cache.get(key)
 
     private val requesting = HashSet<GetTileRequest>()
 
@@ -55,14 +52,15 @@ class TileRepo(
             val result = makeRemoteRequestForBody(accessTokenCache) { token ->
                 api.getTile(token, request)
             }
-                .map {
-                    BitmapFactory.decodeStream(it.byteStream())
-                }
-                .mapLeft { GetTileError.Remote(it) }
 
-            cache.put(request, result)
-            requesting.remove(request)
-            onCacheTile()
+            if (result is Either.Right) {
+                val bitmap = BitmapFactory.decodeStream(result.b.byteStream())
+                cache.put(request, bitmap)
+                requesting.remove(request)
+                onCacheTile()
+            } else {
+                requesting.remove(request)
+            }
         }
     }
 
