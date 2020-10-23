@@ -13,7 +13,7 @@ import com.backpackingmap.backpackingmap.map.NaiveCoordinate
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     val model: MainActivityViewModel by viewModels()
-    lateinit var map: MapView
+    var map: MapView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
