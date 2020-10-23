@@ -112,7 +112,7 @@ class WmtsLayer(context: Context, private val config: WmtsLayerConfig, private v
 
     private val density = context.resources.displayMetrics.density
 
-    fun createRenderPlaceholder(leftX: Float, topY: Float, width: Float, height: Float) =
+    private fun createRenderPlaceholder(leftX: Float, topY: Float, width: Float, height: Float) =
         RenderPlaceholder(leftX, topY, width, height, placeholderPaint)
 
     private val placeholderPaint = Paint().apply {
