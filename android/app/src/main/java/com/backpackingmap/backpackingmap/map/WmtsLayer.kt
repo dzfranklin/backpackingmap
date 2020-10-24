@@ -13,7 +13,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.actor
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
@@ -26,109 +27,48 @@ class WmtsLayer constructor(
     private val config: WmtsLayerConfig,
     private val repo: TileRepo,
     mapState: StateFlow<MapState>,
+    private val requestRender: () -> Unit,
     override val coroutineContext: CoroutineContext,
 ) : MapLayer(), CoroutineScope {
     data class Builder(
         private val context: Context,
         private val config: WmtsLayerConfig,
         private val repo: TileRepo,
-    ): MapLayer.Builder() {
-        override fun build(mapState: StateFlow<MapState>, coroutineContext: CoroutineContext) =
-            WmtsLayer(context, config, repo, mapState, coroutineContext)
+    ) : MapLayer.Builder() {
+        override fun build(
+            mapState: StateFlow<MapState>,
+            requestRender: () -> Unit,
+            coroutineContext: CoroutineContext,
+        ) =
+            WmtsLayer(context, config, repo, mapState, requestRender, coroutineContext)
     }
 
-    data class State(
-        val mapState: MapState,
-        val tiles: Map<GetTileRequest, TileState>,
-        val requesting: Set<GetTileRequest>,
-    ) {
-        constructor(mapState: MapState) : this(mapState, HashMap(), HashSet())
-    }
+    override var render: RenderOperation = UnitRenderOperation
 
-    sealed class TileState {
-        data class Loading(val leftX: Float, val topY: Float) : TileState()
-        data class Loaded(val leftX: Float, val topY: Float, val bitmap: Bitmap) : TileState()
-    }
+    private val requesting: MutableSet<GetTileRequest> = mutableSetOf()
 
-    private val state = MutableStateFlow(State(mapState.value))
-
-    private sealed class Message {
-        data class MapStateUpdate(val mapState: MapState) : Message()
-        data class TileLoaded(val request: GetTileRequest, val bitmap: Bitmap) : Message()
-    }
-
-    private val actor = actor<Message> {
+    private val actor = actor<Unit> {
         for (msg in channel) {
-            when (msg) {
-                is Message.MapStateUpdate -> {
-                    val cached = state.value
-                    val newTiles = cached.tiles.toMutableMap()
-                    val newRequesting = cached.requesting.toMutableSet()
-
-                    for ((request, tileState) in getCoveredTiles(msg.mapState)) {
-                        newTiles[request] = tileState
-
-                        if (tileState is TileState.Loading && !newRequesting.contains(request)) {
-                            newRequesting.add(request)
-                            repo.requestCaching(request, ::onTileLoaded)
-                        }
-                    }
-
-                    state.value = State(msg.mapState, newTiles.toMap(), cached.requesting)
-                }
-
-                is Message.TileLoaded -> {
-                    val cached = state.value
-
-                    val newTiles = cached.tiles.toMutableMap()
-                    val prevValue = newTiles[msg.request]
-                    if (prevValue != null && prevValue is TileState.Loading) {
-                        newTiles[msg.request] =
-                            TileState.Loaded(prevValue.leftX, prevValue.topY, msg.bitmap)
-
-                        val newRequesting = cached.requesting.toMutableSet()
-                        newRequesting.remove(msg.request)
-                        state.value = State(cached.mapState, newTiles, newRequesting)
-                    }
-                }
-            }
+            render = computeRender(mapState.value)
+            requestRender()
         }
     }
 
     init {
         launch {
             mapState.collect {
-                actor.send(Message.MapStateUpdate(it))
+                actor.send(Unit)
             }
         }
     }
 
     private suspend fun onTileLoaded(request: GetTileRequest, bitmap: Bitmap) {
-        actor.send(Message.TileLoaded(request, bitmap))
+        requesting.remove(request)
+        actor.send(Unit)
     }
 
-    override val render = state
-        .transform<State, RenderOperation> { state ->
-            val (matrix, scaleFactor) = selectMatrix(state.mapState)
-            val width = matrix.tileWidth.toFloat()
-            val height = matrix.tileHeight.toFloat()
-
-            val operations = state.tiles.values
-                .map { tile ->
-                    when (tile) {
-                        is TileState.Loading ->
-                            createRenderPlaceholder(tile.leftX, tile.topY, width, height)
-                        is TileState.Loaded ->
-                            RenderBitmap(tile.leftX, tile.topY, tile.bitmap)
-                    }
-                }
-
-            RenderScaled(scaleFactor, RenderMultiple(operations))
-        }
-        .stateIn(this, SharingStarted.Eagerly, UnitRenderOperation)
-
-
-    private fun getCoveredTiles(mapState: MapState): Map<GetTileRequest, TileState> {
+    /** Not coroutine-safe */
+    private fun computeRender(mapState: MapState): RenderOperation {
         // NOTE: The comments in WmtsTileMatrixSetConfig.tileIndices (called below) will help you
         // understand how this code works
         val (matrix, scaleFactor) = selectMatrix(mapState)
@@ -151,12 +91,15 @@ class WmtsLayer constructor(
             minCrsY = minY
         )
 
+        val width = matrix.tileWidth.toFloat()
+        val height = matrix.tileHeight.toFloat()
+
         val overageX = round(tileRange.minColOverageInCrs / pixelSpan).toInt()
         val overageY = round(tileRange.minRowOverageInCrs / pixelSpan).toInt()
 
         val requestBuilder = GetTileRequest.Builder.from(config, matrix)
 
-        val tiles = HashMap<GetTileRequest, TileState>()
+        val tiles: MutableList<RenderOperation> = mutableListOf()
 
         for (col in tileRange.minColInclusive..tileRange.maxColInclusive) {
             val offsetX = (col - tileRange.minColInclusive).toFloat() * matrix.tileWidth.toFloat()
@@ -171,16 +114,19 @@ class WmtsLayer constructor(
 
                 val cached = repo.getCached(request)
                 val tile = if (cached != null) {
-                    TileState.Loaded(leftX, topY, cached)
+                    RenderBitmap(leftX, topY, cached)
                 } else {
-                    TileState.Loading(leftX, topY)
+                    if (!requesting.contains(request)) {
+                        repo.requestCaching(request, ::onTileLoaded)
+                    }
+                    createRenderPlaceholder(leftX, topY, width, height)
                 }
 
-                tiles[request] = tile
+                tiles.add(tile)
             }
         }
 
-        return tiles
+        return RenderScaled(scaleFactor, RenderMultiple(tiles))
     }
 
     private fun selectMatrix(mapState: MapState): Pair<WmtsTileMatrixConfig, Float> {

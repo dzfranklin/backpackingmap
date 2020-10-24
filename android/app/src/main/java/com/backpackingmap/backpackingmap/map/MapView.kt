@@ -7,7 +7,6 @@ import android.view.MotionEvent
 import android.view.View
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -61,23 +60,15 @@ class MapView(
 
     private fun createLayer(builder: MapLayer.Builder) =
         // Create job so we can cancel layers separately
-        builder.build(processor.state, coroutineContext + Job())
+        builder.build(processor.state, ::postInvalidate, coroutineContext + Job())
 
     private val renderer = MapRenderer(coroutineContext, layers)
-
-    init {
-        launch {
-            renderer.operation.collect {
-                postInvalidate()
-            }
-        }
-    }
 
     override fun onDraw(canvas: Canvas?) {
         if (canvas == null) {
             return
         }
 
-        renderer.operation.value.renderTo(canvas)
+        renderer.renderTo(canvas)
     }
 }
