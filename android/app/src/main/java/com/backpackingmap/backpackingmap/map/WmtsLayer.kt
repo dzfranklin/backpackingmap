@@ -51,7 +51,6 @@ class WmtsLayer(context: Context, private val config: WmtsLayerConfig, private v
         val width = matrix.tileWidth.toFloat()
         val height = matrix.tileHeight.toFloat()
 
-        val toRequest: MutableList<GetTileRequest> = mutableListOf()
         val operations: MutableList<RenderOperation> = mutableListOf()
 
         for (col in tileRange.minColInclusive..tileRange.maxColInclusive) {
@@ -69,16 +68,14 @@ class WmtsLayer(context: Context, private val config: WmtsLayerConfig, private v
                 val operation = if (cached != null) {
                     RenderBitmap(leftX, topY, cached)
                 } else {
-                    toRequest.add(request)
+                    repo.requestCaching(request) {
+                        requestRerender()
+                    }
                     createRenderPlaceholder(leftX, topY, width, height)
                 }
 
                 operations.add(operation)
             }
-        }
-
-        repo.requestCaching(toRequest) {
-            requestRerender()
         }
 
         return listOf(RenderScaled(scaleFactor, operations))

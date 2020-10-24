@@ -10,7 +10,9 @@ import com.backpackingmap.backpackingmap.map.wmts.WmtsTileMatrixConfig
 import com.backpackingmap.backpackingmap.net.ApiService
 import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 
@@ -26,42 +28,53 @@ class TileRepo(
         override fun sizeOf(key: GetTileRequest, value: Bitmap) = value.byteCount / 1024
     }
 
-    fun getCached(key: GetTileRequest): Bitmap? = cache.get(key)
+    private data class Request(val request: GetTileRequest, val onCached: suspend () -> Unit)
 
+    private val unsentRequests = ArrayDeque<Request>()
     private val requesting = HashSet<GetTileRequest>()
+
+    init {
+        launch {
+            val inFlightRequests = AtomicInteger(0)
+
+            while (true) {
+                if (inFlightRequests.get() < MAX_IN_FLIGHT_REQUESTS) {
+                    val request = unsentRequests.removeFirstOrNull()
+                    if (request != null) {
+                        inFlightRequests.incrementAndGet()
+                        requesting.add(request.request)
+                        launch {
+                            val result = makeRemoteRequestForBody(accessTokenCache) { token ->
+                                api.getTile(token, request.request)
+                            }
+
+                            inFlightRequests.decrementAndGet()
+
+                            if (result is Either.Right) {
+                                val bitmap = BitmapFactory.decodeStream(result.b.byteStream())
+                                cache.put(request.request, bitmap)
+                                requesting.remove(request.request)
+                                request.onCached()
+                            } else {
+                                requesting.remove(request.request)
+                            }
+                        }
+                    }
+                }
+
+                delay(1)
+            }
+        }
+    }
+
+    fun getCached(key: GetTileRequest): Bitmap? = cache.get(key)
 
     /**
      * If you make multiple requests in short succession and check the cache before each only one
      * request will be made.
      */
-    fun requestCaching(requests: Collection<GetTileRequest>, onCacheTile: suspend () -> Unit) {
-        launch {
-            for (request in requests) {
-                launch {
-                    requestCaching(request, onCacheTile)
-                }
-            }
-        }
-    }
-
-    private suspend fun requestCaching(request: GetTileRequest, onCacheTile: suspend () -> Unit) {
-        // TODO: Don't request tiles that don't exist
-        if (!requesting.contains(request)) {
-            requesting.add(request)
-
-            val result = makeRemoteRequestForBody(accessTokenCache) { token ->
-                api.getTile(token, request)
-            }
-
-            if (result is Either.Right) {
-                val bitmap = BitmapFactory.decodeStream(result.b.byteStream())
-                cache.put(request, bitmap)
-                requesting.remove(request)
-                onCacheTile()
-            } else {
-                requesting.remove(request)
-            }
-        }
+    fun requestCaching(request: GetTileRequest, onCached: suspend () -> Unit) {
+        unsentRequests.addFirst(Request(request, onCached))
     }
 
     data class ClosestMatrixData(
@@ -96,5 +109,9 @@ class TileRepo(
         } else {
             null
         }
+    }
+
+    companion object {
+        private const val MAX_IN_FLIGHT_REQUESTS = 20
     }
 }
