@@ -12,8 +12,8 @@ typealias AccessTokenResponse = Either<UnauthenticatedRemoteError<RenewSessionRe
 // NOTE: Implementation developed with help from Marc Knaup
 // <https://kotlinlang.slack.com/archives/C0922A726/p1602866129274400>
 class AccessTokenCache(private val renew: suspend () -> AccessTokenResponse) {
-    private var cache: AccessToken? = null
-    private var cacheLastUpdated: Instant? = null
+    @Volatile private var cache: AccessToken? = null
+    @Volatile private var cacheLastUpdated: Instant? = null
 
     private val getMutex = Mutex()
     private val refreshMutex = Mutex()
