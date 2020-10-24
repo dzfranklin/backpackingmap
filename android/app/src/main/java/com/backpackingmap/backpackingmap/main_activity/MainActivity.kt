@@ -21,18 +21,17 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         model.repo?.let { repo ->
-            val layers = listOf(
-                WmtsLayer(this, model.explorerLayerConfig, repo.tileRepo)
-            )
-
             map = MapView(
                 context = applicationContext,
-                layers = layers,
                 initialCenter = NaiveCoordinate(-2.804904, 56.340259)
                     .toCoordinate("EPSG:4326"),
                 // Chosen because it's very close to the most zoomed in OS Leisure
                 initialZoom = ZoomLevel(1.7f)
             )
+
+            map?.setLayers(listOf(
+                WmtsLayer.Builder(this, model.explorerLayerConfig, repo.tileRepo)
+            ))
 
             binding.mapParent.addView(map, binding.mapParent.layoutParams)
         }

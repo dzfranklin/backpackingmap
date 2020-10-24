@@ -13,7 +13,6 @@ import kotlin.math.abs
 class MapProcessor(
     override val coroutineContext: CoroutineContext,
     initialState: MapState,
-    private val layers: Collection<MapLayer>,
 ) : CoroutineScope {
 
     private val _state = MutableStateFlow(initialState)

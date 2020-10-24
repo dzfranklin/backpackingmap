@@ -1,71 +1,36 @@
 package com.backpackingmap.backpackingmap.map
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.actor
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
+import arrow.syntax.collections.tail
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.*
 import kotlin.coroutines.CoroutineContext
 
-@OptIn(ExperimentalCoroutinesApi::class, ObsoleteCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class MapRenderer constructor(
     override val coroutineContext: CoroutineContext,
-    private val state: StateFlow<MapState>,
-    private val layers: Collection<MapLayer>,
+    private val layers: MutableStateFlow<List<MapLayer>>,
 ) : CoroutineScope {
-    private val _operations: MutableStateFlow<Map<MapLayer, Collection<RenderOperation>>> =
-        MutableStateFlow(mapOf())
-    val operations get() = _operations.asStateFlow()
+    val operation: StateFlow<RenderOperation> = layers
+        // for each set of layers
+        .transform<List<MapLayer>, RenderOperation> { layers ->
+            // turn the layers into a list of render operations
+            val renderers = layers.map { it.render }
 
-    init {
-        launch {
-            state.collect {
-                actor.send(Event.NewState(it))
-            }
-        }
-    }
-
-    sealed class Event {
-        data class NewState(val state: MapState) : Event()
-        data class RerenderLayer(val layer: MapLayer) : Event()
-    }
-
-    private val actor = actor<Event> {
-        var lastState = state.value
-
-        for (event in channel) {
-            _operations.value = when (event) {
-                is Event.NewState -> {
-                    lastState = event.state
-
-                    layers
-                        .map { layer ->
-                            async {
-                                layer.computeRender(event.state, createLayerRerenderer(layer))
-                            }
-                        }
-                        .awaitAll()
-                        .zip(layers)
-                        .map { (operations, layer) -> layer to operations }
-                        .toMap()
+            val head: Flow<RenderOperation>? = renderers.firstOrNull()
+            if (head != null) {
+                // if there are >0 layers, combine the render operations
+                val tail = renderers.tail()
+                tail.fold(head) { acc: Flow<RenderOperation>, item: Flow<RenderOperation> ->
+                    acc
+                        .combine(item) { a, b -> a + b }
                 }
-
-                is Event.RerenderLayer -> {
-                    val layer = event.layer
-                    val mutable = _operations.value.toMutableMap()
-                    mutable[layer] = layer.computeRender(lastState, createLayerRerenderer(layer))
-                    mutable.toMap()
-                }
+            } else {
+                // otherwise use the no-op operation
+                listOf(UnitRenderOperation).asFlow()
             }
         }
-    }
-
-    private fun createLayerRerenderer(layer: MapLayer): () -> Unit {
-        return { ->
-            launch {
-                actor.send(Event.RerenderLayer(layer))
-            }
-        }
-    }
+        // convert the Flow to a StateFlow
+        .stateIn(this, SharingStarted.Eagerly, UnitRenderOperation)
 }

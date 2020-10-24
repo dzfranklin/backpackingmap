@@ -29,7 +29,10 @@ class TileRepo(
         override fun sizeOf(key: GetTileRequest, value: Bitmap) = value.byteCount / 1024
     }
 
-    private data class Request(val request: GetTileRequest, val onCached: suspend () -> Unit)
+    private data class Request(
+        val request: GetTileRequest,
+        val onCached: suspend (GetTileRequest, Bitmap) -> Unit,
+    )
 
     private val unsentRequests = LIFOQueue<Request>()
     private val requesting = ConcurrentHashMap<GetTileRequest, Unit>()
@@ -52,9 +55,10 @@ class TileRepo(
                     val bitmap = BitmapFactory.decodeStream(result.b.byteStream())
                     cache.put(request.request, bitmap)
                     requesting.remove(request.request)
-                    request.onCached()
+                    request.onCached(request.request, bitmap)
                 } else {
                     Timber.w("Failed to get tile: %s", result)
+                    // TODO: Retry logic.
                     requesting.remove(request.request)
                 }
             }
@@ -67,7 +71,10 @@ class TileRepo(
      * If you make multiple requests in short succession and check the cache before each only one
      * request will be made.
      */
-    fun requestCaching(request: GetTileRequest, onCached: suspend () -> Unit) {
+    fun requestCaching(
+        request: GetTileRequest,
+        onCached: suspend (GetTileRequest, Bitmap) -> Unit,
+    ) {
         if (!requesting.contains(request)) {
             requesting[request] = Unit
             unsentRequests.enqueue(Request(request, onCached))
