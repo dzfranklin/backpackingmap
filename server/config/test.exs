@@ -18,5 +18,12 @@ config :backpackingmap, BackpackingmapWeb.Endpoint,
   http: [port: 4002],
   server: false
 
+config :backpackingmap, :certbot,
+       db_folder: "priv/test_site_encrypt",
+       directory_url: {
+         :internal,
+         port: 5002
+       }
+
 # Print only warnings and errors during test
 config :logger, level: :warn
