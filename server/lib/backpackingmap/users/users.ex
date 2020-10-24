@@ -8,11 +8,6 @@ defmodule Backpackingmap.Users do
 
   alias Backpackingmap.Users.User
 
-  def associate_with_os_auth(user, os_username) do
-    User.associate_with_os_auth_changeset(user, %{os_username: os_username})
-    |> Repo.update()
-  end
-
   def get_user_by(attrs), do:
     Repo.get_by(User, attrs)
 
