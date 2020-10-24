@@ -5,13 +5,11 @@ import androidx.core.graphics.withScale
 
 data class RenderScaled(
     val scaleFactor: Float,
-    val operations: Collection<RenderOperation>,
+    val operation: RenderOperation,
 ) : RenderOperation {
     override fun renderTo(canvas: Canvas) {
         canvas.withScale(scaleFactor, scaleFactor) {
-            for (operation in operations) {
-                operation.renderTo(canvas)
-            }
+            operation.renderTo(canvas)
         }
     }
 }

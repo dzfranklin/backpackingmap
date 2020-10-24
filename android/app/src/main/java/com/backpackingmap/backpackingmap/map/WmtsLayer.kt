@@ -78,7 +78,7 @@ class WmtsLayer(context: Context, private val config: WmtsLayerConfig, private v
             }
         }
 
-        return listOf(RenderScaled(scaleFactor, operations))
+        return listOf(RenderScaled(scaleFactor, RenderMultiple(operations)))
     }
 
     data class RenderBitmap(
