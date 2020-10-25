@@ -138,7 +138,7 @@ class WmtsLayer constructor(
         return matrix to scaleFactor
     }
 
-    data class RenderBitmap(
+    private data class RenderBitmap(
         private val leftX: Float,
         private val topY: Float,
         private val bitmap: Bitmap,
@@ -161,7 +161,7 @@ class WmtsLayer constructor(
         color = context.getColor(R.color.unloadedTile)
     }
 
-    data class RenderPlaceholder(
+    private data class RenderPlaceholder(
         private val leftX: Float,
         private val topY: Float,
         private val width: Float,
