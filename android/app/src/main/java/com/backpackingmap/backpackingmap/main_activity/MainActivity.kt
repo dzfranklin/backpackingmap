@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
         map = MapView(
             context = applicationContext,
             initialCenter = NaiveCoordinate(-2.804904, 56.340259)
-                .toCoordinate("EPSG:4326"),
+                .asCrs("EPSG:4326"),
             // Chosen because it's very close to the most zoomed in OS Leisure
             initialZoom = ZoomLevel(1.7f)
         )

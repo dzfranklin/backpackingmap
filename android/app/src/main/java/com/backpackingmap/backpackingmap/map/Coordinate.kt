@@ -69,7 +69,7 @@ data class Coordinate(
     }
 }
 
-fun NaiveCoordinate.toCoordinate(crsName: String): Coordinate {
+fun NaiveCoordinate.asCrs(crsName: String): Coordinate {
     val crs = crsFactory.createFromName(crsName)
     return Coordinate(crs, this.x, this.y)
 }
