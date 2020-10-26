@@ -1,4 +1,3 @@
-
 import kotlin.collections.set
 
 plugins {
@@ -37,13 +36,17 @@ android {
 
     buildTypes {
         getByName("debug") {
-            buildConfigField("String", "API_BASE_URL", "\"http://localhost:5080/api/v1/\"")
-            buildConfigField("Boolean", "RENDER_EXTRA_DEBUG_INFO", "false")
+            buildConfigField(ConfigField.T.String, ConfigField.API_BASE_URL,
+                "\"http://localhost:5080/api/v1/\"")
+
+            buildConfigField(ConfigField.T.Boolean, ConfigField.RENDER_EXTRA_DEBUG_INFO, "false")
         }
 
         getByName("release") {
-            buildConfigField("String", "API_BASE_URL", "\"https://backpackingmap.com/api/v1/\"")
-            buildConfigField("Boolean", "RENDER_EXTRA_DEBUG_INFO", "false")
+            buildConfigField(ConfigField.T.String, ConfigField.API_BASE_URL,
+                "\"https://backpackingmap.com/api/v1/\"")
+
+            buildConfigField(ConfigField.T.Boolean, ConfigField.RENDER_EXTRA_DEBUG_INFO, "false")
 
             isMinifyEnabled = false
 
