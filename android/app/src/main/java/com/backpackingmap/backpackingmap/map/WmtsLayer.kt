@@ -45,9 +45,21 @@ class WmtsLayer constructor(
 
     private val requesting: MutableSet<GetTileRequest> = mutableSetOf()
 
-    private val actor = actor<Unit> {
+    private sealed class Message {
+        data class StateUpdate(val mapState: MapState) : Message()
+        data class TileLoaded(val request: GetTileRequest) : Message()
+    }
+
+    private val actor = actor<Message> {
         for (msg in channel) {
-            render = computeRender(mapState.value)
+            val state = when (msg) {
+                is Message.StateUpdate -> msg.mapState
+                is Message.TileLoaded -> {
+                    requesting.remove(msg.request)
+                    mapState.value
+                }
+            }
+            render = computeRender(state)
             requestRender()
         }
     }
@@ -55,14 +67,13 @@ class WmtsLayer constructor(
     init {
         launch {
             mapState.collect {
-                actor.send(Unit)
+                actor.send(Message.StateUpdate(it))
             }
         }
     }
 
     private suspend fun onTileLoaded(request: GetTileRequest, bitmap: Bitmap) {
-        requesting.remove(request)
-        actor.send(Unit)
+        actor.send(Message.TileLoaded(request))
     }
 
     /** Not coroutine-safe */
@@ -121,6 +132,7 @@ class WmtsLayer constructor(
                     RenderBitmap(leftX, topY, cached)
                 } else {
                     if (!requesting.contains(request)) {
+                        requesting.add(request)
                         repo.requestCaching(request, ::onTileLoaded)
                     }
                     createRenderPlaceholder(leftX, topY, tileWidth, tileHeight)

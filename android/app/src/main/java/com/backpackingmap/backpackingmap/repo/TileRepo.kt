@@ -14,7 +14,6 @@ import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 
@@ -36,7 +35,6 @@ class TileRepo(
     )
 
     private val unsentRequests = LIFOQueue<Request>()
-    private val requesting = ConcurrentHashMap<GetTileRequest, Unit>()
 
     init {
         launch {
@@ -55,12 +53,10 @@ class TileRepo(
                 if (result is Either.Right) {
                     val bitmap = BitmapFactory.decodeStream(result.b.byteStream())
                     cache.put(request.request, bitmap)
-                    requesting.remove(request.request)
                     request.onCached(request.request, bitmap)
                 } else {
                     Timber.w("Failed to get tile: %s", result)
                     // TODO: Retry logic.
-                    requesting.remove(request.request)
                 }
             }
         }
@@ -68,18 +64,11 @@ class TileRepo(
 
     fun getCached(key: GetTileRequest): Bitmap? = cache.get(key)
 
-    /**
-     * If you make multiple requests in short succession and check the cache before each only one
-     * request will be made.
-     */
     fun requestCaching(
         request: GetTileRequest,
         onCached: suspend (GetTileRequest, Bitmap) -> Unit,
     ) {
-        if (!requesting.contains(request)) {
-            requesting[request] = Unit
-            unsentRequests.enqueue(Request(request, onCached))
-        }
+        unsentRequests.enqueue(Request(request, onCached))
     }
 
     data class ClosestMatrixData(
