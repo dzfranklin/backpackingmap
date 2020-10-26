@@ -142,7 +142,7 @@ class WmtsLayer constructor(
             }
         }
 
-        return if (!BuildConfig.RENDER_DEBUG_BOXES_AROUND_TILES) {
+        return if (!BuildConfig.RENDER_EXTRA_DEBUG_INFO) {
             RenderScaled(scaleFactor.toFloat(), RenderMultiple(tiles))
         } else {
             RenderMultiple(listOf(
@@ -221,7 +221,7 @@ class WmtsLayer constructor(
                 null
             )
 
-            if (BuildConfig.RENDER_DEBUG_BOXES_AROUND_TILES) {
+            if (BuildConfig.RENDER_EXTRA_DEBUG_INFO) {
                 canvas.drawRect(
                     leftX.toFloat(),
                     topY.toFloat(),
@@ -233,7 +233,7 @@ class WmtsLayer constructor(
         }
 
         companion object {
-            private val debugBoxPaint = if (BuildConfig.RENDER_DEBUG_BOXES_AROUND_TILES) {
+            private val debugBoxPaint = if (BuildConfig.RENDER_EXTRA_DEBUG_INFO) {
                 Paint().apply {
                     style = Paint.Style.STROKE
                     strokeWidth = 5f
