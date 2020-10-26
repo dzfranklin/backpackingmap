@@ -75,14 +75,14 @@ data class WmtsTileMatrixSetConfig(
 
         val rawMinCol = (minCrsX - tileMatrixMinX) / tileSpanX
         var tileMinCol = floor(rawMinCol + epsilon).toInt()
-        val minColOverageInCrs = (rawMinCol - tileMinCol) * tileSpanX
+        val minColOverage = rawMinCol - tileMinCol
 
         var tileMaxCol = floor((maxCrsX - tileMatrixMinX) / tileSpanX - epsilon).toInt()
         var tileMaxRow = floor((tileMatrixMaxY - minCrsY) / tileSpanY - epsilon).toInt()
 
         val rawMinRow = (tileMatrixMaxY - maxCrsY) / tileSpanY
         var tileMinRow = floor(rawMinRow + epsilon).toInt()
-        val minRowOverageInCrs = (rawMinRow - tileMinRow) * tileSpanY
+        val minRowOverage = rawMinRow - tileMinRow
 
         if (tileMinCol < 0) {
             tileMinCol = 0
@@ -101,8 +101,8 @@ data class WmtsTileMatrixSetConfig(
         }
 
         return WmtsTileRange(
-            minColOverageInCrs = minColOverageInCrs,
-            minRowOverageInCrs = minRowOverageInCrs,
+            minColOverage = minColOverage,
+            minRowOverage = minRowOverage,
             minColInclusive = tileMinCol,
             maxColInclusive = tileMaxCol,
             minRowInclusive = tileMinRow,

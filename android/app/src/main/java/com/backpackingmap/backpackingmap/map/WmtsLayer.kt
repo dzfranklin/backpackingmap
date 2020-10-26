@@ -110,8 +110,8 @@ class WmtsLayer constructor(
         val tileWidth = matrix.tileWidth
         val tileHeight = matrix.tileHeight
 
-        val overageX: Pixel = tileRange.minColOverageInCrs.asMeters() * pixelSpan.inverse()
-        val overageY: Pixel = tileRange.minRowOverageInCrs.asMeters() * pixelSpan.inverse()
+        val overageX = (tileRange.minColOverage * tileWidth.toDouble()).asPixel()
+        val overageY = (tileRange.minRowOverage * tileWidth.toDouble()).asPixel()
 
         val requestBuilder = GetTileRequest.Builder.from(config, matrix)
 
