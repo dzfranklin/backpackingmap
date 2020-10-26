@@ -1,3 +1,5 @@
 package com.backpackingmap.backpackingmap.map
 
-data class MapSize(val width: Int, val height: Int)
+import com.backpackingmap.backpackingmap.Pixel
+
+data class MapSize(val width: Pixel, val height: Pixel)

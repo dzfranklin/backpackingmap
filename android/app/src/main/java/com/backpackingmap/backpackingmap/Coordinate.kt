@@ -1,7 +1,6 @@
 package com.backpackingmap.backpackingmap
 
 import com.backpackingmap.backpackingmap.map.MapState
-import com.backpackingmap.backpackingmap.map.NaiveCoordinate
 import com.backpackingmap.backpackingmap.map.ZoomLevel
 import org.locationtech.proj4j.CRSFactory
 import org.locationtech.proj4j.CoordinateReferenceSystem
@@ -10,7 +9,6 @@ import org.locationtech.proj4j.ProjCoordinate
 import org.locationtech.proj4j.units.Units
 import org.locationtech.proj4j.util.ProjectionMath
 import kotlin.math.cos
-import kotlin.math.round
 
 private val transformFactory = CoordinateTransformFactory()
 val crsFactory = CRSFactory()
@@ -34,9 +32,9 @@ data class Coordinate(
         return Coordinate(newCrs, target.x, target.y)
     }
 
-    fun movedBy(metersEast: Float, metersNorth: Float): Coordinate {
+    fun movedBy(east: Meter, north: Meter): Coordinate {
         if (crs.projection.units != Units.DEGREES) {
-            return this.convertTo(wgs84).movedBy(metersEast, metersNorth)
+            return this.convertTo(wgs84).movedBy(east, north)
         }
 
         val normalizedCoords = ProjCoordinate(x, y)
@@ -46,8 +44,8 @@ data class Coordinate(
         val northing = normalizedCoords.y
 
         // Approximation, see <https://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters/2964#2964>
-        val newEastingUnnormalized = easting + metersEast / (111_111.0 * cos(northing))
-        val newNorthingUnnormalized = northing + metersNorth / 111_111.0
+        val newEastingUnnormalized = easting + east.value / (111_111.0 * cos(northing))
+        val newNorthingUnnormalized = northing + north.value / 111_111.0
 
         val newEasting = ProjectionMath.radToDeg(
             ProjectionMath.normalizeLongitude(
@@ -63,25 +61,25 @@ data class Coordinate(
         return Coordinate(crs, denormalizedCoords.x, denormalizedCoords.y)
     }
 
-    fun movedBy(zoom: ZoomLevel, deltaX: Float, deltaY: Float): Coordinate {
-        val metersNorth = -1 * deltaY * zoom.metersPerPixel
+    fun movedBy(zoom: ZoomLevel, deltaX: Pixel, deltaY: Pixel): Coordinate {
         // We invert because scrolling moves you in the opposite direction to the one your
         // finger literally moves in
+        val metersNorth = -1.0 * (deltaY * zoom.level)
 
         // and then invert deltaX again (so not at all) because east is to the left
-        val metersEast = deltaX * zoom.metersPerPixel
+        val metersEast = deltaX * zoom.level
 
         return movedBy(metersEast, metersNorth)
     }
 
     /** May return coordinates outside the visible space covered by the state */
-    fun toScreen(state: MapState): NaiveCoordinate {
+    fun toScreenLocation(state: MapState): ScreenLocation {
         if (crs.projection.units != Units.DEGREES) {
-            return this.convertTo(wgs84).toScreen(state)
+            return this.convertTo(wgs84).toScreenLocation(state)
         }
         val center = state.center.convertTo(crs)
         val axisOrder = crs.projection.axisOrder
-        val pixelsPerMeter = 1 / state.zoom.metersPerPixel
+        val pixelsPerMeter = state.zoom.level.inverse()
 
         val thisNormalized = ProjCoordinate(x, y)
         axisOrder.toENU(thisNormalized)
@@ -97,16 +95,16 @@ data class Coordinate(
 
         // pixels relative to center
         val pixelsEast =
-            (thisEasting - centerEasting) * (111_111.0 * cos(centerNorthing)) * pixelsPerMeter
-        val pixelsNorth = (thisNorthing - centerNorthing) * 111_111.0 * pixelsPerMeter
+            Meter(thisEasting - centerEasting) * (111_111.0 * cos(avgNorthing)) * pixelsPerMeter
+        val pixelsNorth = Meter((thisNorthing - centerNorthing) * 111_111.0) * pixelsPerMeter
 
-        val centerX = round(state.size.width / 2.0)
-        val centerY = round(state.size.height / 2.0)
+        val centerX = state.size.width / 2
+        val centerY = state.size.height / 2
 
         val x = centerX + pixelsEast
         val y = centerY - pixelsNorth
 
-        return NaiveCoordinate(x, y)
+        return ScreenLocation(x, y)
     }
 }
 

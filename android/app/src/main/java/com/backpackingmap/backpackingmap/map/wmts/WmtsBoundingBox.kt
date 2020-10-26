@@ -1,6 +1,6 @@
 package com.backpackingmap.backpackingmap.map.wmts
 
-import com.backpackingmap.backpackingmap.map.NaiveCoordinate
+import com.backpackingmap.backpackingmap.NaiveCoordinate
 
 // LatLng contains a CRS, so omitted from BB
 data class WmtsBoundingBox(

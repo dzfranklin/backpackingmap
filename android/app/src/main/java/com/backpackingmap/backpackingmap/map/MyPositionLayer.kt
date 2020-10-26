@@ -3,8 +3,7 @@ package com.backpackingmap.backpackingmap.map
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
-import com.backpackingmap.backpackingmap.GPSLocation
-import com.backpackingmap.backpackingmap.R
+import com.backpackingmap.backpackingmap.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -79,7 +78,7 @@ class MyPositionLayer(
         when (location) {
             is GPSLocation.Known -> {
                 // TODO: Don't render if completely off screen?
-                val position = location.coordinate.toScreen(mapState)
+                val position = location.coordinate.toScreenLocation(mapState)
                 createRender(position, location.coordinateAccuracy, mapState)
             }
 
@@ -87,7 +86,7 @@ class MyPositionLayer(
         }
 
     private fun createRender(
-        screenLocation: NaiveCoordinate,
+        screenLocation: ScreenLocation,
         accuracy: Float?,
         mapState: MapState,
     ) =
@@ -102,11 +101,11 @@ class MyPositionLayer(
             uncertaintyPaint = uncertaintyPaint,
         )
 
-    private fun computeUncertaintyRadius(nullableAccuracy: Float?, mapState: MapState): Float {
-        // Accuracy is in meters, we return a number in pixels
+    private fun computeUncertaintyRadius(nullableAccuracy: Float?, mapState: MapState): Pixel {
         val accuracy =
-            nullableAccuracy ?: maxOf(mapState.size.width, mapState.size.height).toFloat()
-        return accuracy * (1f / mapState.zoom.metersPerPixel)
+            nullableAccuracy?.toDouble()?.asMeters() ?: Pixel(maxOf(mapState.size.width.value,
+                mapState.size.height.value)) * mapState.zoom.level
+        return accuracy * mapState.zoom.level.inverse()
     }
 
     private val mePaint = Paint().apply {
@@ -127,22 +126,22 @@ class MyPositionLayer(
     private data class RenderMyLocation(
         val x: Float,
         val y: Float,
-        val meRadius: Float,
+        val meRadius: Pixel,
         val mePaint: Paint,
-        val meBorderWidth: Float,
+        val meBorderWidth: Pixel,
         val meBorderPaint: Paint,
-        val uncertaintyRadius: Float,
+        val uncertaintyRadius: Pixel,
         val uncertaintyPaint: Paint,
     ) : RenderOperation {
         override fun renderTo(canvas: Canvas) {
-            canvas.drawCircle(x, y, uncertaintyRadius, uncertaintyPaint)
-            canvas.drawCircle(x, y, meRadius + meBorderWidth, meBorderPaint)
-            canvas.drawCircle(x, y, meRadius, mePaint)
+            canvas.drawCircle(x, y, uncertaintyRadius.toFloat(), uncertaintyPaint)
+            canvas.drawCircle(x, y, (meRadius + meBorderWidth).toFloat(), meBorderPaint)
+            canvas.drawCircle(x, y, meRadius.toFloat(), mePaint)
         }
     }
 
     companion object {
-        private const val ME_RADIUS = 20f
-        private const val ME_BORDER_WIDTH = 2f
+        private val ME_RADIUS = Pixel(20)
+        private val ME_BORDER_WIDTH = Pixel(2)
     }
 }

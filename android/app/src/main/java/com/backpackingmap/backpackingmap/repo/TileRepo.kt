@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import androidx.collection.LruCache
 import arrow.core.Either
 import com.backpackingmap.backpackingmap.LIFOQueue
+import com.backpackingmap.backpackingmap.MetersPerPixel
 import com.backpackingmap.backpackingmap.map.ZoomLevel
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
 import com.backpackingmap.backpackingmap.map.wmts.WmtsTileMatrixConfig
@@ -82,34 +83,34 @@ class TileRepo(
     }
 
     data class ClosestMatrixData(
-        val targetMetersPerPixel: Float,
-        val metersPerPixel: Float,
+        val targetMetersPerPixel: MetersPerPixel,
+        val metersPerPixel: MetersPerPixel,
         val matrix: WmtsTileMatrixConfig,
     )
 
     fun findClosestMatrix(layer: WmtsLayerConfig, zoom: ZoomLevel): ClosestMatrixData? {
-        val targetMetersPerPixel = zoom.metersPerPixel
+        val target = zoom.level
 
-        var closestMetersPerPixel: Float? = null
+        var closest: MetersPerPixel? = null
         var closestMatrix: WmtsTileMatrixConfig? = null
 
         for (matrix in layer.matrices.keys) {
-            val metersPerPixel = layer.set.metersPerPixel(matrix).toFloat()
+            val forThisMatrix = layer.set.metersPerPixel(matrix)
 
-            if (closestMatrix == null || closestMetersPerPixel == null) {
-                closestMetersPerPixel = metersPerPixel
+            if (closestMatrix == null || closest == null) {
+                closest = forThisMatrix
                 closestMatrix = matrix
                 continue
             }
 
-            if (abs(targetMetersPerPixel - metersPerPixel) < abs(targetMetersPerPixel - closestMetersPerPixel)) {
-                closestMetersPerPixel = metersPerPixel
+            if (abs(target.value - forThisMatrix.value) < abs(target.value - closest.value)) {
+                closest = forThisMatrix
                 closestMatrix = matrix
             }
         }
 
-        return if (closestMetersPerPixel != null && closestMatrix != null) {
-            ClosestMatrixData(targetMetersPerPixel, closestMetersPerPixel, closestMatrix)
+        return if (closest != null && closestMatrix != null) {
+            ClosestMatrixData(target, closest, closestMatrix)
         } else {
             null
         }

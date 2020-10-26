@@ -1,6 +1,5 @@
 package com.backpackingmap.backpackingmap
 
-import com.backpackingmap.backpackingmap.Coordinate
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.Matchers.closeTo
 import org.junit.Assert.assertThat
@@ -34,7 +33,7 @@ class CoordinateTest {
     fun movedBy() {
         // Reference computed using <https://www.movable-type.co.uk/scripts/latlong.html>
         val dest = Coordinate(subject.crs, -2.803904, 56.340259)
-        val moved = subject.movedBy(111.2f, 0.0f)
+        val moved = subject.movedBy(Meter(111.2), Meter(0.0))
 
         assertThat(moved.crs, `is`(subject.crs))
         assertThat(moved.x, closeTo(dest.x, 0.0005))

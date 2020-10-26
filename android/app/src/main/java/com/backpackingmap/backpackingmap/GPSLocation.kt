@@ -1,7 +1,6 @@
 package com.backpackingmap.backpackingmap
 
 import android.location.Location
-import com.backpackingmap.backpackingmap.map.NaiveCoordinate
 import kotlinx.datetime.Instant
 
 sealed class GPSLocation {

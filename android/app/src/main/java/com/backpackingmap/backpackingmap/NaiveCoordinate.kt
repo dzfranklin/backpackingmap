@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.map
+package com.backpackingmap.backpackingmap
 
 data class NaiveCoordinate(
     val x: Double,

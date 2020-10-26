@@ -1,7 +1,7 @@
 package com.backpackingmap.backpackingmap.map.wmts
 
-import com.backpackingmap.backpackingmap.map.NaiveCoordinate
-import com.backpackingmap.backpackingmap.map.Pixel
+import com.backpackingmap.backpackingmap.NaiveCoordinate
+import com.backpackingmap.backpackingmap.Pixel
 
 data class WmtsTileMatrixConfig(
     val identifier: String,

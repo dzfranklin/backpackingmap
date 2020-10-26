@@ -1,5 +1,6 @@
 package com.backpackingmap.backpackingmap.map
 
+import com.backpackingmap.backpackingmap.asPixel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -35,7 +36,9 @@ class MapProcessor(
             computeNewStateFromGesture(oldState, event.event)
 
         is Event.MoveBy ->
-            oldState.withCenter(oldState.center.movedBy(oldState.zoom, event.deltaX, event.deltaY))
+            oldState.withCenter(oldState.center.movedBy(oldState.zoom,
+                event.deltaX.asPixel(),
+                event.deltaY.asPixel()))
 
         is Event.SizeChanged ->
             oldState.withSize(event.size)
@@ -63,7 +66,9 @@ class MapProcessor(
         return when (event) {
             is OmniGestureDetector.Event.Scroll ->
                 oldState.withCenter(
-                    oldState.center.movedBy(oldState.zoom, event.distanceX, event.distanceY))
+                    oldState.center.movedBy(oldState.zoom,
+                        event.distanceX.asPixel(),
+                        event.distanceY.asPixel()))
 
             is OmniGestureDetector.Event.Fling -> {
                 if (event.velocityX != null && event.velocityY != null) {
@@ -86,7 +91,7 @@ class MapProcessor(
 
             is OmniGestureDetector.Event.Scale -> {
                 if (event.scaleFactor != null) {
-                    oldState.withZoom(oldState.zoom.scaledBy(1 / event.scaleFactor))
+                    oldState.withZoom(oldState.zoom.scaledBy(1.0 / event.scaleFactor.toDouble()))
                 } else {
                     oldState
                 }

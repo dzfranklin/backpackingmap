@@ -1,4 +1,5 @@
 
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import kotlin.collections.set
 
 plugins {
@@ -53,7 +54,7 @@ android {
     kotlinOptions {
         // Added per <https://square.github.io/okhttp/upgrading_to_okhttp_4/>
         jvmTarget = "1.8"
-        freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
+        freeCompilerArgs = freeCompilerArgs + listOf("-Xopt-in=kotlin.RequiresOptIn", "-Xinline-classes")
     }
 
     compileOptions {

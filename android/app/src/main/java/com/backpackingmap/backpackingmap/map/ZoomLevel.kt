@@ -1,7 +1,9 @@
 package com.backpackingmap.backpackingmap.map
 
-data class ZoomLevel(val metersPerPixel: Float) {
+import com.backpackingmap.backpackingmap.MetersPerPixel
+
+data class ZoomLevel(val level: MetersPerPixel) {
     // TODO: Cap max and min scale
-    fun scaledBy(factor: Float) = ZoomLevel(metersPerPixel * factor)
+    fun scaledBy(factor: Double) = ZoomLevel(level * factor)
 }
 

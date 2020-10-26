@@ -4,7 +4,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import com.backpackingmap.backpackingmap.Meter
+import com.backpackingmap.backpackingmap.Pixel
 import com.backpackingmap.backpackingmap.R
+import com.backpackingmap.backpackingmap.asMeters
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
 import com.backpackingmap.backpackingmap.map.wmts.WmtsTileMatrixConfig
 import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
@@ -18,9 +21,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.locationtech.proj4j.units.Units
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.ceil
-import kotlin.math.floor
-import kotlin.math.round
 
 @OptIn(ExperimentalCoroutinesApi::class, ObsoleteCoroutinesApi::class)
 class WmtsLayer constructor(
@@ -77,16 +77,19 @@ class WmtsLayer constructor(
         // understand how this code works
         val (matrix, scaleFactor) = selectMatrix(mapState)
 
-        val (_, centerX, centerY) = mapState.center.convertTo(config.set.crs)
-        val pixelSpan = config.set.metersPerPixel(matrix).toFloat()
+        val (_, centerXInCrs, centerYInCrs) = mapState.center.convertTo(config.set.crs)
+        val centerX = Meter(centerXInCrs)
+        val centerY = Meter(centerYInCrs)
 
-        val effectiveWidth = mapState.size.width * pixelSpan / scaleFactor
-        val effectiveHeight = mapState.size.height * pixelSpan / scaleFactor
+        val pixelSpan = config.set.metersPerPixel(matrix)
 
-        val minX = centerX - floor(effectiveWidth / 2.0)
-        val maxX = centerX + ceil(effectiveWidth / 2.0)
-        val minY = centerY - floor(effectiveHeight / 2.0)
-        val maxY = centerY + ceil(effectiveHeight / 2.0)
+        val effectiveHalfWidth = (mapState.size.width * pixelSpan) / (scaleFactor * 2.0)
+        val effectiveHalfHeight = (mapState.size.height * pixelSpan) / (scaleFactor * 2.0)
+
+        val minX = (centerX - effectiveHalfWidth).toDouble()
+        val maxX = (centerX + effectiveHalfWidth).toDouble()
+        val minY = (centerY - effectiveHalfHeight).toDouble()
+        val maxY = (centerY + effectiveHalfHeight).toDouble()
 
         val tileRange = config.set.tileIndices(matrix,
             maxCrsX = maxX,
@@ -95,21 +98,20 @@ class WmtsLayer constructor(
             minCrsY = minY
         )
 
-        val width = matrix.tileWidth.toFloat()
-        val height = matrix.tileHeight.toFloat()
+        val tileWidth = matrix.tileWidth
+        val tileHeight = matrix.tileHeight
 
-        val overageX = round(tileRange.minColOverageInCrs / pixelSpan).toInt()
-        val overageY = round(tileRange.minRowOverageInCrs / pixelSpan).toInt()
+        val overageX: Pixel = tileRange.minColOverageInCrs.asMeters() * pixelSpan.inverse()
+        val overageY: Pixel = tileRange.minRowOverageInCrs.asMeters() * pixelSpan.inverse()
 
         val requestBuilder = GetTileRequest.Builder.from(config, matrix)
 
         val tiles: MutableList<RenderOperation> = mutableListOf()
 
         for (col in tileRange.minColInclusive..tileRange.maxColInclusive) {
-            val offsetX = (col - tileRange.minColInclusive).toFloat() * matrix.tileWidth.toFloat()
+            val offsetX = matrix.tileWidth * (col - tileRange.minColInclusive)
             for (row in tileRange.minRowInclusive..tileRange.maxRowInclusive) {
-                val offsetY =
-                    (row - tileRange.minRowInclusive).toFloat() * matrix.tileHeight.toFloat()
+                val offsetY = matrix.tileHeight * (row - tileRange.minRowInclusive)
 
                 val leftX = offsetX - overageX
                 val topY = offsetY - overageY
@@ -123,41 +125,40 @@ class WmtsLayer constructor(
                     if (!requesting.contains(request)) {
                         repo.requestCaching(request, ::onTileLoaded)
                     }
-                    createRenderPlaceholder(leftX, topY, width, height)
+                    createRenderPlaceholder(leftX, topY, tileWidth, tileHeight)
                 }
 
                 tiles.add(tile)
             }
         }
 
-        return RenderScaled(scaleFactor, RenderMultiple(tiles))
+        return RenderScaled(scaleFactor.toFloat(), RenderMultiple(tiles))
     }
 
-    private fun selectMatrix(mapState: MapState): Pair<WmtsTileMatrixConfig, Float> {
+    private fun selectMatrix(mapState: MapState): Pair<WmtsTileMatrixConfig, Double> {
         val (targetMetersPerPixel, matrixMetersPerPixel, matrix) =
             repo.findClosestMatrix(config, mapState.zoom)!!
-        val metersPerPixelScaleFactor = targetMetersPerPixel / matrixMetersPerPixel
-        val scaleFactor = 1 / metersPerPixelScaleFactor
+        val scaleFactor = matrixMetersPerPixel / targetMetersPerPixel
 
         return matrix to scaleFactor
     }
 
     private data class RenderBitmap(
-        private val leftX: Float,
-        private val topY: Float,
+        private val leftX: Pixel,
+        private val topY: Pixel,
         private val bitmap: Bitmap,
     ) : RenderOperation {
         override fun renderTo(canvas: Canvas) {
             canvas.drawBitmap(
                 bitmap,
-                leftX,
-                topY,
+                leftX.toFloat(),
+                topY.toFloat(),
                 null
             )
         }
     }
 
-    private fun createRenderPlaceholder(leftX: Float, topY: Float, width: Float, height: Float) =
+    private fun createRenderPlaceholder(leftX: Pixel, topY: Pixel, width: Pixel, height: Pixel) =
         RenderPlaceholder(leftX, topY, width, height, placeholderPaint)
 
     private val placeholderPaint = Paint().apply {
@@ -166,18 +167,18 @@ class WmtsLayer constructor(
     }
 
     private data class RenderPlaceholder(
-        private val leftX: Float,
-        private val topY: Float,
-        private val width: Float,
-        private val height: Float,
+        private val leftX: Pixel,
+        private val topY: Pixel,
+        private val width: Pixel,
+        private val height: Pixel,
         private val placeholderPaint: Paint,
     ) : RenderOperation {
         override fun renderTo(canvas: Canvas) {
             canvas.drawRect(
-                leftX,
-                topY,
-                leftX + width,
-                topY + height,
+                leftX.toFloat(),
+                topY.toFloat(),
+                (leftX + width).toFloat(),
+                (topY + height).toFloat(),
                 placeholderPaint
             )
         }

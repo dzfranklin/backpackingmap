@@ -1,6 +1,8 @@
 package com.backpackingmap.backpackingmap.map.wmts
 
+import com.backpackingmap.backpackingmap.MetersPerPixel
 import org.locationtech.proj4j.CoordinateReferenceSystem
+import org.locationtech.proj4j.units.Units
 import kotlin.math.floor
 
 data class WmtsTileMatrixSetConfig(
@@ -32,8 +34,8 @@ data class WmtsTileMatrixSetConfig(
         tileSpanY = tileHeight × pixelSpan;
         */
         val pixelSpan = metersPerPixel(matrix)
-        val tileSpanX = matrix.tileWidth.toInt() * pixelSpan
-        val tileSpanY = matrix.tileHeight.toInt() * pixelSpan
+        val tileSpanX = (matrix.tileWidth * pixelSpan).value
+        val tileSpanY = (matrix.tileHeight * pixelSpan).value
 
         /* H.1 From BBOX to tile indices
         From OGC 07-057r7 (WMTS standard version 1.0.0) page 112
@@ -108,7 +110,7 @@ data class WmtsTileMatrixSetConfig(
         )
     }
 
-    fun metersPerPixel(matrix: WmtsTileMatrixConfig): Double {
+    fun metersPerPixel(matrix: WmtsTileMatrixConfig): MetersPerPixel {
         /* 6.1 Tile matrix set – the geometry of the tiled space
         From OGC 07-057r7 (WMTS standard version 1.0.0) page 8
 
@@ -123,11 +125,11 @@ data class WmtsTileMatrixSetConfig(
         tileSpanX = tileWidth × pixelSpan;
         tileSpanY = tileHeight × pixelSpan;
         */
-        return matrix.scaleDenominator * 0.28E-3 / metersPerUnit
         if (crs.projection.units != Units.METRES) {
             TODO("Handle projections with units other than meters")
         }
-        return matrix.scaleDenominator * 0.28E-3
+        // NOTE: See <https://gis.stackexchange.com/questions/315881/what-is-wmts-scaledenominator/315989#315989>
+        return MetersPerPixel(matrix.scaleDenominator * 0.28E-3 / crs.projection.fromMetres)
     }
 
     override fun equals(other: Any?): Boolean {

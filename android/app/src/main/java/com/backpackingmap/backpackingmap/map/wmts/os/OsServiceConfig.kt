@@ -1,7 +1,7 @@
 package com.backpackingmap.backpackingmap.map.wmts.os
 
-import com.backpackingmap.backpackingmap.map.NaiveCoordinate
-import com.backpackingmap.backpackingmap.map.Pixel
+import com.backpackingmap.backpackingmap.NaiveCoordinate
+import com.backpackingmap.backpackingmap.Pixel
 import com.backpackingmap.backpackingmap.map.wmts.*
 import org.locationtech.proj4j.CRSFactory
 import org.locationtech.proj4j.CoordinateReferenceSystem

@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.view.MotionEvent
 import android.view.View
 import com.backpackingmap.backpackingmap.Coordinate
+import com.backpackingmap.backpackingmap.asPixel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -35,7 +36,7 @@ class MapView(
     private val initialState = MapState(
         center = initialCenter,
         zoom = initialZoom,
-        MapSize(width, height)
+        MapSize(width.asPixel(), height.asPixel())
     )
     private val processor = MapProcessor(coroutineContext, initialState)
 
@@ -50,7 +51,7 @@ class MapView(
 
     override fun onSizeChanged(width: Int, height: Int, oldw: Int, oldh: Int) {
         launch {
-            processor.send(MapProcessor.Event.SizeChanged(MapSize(width, height)))
+            processor.send(MapProcessor.Event.SizeChanged(MapSize(width.asPixel(), height.asPixel())))
         }
     }
 

@@ -6,11 +6,12 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
-import com.backpackingmap.backpackingmap.R
-import com.backpackingmap.backpackingmap.asCrs
+import com.backpackingmap.backpackingmap.*
 import com.backpackingmap.backpackingmap.databinding.ActivityMainBinding
-import com.backpackingmap.backpackingmap.map.*
-import com.backpackingmap.backpackingmap.switchToSetup
+import com.backpackingmap.backpackingmap.map.ForegroundLocationProcessor
+import com.backpackingmap.backpackingmap.map.MapView
+import com.backpackingmap.backpackingmap.map.WmtsLayer
+import com.backpackingmap.backpackingmap.map.ZoomLevel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
@@ -40,7 +41,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
             initialCenter = NaiveCoordinate(-2.804904, 56.340259)
                 .asCrs("EPSG:4326"),
             // Chosen because it's very close to the most zoomed in OS Leisure
-            initialZoom = ZoomLevel(1.7f),
+            initialZoom = ZoomLevel(MetersPerPixel(1.7)),
             locationProcessor = locationProcessor,
         )
 
