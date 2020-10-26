@@ -123,10 +123,11 @@ data class WmtsTileMatrixSetConfig(
         tileSpanX = tileWidth × pixelSpan;
         tileSpanY = tileHeight × pixelSpan;
         */
-        // TODO: This currently works only because the OS projections use metres as their unit
-        // Every projection in proj4j has 1 for fromMetres
-        val metersPerUnit = crs.projection.fromMetres
         return matrix.scaleDenominator * 0.28E-3 / metersPerUnit
+        if (crs.projection.units != Units.METRES) {
+            TODO("Handle projections with units other than meters")
+        }
+        return matrix.scaleDenominator * 0.28E-3
     }
 
     override fun equals(other: Any?): Boolean {
