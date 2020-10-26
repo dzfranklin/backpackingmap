@@ -142,7 +142,62 @@ class WmtsLayer constructor(
             }
         }
 
-        return RenderScaled(scaleFactor.toFloat(), RenderMultiple(tiles))
+        return if (!BuildConfig.RENDER_DEBUG_BOXES_AROUND_TILES) {
+            RenderScaled(scaleFactor.toFloat(), RenderMultiple(tiles))
+        } else {
+            RenderMultiple(listOf(
+                RenderScaled(scaleFactor.toFloat(),
+                    RenderMultiple(tiles)),
+            ) + extraDebugs(mapState, scaleFactor))
+        }
+    }
+
+    private fun extraDebugs(mapState: MapState, scaleFactor: Double): List<RenderOperation> {
+        val preScaleCenter = object : RenderOperation {
+            override fun renderTo(canvas: Canvas) {
+                canvas.drawCircle(
+                    (mapState.size.width / (scaleFactor * 2.0)).toFloat(),
+                    (mapState.size.height / (scaleFactor * 2.0)).toFloat(),
+                    10f,
+                    Paint().apply {
+                        style = Paint.Style.FILL
+                        color = Color.RED
+                    }
+                )
+            }
+        }
+
+        val center = object : RenderOperation {
+            override fun renderTo(canvas: Canvas) {
+                canvas.drawCircle(
+                    (mapState.size.width / 2.0).toFloat(),
+                    (mapState.size.height / 2.0).toFloat(),
+                    10f,
+                    Paint().apply {
+                        style = Paint.Style.FILL
+                        color = Color.BLUE
+                    }
+                )
+            }
+        }
+
+        val preScaleExtents = object : RenderOperation {
+            override fun renderTo(canvas: Canvas) {
+                canvas.drawRect(
+                    0f,
+                    0f,
+                    mapState.size.width.toFloat() / scaleFactor.toFloat(),
+                    mapState.size.height.toFloat() / scaleFactor.toFloat(),
+                    Paint().apply {
+                        style = Paint.Style.STROKE
+                        color = Color.RED
+                        strokeWidth = 5f
+                    }
+                )
+            }
+        }
+
+        return listOf(preScaleCenter, center, preScaleExtents)
     }
 
     private fun selectMatrix(mapState: MapState): Pair<WmtsTileMatrixConfig, Double> {
