@@ -34,13 +34,12 @@ class WmtsLayer constructor(
         private val context: Context,
         private val config: WmtsLayerConfig,
         private val repo: TileRepo,
-    ) : MapLayer.Builder() {
+    ) : MapLayer.Builder<WmtsLayer>() {
         override fun build(
             mapState: StateFlow<MapState>,
             requestRender: () -> Unit,
             coroutineContext: CoroutineContext,
-        ) =
-            WmtsLayer(context, config, repo, mapState, requestRender, coroutineContext)
+        ) = WmtsLayer(context, config, repo, mapState, requestRender, coroutineContext)
     }
 
     override var render: RenderOperation = UnitRenderOperation

@@ -4,6 +4,7 @@
       <w>backpackingmap</w>
       <w>epsg</w>
       <w>flinger</w>
+      <w>idempotently</w>
       <w>kotlinx</w>
       <w>moshi</w>
       <w>omni</w>

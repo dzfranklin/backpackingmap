@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.view.MotionEvent
 import android.view.View
+import com.backpackingmap.backpackingmap.Coordinate
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -18,6 +19,7 @@ class MapView(
     context: Context,
     initialCenter: Coordinate,
     initialZoom: ZoomLevel,
+    locationProcessor: ForegroundLocationProcessor,
 ) : View(context), CoroutineScope {
     // TODO: figure out when to cancel to avoid leaks
     override val coroutineContext = CoroutineScope(Dispatchers.Main).coroutineContext
@@ -52,13 +54,15 @@ class MapView(
         }
     }
 
+    private val myPositionLayer = createLayer(MyPositionLayer.Builder(context, locationProcessor))
+
     private val layers = MutableStateFlow<List<MapLayer>>(emptyList())
 
-    fun setLayers(new: Collection<MapLayer.Builder>) {
-        layers.value = new.map(::createLayer)
+    fun <T: MapLayer> setLayers(new: Collection<MapLayer.Builder<T>>) {
+        layers.value = new.map(::createLayer) + myPositionLayer
     }
 
-    private fun createLayer(builder: MapLayer.Builder) =
+    private fun <T: MapLayer> createLayer(builder: MapLayer.Builder<T>) : T =
         // Create job so we can cancel layers separately
         builder.build(processor.state, ::postInvalidate, coroutineContext + Job())
 
@@ -70,5 +74,19 @@ class MapView(
         }
 
         renderer.renderTo(canvas)
+    }
+
+    override fun onDetachedFromWindow() {
+        for (layer in layers.value) {
+            layer.onDetachedFromWindow()
+        }
+        super.onDetachedFromWindow()
+    }
+
+    override fun onAttachedToWindow() {
+        for (layer in layers.value) {
+            layer.onAttachedToWindow()
+        }
+        super.onAttachedToWindow()
     }
 }

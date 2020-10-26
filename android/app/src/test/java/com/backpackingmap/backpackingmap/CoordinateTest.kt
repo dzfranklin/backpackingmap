@@ -1,5 +1,6 @@
-package com.backpackingmap.backpackingmap.map
+package com.backpackingmap.backpackingmap
 
+import com.backpackingmap.backpackingmap.Coordinate
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.Matchers.closeTo
 import org.junit.Assert.assertThat

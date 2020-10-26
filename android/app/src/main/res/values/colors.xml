@@ -5,4 +5,7 @@
     <color name="colorAccent">#03DAC5</color>
     <color name="unloadedTile">#999</color>
     <color name="tileErrorText">#b72c3d</color>
+    <color name="myLocation">#64B5F6</color>
+    <color name="myLocationBorder">#1E88E5</color>
+    <color name="myLocationUncertainty">#9E65B5F6</color>
 </resources>

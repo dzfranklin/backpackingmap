@@ -7,13 +7,17 @@ import kotlin.coroutines.CoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class MapLayer : CoroutineScope {
-    abstract class Builder {
+    abstract class Builder<T : MapLayer> {
         abstract fun build(
             mapState: StateFlow<MapState>,
             requestRender: () -> Unit,
-            coroutineContext: CoroutineContext
-        ): MapLayer
+            coroutineContext: CoroutineContext,
+        ): T
     }
 
     abstract val render: RenderOperation
+
+    open fun onDetachedFromWindow() {}
+
+    open fun onAttachedToWindow() {}
 }

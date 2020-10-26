@@ -114,4 +114,7 @@ dependencies {
     implementation("org.locationtech.proj4j:proj4j:1.1.1")
 
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.0")
+
+    implementation("com.google.android.gms:play-services-location:17.1.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:${Versions.kotlinxCoroutinesAndroid}")
 }

@@ -1,18 +1,28 @@
 package com.backpackingmap.backpackingmap.main_activity
 
+import android.Manifest
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import com.backpackingmap.backpackingmap.R
+import com.backpackingmap.backpackingmap.asCrs
 import com.backpackingmap.backpackingmap.databinding.ActivityMainBinding
 import com.backpackingmap.backpackingmap.map.*
 import com.backpackingmap.backpackingmap.switchToSetup
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), CoroutineScope {
+    override val coroutineContext = Job()
+
     private lateinit var binding: ActivityMainBinding
     val model: MainActivityViewModel by viewModels()
     var map: MapView? = null
+    private val locationProcessor =
+        ForegroundLocationProcessor(this, ::requestFineLocation, coroutineContext)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val repo = model.repo
@@ -30,7 +40,8 @@ class MainActivity : AppCompatActivity() {
             initialCenter = NaiveCoordinate(-2.804904, 56.340259)
                 .asCrs("EPSG:4326"),
             // Chosen because it's very close to the most zoomed in OS Leisure
-            initialZoom = ZoomLevel(1.7f)
+            initialZoom = ZoomLevel(1.7f),
+            locationProcessor = locationProcessor,
         )
 
         map?.setLayers(listOf(
@@ -40,4 +51,30 @@ class MainActivity : AppCompatActivity() {
         binding.mapParent.addView(map, binding.mapParent.layoutParams)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        coroutineContext.cancel("MainActivity destroyed")
+    }
+
+    private fun requestFineLocation() {
+        // Based on <https://medium.com/google-developer-experts/exploring-android-q-location-permissions-64d312b0e2e1>
+        ActivityCompat.requestPermissions(this,
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            REQUEST_CODE_FOREGROUND_LOCATION)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        if (requestCode == REQUEST_CODE_FOREGROUND_LOCATION) {
+            locationProcessor.onPermissionResult(permissions, grantResults)
+        }
+    }
+
+    companion object {
+        // application-specific, to identify request in callback
+        private const val REQUEST_CODE_FOREGROUND_LOCATION = 10
+    }
 }
