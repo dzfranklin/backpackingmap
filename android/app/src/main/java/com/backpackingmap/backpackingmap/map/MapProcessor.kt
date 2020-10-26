@@ -36,12 +36,12 @@ class MapProcessor(
             computeNewStateFromGesture(oldState, event.event)
 
         is Event.MoveBy ->
-            oldState.withCenter(oldState.center.movedBy(oldState.zoom,
+            oldState.copy(center = oldState.center.movedBy(oldState.zoom,
                 event.deltaX.asPixel(),
                 event.deltaY.asPixel()))
 
         is Event.SizeChanged ->
-            oldState.withSize(event.size)
+            oldState.copy(size = event.size)
     }
 
     private val events =
@@ -65,7 +65,7 @@ class MapProcessor(
 
         return when (event) {
             is OmniGestureDetector.Event.Scroll ->
-                oldState.withCenter(
+                oldState.copy(center =
                     oldState.center.movedBy(oldState.zoom,
                         event.distanceX.asPixel(),
                         event.distanceY.asPixel()))
@@ -91,7 +91,7 @@ class MapProcessor(
 
             is OmniGestureDetector.Event.Scale -> {
                 if (event.scaleFactor != null) {
-                    oldState.withZoom(oldState.zoom.scaledBy(1.0 / event.scaleFactor.toDouble()))
+                    oldState.copy(zoom = oldState.zoom.scaledBy(1.0 / event.scaleFactor.toDouble()))
                 } else {
                     oldState
                 }
