@@ -3,11 +3,9 @@ package com.backpackingmap.backpackingmap.map
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
-import com.backpackingmap.backpackingmap.Meter
-import com.backpackingmap.backpackingmap.Pixel
-import com.backpackingmap.backpackingmap.R
-import com.backpackingmap.backpackingmap.asMeters
+import com.backpackingmap.backpackingmap.*
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
 import com.backpackingmap.backpackingmap.map.wmts.WmtsTileMatrixConfig
 import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
@@ -155,6 +153,28 @@ class WmtsLayer constructor(
                 topY.toFloat(),
                 null
             )
+
+            if (BuildConfig.RENDER_DEBUG_BOXES_AROUND_TILES) {
+                canvas.drawRect(
+                    leftX.toFloat(),
+                    topY.toFloat(),
+                    leftX.toFloat() + bitmap.width,
+                    topY.toFloat() + bitmap.height,
+                    debugBoxPaint!!
+                )
+            }
+        }
+
+        companion object {
+            private val debugBoxPaint = if (BuildConfig.RENDER_DEBUG_BOXES_AROUND_TILES) {
+                Paint().apply {
+                    style = Paint.Style.STROKE
+                    strokeWidth = 5f
+                    color = Color.WHITE
+                }
+            } else {
+                null
+            }
         }
     }
 
