@@ -49,6 +49,7 @@ class MyPositionLayer(
                 }
                 .collectLatest { (mapState, location) ->
                     render = computeRender(mapState, location)
+                    requestRender()
                 }
         }
     }
