@@ -28,12 +28,14 @@ class WmtsLayer constructor(
     mapState: StateFlow<MapState>,
     private val requestRender: () -> Unit,
     override val coroutineContext: CoroutineContext,
-) : MapLayer(), CoroutineScope {
+) : BaseMapLayer(), CoroutineScope {
     data class Builder(
         private val context: Context,
         private val config: WmtsLayerConfig,
         private val repo: TileRepo,
-    ) : MapLayer.Builder<WmtsLayer>() {
+    ) : BaseMapLayer.Builder<WmtsLayer>() {
+        override val baseCrs = config.set.crs
+
         override fun build(
             mapState: StateFlow<MapState>,
             requestRender: () -> Unit,
@@ -86,7 +88,10 @@ class WmtsLayer constructor(
         // understand how this code works
         val (matrix, scaleFactor) = selectMatrix(mapState)
 
-        val (_, centerXInCrs, centerYInCrs) = mapState.center.convertTo(config.set.crs)
+        val (_, centerXInCrs, centerYInCrs) = mapState.center
+            .asCrs(mapState.baseCrs)
+            .convertTo(config.set.crs)
+
         val centerX = Meter(centerXInCrs)
         val centerY = Meter(centerYInCrs)
 

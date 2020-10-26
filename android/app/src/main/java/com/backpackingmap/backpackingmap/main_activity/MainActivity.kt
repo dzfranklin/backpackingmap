@@ -13,9 +13,11 @@ import com.backpackingmap.backpackingmap.map.MapView
 import com.backpackingmap.backpackingmap.map.WmtsLayer
 import com.backpackingmap.backpackingmap.map.ZoomLevel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class MainActivity : AppCompatActivity(), CoroutineScope {
     override val coroutineContext = Job()
 
@@ -39,17 +41,16 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
         map = MapView(
             context = applicationContext,
             initialCenter = NaiveCoordinate(-2.804904, 56.340259)
-                .asCrs("EPSG:4326"),
+                .asWgs84()
+                .convertTo("EPSG:27700"),
             // Chosen because it's very close to the most zoomed in OS Leisure
             initialZoom = ZoomLevel(MetersPerPixel(1.7)),
             locationProcessor = locationProcessor,
-        )
-
-        map?.setLayers(listOf(
-            WmtsLayer.Builder(this, model.explorerLayerConfig, repo.tileRepo)
-        ))
-
-        binding.mapParent.addView(map, binding.mapParent.layoutParams)
+        ).apply {
+            baseLayer.value =
+                WmtsLayer.Builder(this@MainActivity, model.explorerLayerConfig, repo.tileRepo)
+            binding.mapParent.addView(this, binding.mapParent.layoutParams)
+        }
     }
 
     override fun onDestroy() {

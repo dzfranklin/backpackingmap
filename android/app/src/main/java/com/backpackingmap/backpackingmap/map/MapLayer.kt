@@ -7,7 +7,7 @@ import kotlin.coroutines.CoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class MapLayer : CoroutineScope {
-    abstract class Builder<T : MapLayer> {
+    abstract class Builder<out T : MapLayer> {
         abstract fun build(
             mapState: StateFlow<MapState>,
             requestRender: () -> Unit,
