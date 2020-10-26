@@ -16,6 +16,7 @@ import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import org.locationtech.proj4j.units.Units
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -68,6 +69,10 @@ class WmtsLayer constructor(
 
     /** Not coroutine-safe */
     private fun computeRender(mapState: MapState): RenderOperation {
+        if (config.set.crs.projection.units != Units.METRES) {
+            TODO("Support units other than meters")
+        }
+
         // NOTE: The comments in WmtsTileMatrixSetConfig.tileIndices (called below) will help you
         // understand how this code works
         val (matrix, scaleFactor) = selectMatrix(mapState)
