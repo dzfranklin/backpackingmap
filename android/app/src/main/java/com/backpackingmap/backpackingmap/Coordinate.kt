@@ -65,6 +65,8 @@ data class Coordinate(
 
     fun movedBy(zoom: ZoomLevel, deltaX: Float, deltaY: Float): Coordinate {
         val metersNorth = -1 * deltaY * zoom.metersPerPixel
+        // We invert because scrolling moves you in the opposite direction to the one your
+        // finger literally moves in
 
         // and then invert deltaX again (so not at all) because east is to the left
         val metersEast = deltaX * zoom.metersPerPixel
