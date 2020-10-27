@@ -6,9 +6,18 @@ defmodule Backpackingmap.UsersTest do
   describe "users" do
     alias Backpackingmap.Users.User
 
-    @valid_attrs %{}
-    @update_attrs %{}
-    @invalid_attrs %{}
+    @valid_attrs %{
+      "password" => "FooPassword123",
+      "email" => "foo@example.com"
+    }
+    @update_attrs %{
+      "email" => "foo2@example.com",
+      "current_password" => "FooPassword123"
+    }
+    @invalid_attrs %{
+      "password" => "1",
+      "email" => "foo3"
+    }
 
     def user_fixture(attrs \\ %{}) do
       {:ok, user} =
@@ -21,12 +30,12 @@ defmodule Backpackingmap.UsersTest do
 
     test "list_users/0 returns all users" do
       user = user_fixture()
-      assert Users.list_users() == [user]
+      assert length(Users.list_users()) == 1
     end
 
     test "get_user!/1 returns the user with given id" do
       user = user_fixture()
-      assert Users.get_user!(user.id) == user
+      assert Users.get_user!(user.id).email == user.email
     end
 
     test "create_user/1 with valid data creates a user" do
@@ -45,7 +54,7 @@ defmodule Backpackingmap.UsersTest do
     test "update_user/2 with invalid data returns error changeset" do
       user = user_fixture()
       assert {:error, %Ecto.Changeset{}} = Users.update_user(user, @invalid_attrs)
-      assert user == Users.get_user!(user.id)
+      assert user.email == Users.get_user!(user.id).email
     end
 
     test "delete_user/1 deletes the user" do

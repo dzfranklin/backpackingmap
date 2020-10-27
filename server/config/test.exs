@@ -16,6 +16,7 @@ config :backpackingmap, Backpackingmap.Repo,
 # you can enable the server option below.
 config :backpackingmap, BackpackingmapWeb.Endpoint,
   http: [port: 4002],
+  https: [port: 5442],
   server: false
 
 config :backpackingmap, :certbot,
