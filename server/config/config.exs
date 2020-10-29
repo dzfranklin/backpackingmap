@@ -7,6 +7,10 @@
 # General application configuration
 use Mix.Config
 
+config :backpackingmap, env: Mix.env()
+
+config :backpackingmap, :os_raster_api_base_url, "https://api.os.uk/maps/raster/v1/wmts"
+
 config :backpackingmap, :certbot,
   error_contacts: ["daniel@danielzfranklin.org"]
 

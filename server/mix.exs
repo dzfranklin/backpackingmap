@@ -50,7 +50,8 @@ defmodule Backpackingmap.MixProject do
       {:coord, "~> 0.1"},
       {:pow, "~> 1.0.20"},
       {:site_encrypt, "~> 0.3.0"},
-      {:httpoison, "~> 1.6"}
+      {:httpoison, "~> 1.6"},
+      {:deque, "~> 1.0"},
     ]
   end
 

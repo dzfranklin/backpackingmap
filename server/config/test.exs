@@ -1,5 +1,9 @@
 use Mix.Config
 
+# Server in test/support/mock_os_raster_server.ex
+config :backpackingmap, :os_raster_api_base_url, "http://localhost:5916/wmts"
+config :backpackingmap, :os_api_key, "TEST_API_KEY"
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
