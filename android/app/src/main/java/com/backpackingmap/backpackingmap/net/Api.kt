@@ -6,7 +6,6 @@ import com.backpackingmap.backpackingmap.net.auth.AuthInfo
 import com.backpackingmap.backpackingmap.net.auth.RenewSessionResponseError
 import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
 import com.backpackingmap.backpackingmap.repo.RenewalToken
-import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.Dispatcher
@@ -64,7 +63,6 @@ object Api {
 
             val client = OkHttpClient.Builder()
                 .dispatcher(dispatcher)
-                .addInterceptor(ChuckerInterceptor(context))
                 .build()
 
             val retrofit = Retrofit.Builder()

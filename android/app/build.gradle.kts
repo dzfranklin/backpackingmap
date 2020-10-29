@@ -103,10 +103,6 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
 
-    // HTTP Debugger
-    debugImplementation("com.github.chuckerteam.chucker:library:3.3.0")
-    releaseImplementation("com.github.chuckerteam.chucker:library-no-op:3.3.0")
-
     // Arrow
     implementation("io.arrow-kt:arrow-core:${Versions.arrowVersion}")
     implementation("io.arrow-kt:arrow-syntax:${Versions.arrowVersion}")
