@@ -1,29 +1,28 @@
 package com.backpackingmap.backpackingmap
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
+import java.util.concurrent.ConcurrentLinkedDeque
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class LIFOQueue<T> {
-    private val queue = ArrayDeque<T>()
-    private val shouldRecheckQueue = Channel<Unit>(Channel.UNLIMITED)
+    private val queue = ConcurrentLinkedDeque<T>()
+    private val newItemNotifier = Channel<Unit>(Channel.UNLIMITED)
 
     private val flow = flow<T> {
-        for (msg in shouldRecheckQueue) {
-            currentCoroutineContext().ensureActive()
+        for (notice in newItemNotifier) {
+            val item = queue.removeFirst()
+                ?: throw IllegalStateException("Notified of new item but none present")
 
-            val item = queue.removeFirstOrNull()
-            if (item != null) {
-                emit(item)
-            }
+            emit(item)
         }
     }
 
     fun enqueue(item: T) {
         queue.addFirst(item)
-        if (!shouldRecheckQueue.offer(Unit)) {
+        if (!newItemNotifier.offer(Unit)) {
             throw IllegalStateException("shouldRecheckQueue should be unlimited, so offer should never fail")
         }
     }
