@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.collection.LruCache
 import arrow.core.Either
+import com.backpackingmap.backpackingmap.FileCache
 import com.backpackingmap.backpackingmap.LIFOQueue
 import com.backpackingmap.backpackingmap.MetersPerPixel
 import com.backpackingmap.backpackingmap.map.ZoomLevel
@@ -12,7 +13,10 @@ import com.backpackingmap.backpackingmap.map.wmts.WmtsTileMatrixConfig
 import com.backpackingmap.backpackingmap.net.ApiService
 import com.backpackingmap.backpackingmap.net.tile.GetTileRequest
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.ResponseBody
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
@@ -24,6 +28,7 @@ class TileRepo(
     private val accessTokenCache: AccessTokenCache,
     private val api: ApiService,
     private val size: Int,
+    private val fileCache: FileCache,
 ) : CoroutineScope {
     private val cache = object : LruCache<GetTileRequest, Bitmap>(size) {
         override fun sizeOf(key: GetTileRequest, value: Bitmap) = value.byteCount / 1024
@@ -51,9 +56,7 @@ class TileRepo(
                 }
 
                 if (result is Either.Right) {
-                    val bitmap = BitmapFactory.decodeStream(result.b.byteStream())
-                    cache.put(request.request, bitmap)
-                    request.onCached(request.request, bitmap)
+                    processResponse(request, result.b)
                 } else {
                     Timber.w("Failed to get tile: %s", result)
                     // TODO: Retry logic.
@@ -62,7 +65,36 @@ class TileRepo(
         }
     }
 
-    fun getCached(key: GetTileRequest): Bitmap? = cache.get(key)
+    private fun processResponse(request: Request, response: ResponseBody) {
+        launch {
+            val bytes = withContext(Dispatchers.IO) {
+                response.bytes()
+            }
+            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+
+            cache.put(request.request, bitmap)
+            request.onCached(request.request, bitmap)
+
+            fileCache.writeLater("tile-${request.request}", bytes)
+
+        }
+    }
+
+    fun getCached(request: GetTileRequest): Bitmap? {
+        val memoryCached = cache.get(request)
+        if (memoryCached != null) {
+            return memoryCached
+        }
+
+        val diskCached = fileCache.read("tile-${request}")
+        if (diskCached != null) {
+            val bitmap = BitmapFactory.decodeByteArray(diskCached, 0, diskCached.size)
+            cache.put(request, bitmap)
+            return bitmap
+        }
+
+        return null
+    }
 
     fun requestCaching(
         request: GetTileRequest,

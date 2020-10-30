@@ -3,6 +3,7 @@
     <words>
       <w>backpackingmap</w>
       <w>epsg</w>
+      <w>filecache</w>
       <w>flinger</w>
       <w>idempotently</w>
       <w>kotlinx</w>

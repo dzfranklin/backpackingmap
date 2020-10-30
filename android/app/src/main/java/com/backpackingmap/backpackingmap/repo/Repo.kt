@@ -2,6 +2,7 @@ package com.backpackingmap.backpackingmap.repo
 
 import android.app.ActivityManager
 import android.content.Context
+import com.backpackingmap.backpackingmap.FileCache
 import com.backpackingmap.backpackingmap.db.Db
 import com.backpackingmap.backpackingmap.db.user.DbUser
 import com.backpackingmap.backpackingmap.db.user.UserDao
@@ -19,6 +20,7 @@ class Repo(
     private val userDao: UserDao,
     private val api: ApiService,
     memoryClass: Int,
+    fileCache: FileCache,
 ) : CoroutineScope {
     init {
         if (!prefs.isLoggedIn) {
@@ -68,7 +70,7 @@ class Repo(
     }
 
     private val tileRepoSize = ((memoryClass.toDouble() * MB_TO_BYTES) * 0.75).toInt()
-    val tileRepo = TileRepo(coroutineContext, accessTokenCache, api, tileRepoSize)
+    val tileRepo = TileRepo(coroutineContext, accessTokenCache, api, tileRepoSize, fileCache)
 
     companion object {
         private const val MB_TO_BYTES = 1e6
@@ -93,8 +95,17 @@ class Repo(
                         context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
                     val memoryClass = activityManager.memoryClass
 
+                    val fileCache = FileCache.get(context)
+
                     val instance =
-                        Repo(scope.coroutineContext, prefs, db.userDao(), api, memoryClass)
+                        Repo(
+                            coroutineContext = scope.coroutineContext,
+                            prefs = prefs,
+                            userDao = db.userDao(),
+                            api = api,
+                            memoryClass = memoryClass,
+                            fileCache = fileCache
+                        )
 
                     INSTANCE = instance
                     return instance
