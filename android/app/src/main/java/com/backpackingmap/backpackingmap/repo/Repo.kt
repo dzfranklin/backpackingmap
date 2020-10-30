@@ -70,7 +70,6 @@ class Repo(
     private val tileRepoSize = ((memoryClass.toDouble() * MB_TO_BYTES) * 0.75).toInt()
     val tileRepo = TileRepo(coroutineContext, accessTokenCache, api, tileRepoSize)
 
-
     companion object {
         private const val MB_TO_BYTES = 1e6
 
