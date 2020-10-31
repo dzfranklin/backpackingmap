@@ -17,31 +17,42 @@ config :backpackingmap, :ua_header, {"User-Agent", "backpackingmap.com/#{env}_#{
 config :backpackingmap, :os_raster_api_base_url, "https://api.os.uk/maps/raster/v1/wmts"
 
 config :backpackingmap, :certbot,
-  error_contacts: ["daniel@danielzfranklin.org"]
+       error_contacts: ["daniel@danielzfranklin.org"]
 
 config :backpackingmap,
-  ecto_repos: [Backpackingmap.Repo]
+       ecto_repos: [Backpackingmap.Repo]
 
-config :backpackingmap, :pow,
-  user: Backpackingmap.Users.User,
-  repo: Backpackingmap.Repo,
-  web_module: BackpackingmapWeb,
-  extensions: [PowPersistentSession],
-  cache_store_backend: Pow.Store.Backend.MnesiaCache,
-  persistent_session_ttl: :infinity
+config :backpackingmap,
+       :pow,
+       user: Backpackingmap.Users.User,
+       repo: Backpackingmap.Repo,
+       web_module: BackpackingmapWeb,
+       extensions: [PowPersistentSession],
+       cache_store_backend: Pow.Store.Backend.MnesiaCache,
+       persistent_session_ttl: :infinity
 
 # Configures the endpoint
-config :backpackingmap, BackpackingmapWeb.Endpoint,
-  url: [host: "localhost"],
-  secret_key_base: "2fYs29lZ+dptYGCRIEkPIi55ikABOYcIseagrFNgj/CF9TL8J7XVSPukjcGy3YAZ",
-  render_errors: [view: BackpackingmapWeb.ErrorView, accepts: ~w(html json), layout: false],
-  pubsub_server: Backpackingmap.PubSub,
-  live_view: [signing_salt: "Y23eZRzD"]
+config :backpackingmap,
+       BackpackingmapWeb.Endpoint,
+       url: [
+         host: "localhost"
+       ],
+       secret_key_base: "2fYs29lZ+dptYGCRIEkPIi55ikABOYcIseagrFNgj/CF9TL8J7XVSPukjcGy3YAZ",
+       render_errors: [
+         view: BackpackingmapWeb.ErrorView,
+         accepts: ~w(html json),
+         layout: false
+       ],
+       pubsub_server: Backpackingmap.PubSub,
+       live_view: [
+         signing_salt: "Y23eZRzD"
+       ]
 
 # Configures Elixir's Logger
-config :logger, :console,
-  format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
+config :logger,
+       :console,
+       format: "$time $metadata[$level] $message\n",
+       metadata: [:request_id]
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason

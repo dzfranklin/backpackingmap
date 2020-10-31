@@ -1,13 +1,14 @@
 use Mix.Config
 
 # Configure your database
-config :backpackingmap, Backpackingmap.Repo,
-  username: "postgres",
-  password: "postgres",
-  database: "backpackingmap_dev",
-  hostname: "localhost",
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+config :backpackingmap,
+       Backpackingmap.Repo,
+       username: "postgres",
+       password: "postgres",
+       database: "backpackingmap_dev",
+       hostname: "localhost",
+       show_sensitive_data_on_connection_error: true,
+       pool_size: 10
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
@@ -15,30 +16,34 @@ config :backpackingmap, Backpackingmap.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we use it
 # with webpack to recompile .js and .css sources.
-config :backpackingmap, BackpackingmapWeb.Endpoint,
-  http: [port: 5080],
-  https: [
-    port: 5443
-  ],
-  debug_errors: false,
-  code_reloader: true,
-  check_origin: false,
-  watchers: [
-    node: [
-      "node_modules/webpack/bin/webpack.js",
-      "--mode",
-      "development",
-      "--watch-stdin",
-      cd: Path.expand("../assets", __DIR__)
-    ]
-  ]
+config :backpackingmap,
+       BackpackingmapWeb.Endpoint,
+       http: [
+         port: 5080
+       ],
+       https: [
+         port: 5443
+       ],
+       debug_errors: false,
+       code_reloader: true,
+       check_origin: false,
+       watchers: [
+         node: [
+           "node_modules/webpack/bin/webpack.js",
+           "--mode",
+           "development",
+           "--watch-stdin",
+           cd: Path.expand("../assets", __DIR__)
+         ]
+       ]
 
-config :backpackingmap, :certbot,
-  db_folder: "priv/dev_site_encrypt",
-  directory_url: {
-    :internal,
-    port: 5002
-  }
+config :backpackingmap,
+       :certbot,
+       db_folder: "priv/dev_site_encrypt",
+       directory_url: {
+         :internal,
+         port: 5002
+       }
 
 # ## SSL Support
 #
@@ -65,15 +70,16 @@ config :backpackingmap, :certbot,
 # different ports.
 
 # Watch static and templates for browser reloading.
-config :backpackingmap, BackpackingmapWeb.Endpoint,
-  live_reload: [
-    patterns: [
-      ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
-      ~r"priv/gettext/.*(po)$",
-      ~r"lib/backpackingmap_web/(live|views)/.*(ex)$",
-      ~r"lib/backpackingmap_web/templates/.*(eex)$"
-    ]
-  ]
+config :backpackingmap,
+       BackpackingmapWeb.Endpoint,
+       live_reload: [
+         patterns: [
+           ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
+           ~r"priv/gettext/.*(po)$",
+           ~r"lib/backpackingmap_web/(live|views)/.*(ex)$",
+           ~r"lib/backpackingmap_web/templates/.*(eex)$"
+         ]
+       ]
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
