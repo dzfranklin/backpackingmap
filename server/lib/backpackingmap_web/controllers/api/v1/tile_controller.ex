@@ -41,7 +41,7 @@ defmodule BackpackingmapWeb.API.V1.TileController do
       |> send_resp(:ok, png)
     else
       {:error, error} ->
-        Timber.w("Got error #{error} while trying to serve request with params #{params}")
+        Logger.warn("Got error #{error} while trying to serve request with params #{params}")
         json(
           conn,
           %{
