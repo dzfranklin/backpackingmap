@@ -3,9 +3,6 @@ defmodule BackpackingmapWeb.API.V1.TileController do
   alias Backpackingmap.OsRequester
   require Logger
 
-  defp get_api_key, do:
-    Application.get_env(:backpackingmap, :os_api_key)
-
   def post(
         conn,
         %{
