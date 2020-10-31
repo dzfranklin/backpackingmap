@@ -7,6 +7,7 @@ import arrow.core.Either
 import com.backpackingmap.backpackingmap.FileCache
 import com.backpackingmap.backpackingmap.LIFOQueue
 import com.backpackingmap.backpackingmap.MetersPerPixel
+import com.backpackingmap.backpackingmap.MurmurHash.hash64
 import com.backpackingmap.backpackingmap.map.ZoomLevel
 import com.backpackingmap.backpackingmap.map.wmts.WmtsLayerConfig
 import com.backpackingmap.backpackingmap.map.wmts.WmtsTileMatrixConfig
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import timber.log.Timber
+import java.nio.ByteBuffer
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 
@@ -30,8 +32,8 @@ class TileRepo(
     private val size: Int,
     private val fileCache: FileCache,
 ) : CoroutineScope {
-    private val cache = object : LruCache<GetTileRequest, Bitmap>(size) {
-        override fun sizeOf(key: GetTileRequest, value: Bitmap) = value.byteCount / 1024
+    private val cache = object : LruCache<Long, Bitmap>(size) {
+        override fun sizeOf(key: Long, value: Bitmap) = value.byteCount / 1024
     }
 
     private data class Request(
@@ -72,24 +74,26 @@ class TileRepo(
             }
             val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 
-            cache.put(request.request, bitmap)
+            cache.put(request.request.createKey(), bitmap)
             request.onCached(request.request, bitmap)
 
-            fileCache.writeLater("tile-${request.request}", bytes)
+            fileCache.writeLater("tile-${request.request.createKey()}", bytes)
 
         }
     }
 
     fun getCached(request: GetTileRequest): Bitmap? {
-        val memoryCached = cache.get(request)
+        val key = request.createKey()
+
+        val memoryCached = cache.get(key)
         if (memoryCached != null) {
             return memoryCached
         }
 
-        val diskCached = fileCache.read("tile-${request}")
+        val diskCached = fileCache.read("tile-$key")
         if (diskCached != null) {
             val bitmap = BitmapFactory.decodeByteArray(diskCached, 0, diskCached.size)
-            cache.put(request, bitmap)
+            cache.put(key, bitmap)
             return bitmap
         }
 
@@ -135,6 +139,20 @@ class TileRepo(
         } else {
             null
         }
+    }
+
+    private fun GetTileRequest.createKey(): Long {
+        val service = hash64(serviceIdentifier)
+        val layer = hash64(layerIdentifier)
+        val set = hash64(setIdentifier)
+        val matrix = hash64(matrixIdentifier)
+
+        val positionBuf = ByteBuffer.allocate(8)
+        positionBuf.putInt(position.col)
+        positionBuf.putInt(4, position.row)
+        val position = hash64(positionBuf.array(), 8)
+
+        return service xor layer xor set xor matrix xor position
     }
 
     companion object {
