@@ -20,6 +20,7 @@ import java.io.IOException
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.minutes
+import kotlin.time.seconds
 
 /**
  * No guarantees as to ordering of reads and writes.
@@ -79,6 +80,11 @@ class FileCache private constructor(
     init {
         createQueueWorkers()
         createShrinkQueueWorker()
+
+        launch {
+            // Shrink after launch, even if no writes are made
+            shrinkQueue.emit(Unit)
+        }
     }
 
     @OptIn(ExperimentalTime::class, FlowPreview::class)
