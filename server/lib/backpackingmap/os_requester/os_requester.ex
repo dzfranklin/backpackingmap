@@ -2,6 +2,7 @@ defmodule Backpackingmap.OsRequester do
   alias Backpackingmap.OsRequester.{Request, QuotaAllocator}
 
   @base_url Application.compile_env!(:backpackingmap, :os_raster_api_base_url)
+  @ua_header Application.compile_env!(:backpackingmap, :ua_header)
 
   @seconds_per_minute 60
 
@@ -69,7 +70,7 @@ defmodule Backpackingmap.OsRequester do
   defp make_request(%{caller: caller} = request) do
     url = "#{@base_url}?key=#{api_key()}&#{URI.encode_query(request.params)}"
 
-    with {:ok, %{status_code: 200, body: body}} <- HTTPoison.get(url) do
+    with {:ok, %{status_code: 200, body: body}} <- HTTPoison.get(url, [@ua_header]) do
       send(caller, {request, {:ok, body}})
     else
       {:ok, %{status_code: status, body: body}} ->

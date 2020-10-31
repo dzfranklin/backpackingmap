@@ -7,7 +7,12 @@
 # General application configuration
 use Mix.Config
 
-config :backpackingmap, env: Mix.env()
+env = Mix.env()
+version = Mix.Project.config()[:version]
+
+config :backpackingmap, env: env
+
+config :backpackingmap, :ua_header, {"User-Agent", "backpackingmap.com/#{env}_#{version}"}
 
 config :backpackingmap, :os_raster_api_base_url, "https://api.os.uk/maps/raster/v1/wmts"
 
