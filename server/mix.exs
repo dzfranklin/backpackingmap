@@ -64,10 +64,43 @@ defmodule Backpackingmap.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "ecto.setup", "cmd npm install --prefix assets"],
-      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
-      "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+      setup: [
+        "deps.get",
+        "ecto.setup",
+        fn _ -> Mix.Task.reenable("ecto.setup") end,
+        "ecto.setup -r Backpackingmap.Osm.Repo",
+        "cmd npm install --prefix assets"
+      ],
+      "ecto.migrate-all": [
+        "ecto.migrate -r Backpackingmap.Repo",
+        fn _ -> Mix.Task.reenable("ecto.migrate") end,
+        "ecto.migrate -r Backpackingmap.Osm.Repo",
+      ],
+      "ecto.create-all": [
+        "ecto.create -r Backpackingmap.Repo",
+        fn _ -> Mix.Task.reenable("ecto.create") end,
+        "ecto.create -r Backpackingmap.Osm.Repo",
+      ],
+      "ecto.setup-all": [
+        "ecto.create-all",
+        "ecto.migrate-all",
+        "run priv/repo/seeds.exs"
+      ],
+      "ecto.reset-all": [
+        "ecto.drop",
+        fn _ -> Mix.Task.reenable("ecto.drop") end,
+        "ecto.drop -r Backpackingmap.Osm.Repo",
+        "ecto.setup-all",
+      ],
+      test: [
+        "ecto.create --quiet",
+        fn _ -> Mix.Task.reenable("ecto.create") end,
+        "ecto.create --quiet -r Backpackingmap.Osm.Repo",
+        "ecto.migrate --quiet",
+        fn _ -> Mix.Task.reenable("ecto.migrate") end,
+        "ecto.migrate --quiet -r Backpackingmap.Osm.Repo",
+        "test"
+      ]
     ]
   end
 end

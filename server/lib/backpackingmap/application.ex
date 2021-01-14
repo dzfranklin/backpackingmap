@@ -11,6 +11,7 @@ defmodule Backpackingmap.Application do
       Backpackingmap.OsRequester,
       # Start the Ecto repository
       Backpackingmap.Repo,
+      Backpackingmap.Osm.Repo,
       # Start the Telemetry supervisor
       BackpackingmapWeb.Telemetry,
       # Start the PubSub system
