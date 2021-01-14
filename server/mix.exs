@@ -53,6 +53,7 @@ defmodule Backpackingmap.MixProject do
       {:httpoison, "~> 1.6"},
       {:deque, "~> 1.0"},
       {:tracer, git: "https://github.com/martinmaillard/tracer.git", commit: "beaf6e8"},
+      {:temp, "~> 0.4"}
     ]
   end
 

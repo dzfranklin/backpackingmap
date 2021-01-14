@@ -29,7 +29,7 @@ defmodule Backpackingmap.Application do
     Supervisor.start_link(children, opts)
   end
 
-  defp env_specific_children(:test), do: [MockOsRasterServer]
+  defp env_specific_children(:test), do: [MockOsRasterServer, MockOsmPbfServer]
 
   defp env_specific_children(_), do: []
 
