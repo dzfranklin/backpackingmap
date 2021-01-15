@@ -11,7 +11,8 @@ To start your Phoenix server:
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-You may want to try looking at the database with [postgis-editor](https://github.com/danielzfranklin/postgis-editor).
+You may want to try looking at the database using DataGrip with "Show Geo Viewer" or using
+[postgis-editor](https://github.com/danielzfranklin/postgis-editor).
 
 Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
