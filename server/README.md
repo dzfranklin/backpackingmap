@@ -14,6 +14,9 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 You may want to try looking at the database using DataGrip with "Show Geo Viewer" or using
 [postgis-editor](https://github.com/danielzfranklin/postgis-editor).
 
+For vector tiles we use the Mapbox Vector Tile format. [mvtview](https://github.com/mapbox/mvtview) is a useful tool for
+debugging tile generation.
+
 Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
 ## Learn more
