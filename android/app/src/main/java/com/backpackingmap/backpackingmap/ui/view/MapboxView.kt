@@ -36,9 +36,7 @@ fun MapboxView(state: MapboxState, modifier: Modifier = Modifier) {
             MapView(context, options).apply {
                 getMapAsync {
                     it.setStyle(state.initialStyle)
-                    runBlocking {
-                        state.registerMap(it)
-                    }
+                    state.registerMap(it)
                 }
             }
         },
@@ -79,7 +77,7 @@ class MapboxState constructor(internal val initialPosition: CameraPosition, inte
     suspend fun awaitMap() =
         _map.await()
 
-    internal suspend fun registerMap(map: MapboxMap) {
+    internal fun registerMap(map: MapboxMap) {
         if (!_map.complete(map)) {
             throw IllegalStateException("MapState already registered to a MapboxMap")
         }
