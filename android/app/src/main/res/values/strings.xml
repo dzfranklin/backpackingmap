@@ -1,3 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Backpacking Map</string>
+    <string name="public_token_mapbox" tools:ignore="Typos">pk.eyJ1IjoiZHpmcmFua2xpbiIsImEiOiJja3A2eXY0amEwMm5zMnBueWc4OG5pZDBmIn0.yQg9NqHrBiwOS0pmBQDKfA</string>
 </resources>
