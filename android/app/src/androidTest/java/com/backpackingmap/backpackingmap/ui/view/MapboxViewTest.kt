@@ -27,7 +27,10 @@ class MapboxViewTest {
     @Before
     fun setUp() {
         composeTestRule.setContent {
-            state = rememberMapboxState(initialPosition = initialPosition, initialStyle = Style.LIGHT)
+            state = rememberMapboxState(
+                initialStyle = Style.LIGHT,
+                initialPosition = initialPosition
+            )
             MapboxView(state)
         }
     }

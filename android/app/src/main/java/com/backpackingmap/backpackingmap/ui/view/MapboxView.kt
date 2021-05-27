@@ -31,7 +31,9 @@ fun MapboxView(state: MapboxState, modifier: Modifier = Modifier) {
             Mapbox.getInstance(context, token)
 
             val options = MapboxMapOptions.createFromAttributes(context, null)
-            options.camera(state.initialPosition)
+            if (state.initialPosition != null) {
+                options.camera(state.initialPosition)
+            }
 
             MapView(context, options).apply {
                 getMapAsync {
@@ -52,7 +54,7 @@ fun MapboxViewPreview() {
         .zoom(5.0)
         .build()
 
-    val state = rememberMapboxState(initialPosition, Style.OUTDOORS)
+    val state = rememberMapboxState(Style.OUTDOORS, initialPosition)
     LaunchedEffect(state) {
         val update = CameraUpdateFactory.zoomBy(10.0)
         state.awaitMap().animateCamera(update, 10_000)
@@ -62,24 +64,38 @@ fun MapboxViewPreview() {
 }
 
 @Composable
-fun rememberMapboxState(initialPosition: CameraPosition, initialStyle: String): MapboxState {
+fun rememberMapboxState(initialStyle: String, initialPosition: CameraPosition? = null): MapboxState {
     val coroutineContext = rememberCoroutineScope().coroutineContext
     return remember {
-        MapboxState(initialPosition, initialStyle, coroutineContext)
+        MapboxState(initialStyle, initialPosition, coroutineContext)
     }
 }
 
-class MapboxState constructor(internal val initialPosition: CameraPosition, internal val initialStyle: String, override val coroutineContext: CoroutineContext):
+class MapboxState(
+    internal val initialStyle: String,
+    internal val initialPosition: CameraPosition?,
+    override val coroutineContext: CoroutineContext
+):
     CoroutineScope {
 
     private val _map = CompletableDeferred<MapboxMap>()
+    private val _style = CompletableDeferred<Style>()
 
     suspend fun awaitMap() =
         _map.await()
 
+    suspend fun awaitStyle() =
+        _style.await()
+
     internal fun registerMap(map: MapboxMap) {
         if (!_map.complete(map)) {
             throw IllegalStateException("MapState already registered to a MapboxMap")
+        }
+
+        map.getStyle {
+            if (!_style.complete(it)) {
+                throw IllegalStateException("Expected MapState style unset")
+            }
         }
     }
 }
