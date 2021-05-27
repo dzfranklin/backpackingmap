@@ -43,6 +43,10 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = rootProject.extra["compose_version"] as String
     }
+
+    packagingOptions {
+        resources.excludes.add("META-INF/*")
+    }
 }
 
 dependencies {
@@ -55,9 +59,10 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling:${rootProject.extra["compose_version"]}")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
     implementation("androidx.activity:activity-compose:1.3.0-alpha08")
-    testImplementation("junit:junit:4.+")
+    implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:9.6.1")
+    testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.2")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:${rootProject.extra["compose_version"]}")
-    implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:9.6.1")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:${rootProject.extra["compose_version"]}")
 }
