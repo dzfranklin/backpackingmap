@@ -18,7 +18,9 @@ fun BottomBar(current: Destination, navigateTo: (Destination) -> Unit) {
             BottomNavigationItem(
                 selected = dest == current,
                 onClick = {
-                    navigateTo(dest)
+                    if (dest != current) {
+                        navigateTo(dest)
+                    }
                 },
                 icon = { Icon(painterResource(dest.icon), stringResource(dest.iconDescription)) },
                 modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp)
