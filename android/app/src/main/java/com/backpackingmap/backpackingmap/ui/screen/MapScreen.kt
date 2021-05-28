@@ -32,7 +32,7 @@ fun MapScreen(nav: NavController, repo: Repo, ensureFineLocation: suspend () -> 
             val map = mapbox.awaitMap()
 
             if (initialPos != null) {
-                map.animateCamera(CameraUpdateFactory.newCameraPosition(initialPos))
+                map.moveCamera(CameraUpdateFactory.newCameraPosition(initialPos))
             }
 
             val locOpts = LocationComponentActivationOptions.Builder(context, mapbox.awaitStyle()).build();
