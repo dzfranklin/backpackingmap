@@ -2,7 +2,6 @@ package com.backpackingmap.backpackingmap.ui
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.material.icons.Icons
 import com.backpackingmap.backpackingmap.R
 
 enum class Destination(

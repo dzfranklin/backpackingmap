@@ -7,7 +7,7 @@ class Repo {
 
     var _pos: CameraPosition? = null
 
-    suspend fun mapPosition() : CameraPosition? {
+    suspend fun mapPosition(): CameraPosition? {
         // TODO
         return _pos
     }

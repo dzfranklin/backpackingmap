@@ -90,19 +90,23 @@ fun MapScreen(nav: NavController, repo: Repo, ensureFineLocation: suspend () -> 
         ConstraintLayout(
             Modifier
                 .fillMaxSize()
-                .padding(contentPadding)) {
+                .padding(contentPadding)
+        ) {
             val (map, locButton) = createRefs()
 
             MapboxView(mapbox, Modifier.constrainAs(map) {
                 linkTo(parent.start, parent.top, parent.end, parent.bottom)
             })
 
-            TrackingButton(isTracking.value, { isTracking.value = it }, Modifier.constrainAs(locButton) {
-                bottom.linkTo(parent.bottom, margin = 20.dp)
-                end.linkTo(parent.end, margin = 20.dp)
-                width = Dimension.wrapContent
-                height = Dimension.wrapContent
-            })
+            TrackingButton(
+                isTracking.value,
+                { isTracking.value = it },
+                Modifier.constrainAs(locButton) {
+                    bottom.linkTo(parent.bottom, margin = 20.dp)
+                    end.linkTo(parent.end, margin = 20.dp)
+                    width = Dimension.wrapContent
+                    height = Dimension.wrapContent
+                })
         }
     }
 }

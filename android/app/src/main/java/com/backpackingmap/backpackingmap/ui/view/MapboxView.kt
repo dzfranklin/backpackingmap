@@ -71,7 +71,10 @@ fun MapboxViewPreview() {
 }
 
 @Composable
-fun rememberMapboxState(initialStyle: String, initialPosition: CameraPosition? = null): MapboxState {
+fun rememberMapboxState(
+    initialStyle: String,
+    initialPosition: CameraPosition? = null
+): MapboxState {
     val coroutineContext = rememberCoroutineScope().coroutineContext
     return remember {
         MapboxState(initialStyle, initialPosition, coroutineContext)
@@ -82,10 +85,12 @@ class MapboxState(
     internal val initialStyle: String,
     internal val initialPosition: CameraPosition?,
     override val coroutineContext: CoroutineContext
-):
+) :
     CoroutineScope, OnCameraTrackingChangedListener {
 
-    private val _cameraPosition = MutableStateFlow(initialPosition ?: CameraPosition.Builder().build())
+    private val _cameraPosition =
+        MutableStateFlow(initialPosition ?: CameraPosition.Builder().build())
+
     /** Only updates on idle */
     val cameraPosition = _cameraPosition.asStateFlow()
 
