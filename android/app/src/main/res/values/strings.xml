@@ -2,6 +2,7 @@
     <string name="app_name">Backpacking Map</string>
     <string name="public_token_mapbox" tools:ignore="Typos">pk.eyJ1IjoiZHpmcmFua2xpbiIsImEiOiJja3A2eXY0amEwMm5zMnBueWc4OG5pZDBmIn0.yQg9NqHrBiwOS0pmBQDKfA</string>
     <string name="map">map</string>
+    <string name="track_my_location">track my location</string>
     <string name="location_permission">Location Permission</string>
     <string name="location_permission_rationale">This feature requires location permission</string>
     <string name="ok">OK</string>
