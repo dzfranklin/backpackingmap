@@ -2,4 +2,9 @@
     <string name="app_name">Backpacking Map</string>
     <string name="public_token_mapbox" tools:ignore="Typos">pk.eyJ1IjoiZHpmcmFua2xpbiIsImEiOiJja3A2eXY0amEwMm5zMnBueWc4OG5pZDBmIn0.yQg9NqHrBiwOS0pmBQDKfA</string>
     <string name="map">map</string>
+    <string name="location_permission">Location Permission</string>
+    <string name="location_permission_rationale">This feature requires location permission</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="fine_location_denied">Since you denied location permission we can\'t do that</string>
 </resources>

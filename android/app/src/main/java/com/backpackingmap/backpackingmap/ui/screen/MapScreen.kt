@@ -19,7 +19,7 @@ import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
 @Composable
-fun MapScreen(nav: NavController, repo: Repo) {
+fun MapScreen(nav: NavController, repo: Repo, ensureFineLocation: suspend () -> Boolean) {
     Scaffold(
         bottomBar = { BottomBar(Destination.Map) { nav.navigate(it.route)} }
     ) {

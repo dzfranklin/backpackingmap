@@ -10,14 +10,14 @@ import com.backpackingmap.backpackingmap.ui.screen.MapScreen
 import com.backpackingmap.backpackingmap.ui.theme.BackpackingMapTheme
 
 @Composable
-fun Main() {
+fun Main(ensureFineLocation: suspend () -> Boolean) {
     val nav = rememberNavController()
     val repo = remember { Repo() }
 
     BackpackingMapTheme {
         NavHost(nav, startDestination = Destination.Map.route) {
             composable(Destination.Map.route) {
-                MapScreen(nav, repo)
+                MapScreen(nav, repo, ensureFineLocation)
             }
         }
     }
