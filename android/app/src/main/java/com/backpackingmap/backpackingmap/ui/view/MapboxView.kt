@@ -109,7 +109,6 @@ class MapboxState(
     /** Caller must ensure they have ACCESS_FINE_LOCATION permission */
     suspend fun trackLocation(context: Context, enable: Boolean) {
         val map = awaitMap()
-        val style = awaitStyle()
         val loc = map.locationComponent
 
         if (enable) {
