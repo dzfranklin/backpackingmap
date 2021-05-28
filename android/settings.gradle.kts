@@ -5,7 +5,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        jcenter() // Warning: this repository is going to shut down soon
         maven {
             url = java.net.URI("https://api.mapbox.com/downloads/v2/releases/maven")
             authentication {
