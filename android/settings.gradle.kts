@@ -6,7 +6,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven {
-            url = java.net.URI("https://api.mapbox.com/downloads/v2/releases/maven")
+            url = URI("https://api.mapbox.com/downloads/v2/releases/maven")
             authentication {
                 create<BasicAuthentication>("basic")
             }
