@@ -8,4 +8,6 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="fine_location_denied">Since you denied location permission we can\'t do that</string>
+    <string name="expand">Expand</string>
+    <string name="collapse">Collapse</string>
 </resources>
