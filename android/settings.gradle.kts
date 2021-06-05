@@ -3,6 +3,7 @@ import java.net.URI
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven("https://repo.osgeo.org/repository/release/")
         google()
         mavenCentral()
         maven {
@@ -18,6 +19,7 @@ dependencyResolutionManagement {
                 password = (extra["BACKPACKINGMAP_MAPBOX_SECRET"] as? String)!!
             }
         }
+        maven("https://jitpack.io")
     }
 }
 rootProject.name = "Backpacking Map"

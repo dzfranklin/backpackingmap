@@ -1,15 +1,25 @@
 package com.backpackingmap.backpackingmap.ui.view
 
 import android.content.Context
+import android.graphics.PointF
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewConfiguration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.backpackingmap.backpackingmap.R
+import com.backpackingmap.backpackingmap.distanceTo
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
@@ -25,8 +35,10 @@ import com.mapbox.mapboxsdk.maps.MapboxMapOptions
 import com.mapbox.mapboxsdk.maps.Style
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
 @Composable
@@ -47,6 +59,8 @@ fun MapboxView(state: MapboxState, modifier: Modifier = Modifier) {
                     it.setStyle(state.initialStyle)
                     state.registerMap(it)
                 }
+
+                setOnTouchListener(state)
             }
         },
         modifier = modifier,
@@ -70,23 +84,59 @@ fun MapboxViewPreview() {
     MapboxView(state)
 }
 
+class TouchArea(
+    val id: Any,
+    var center: LatLng,
+    val onPress: ((MotionEvent) -> Boolean)? = null,
+    val onLongPress: ((MotionEvent) -> Boolean)? = null,
+    val onDrag: ((MotionEvent, LatLng) -> Boolean)? = null,
+    val onDown: ((MotionEvent) -> Boolean)? = null,
+    val onUp: ((MotionEvent) -> Boolean)? = null,
+    val radius: Dp = 15.dp,
+) {
+    internal fun contains(point: LatLng, map: MapboxMap, density: Density): Boolean {
+        val distMeters = center.distanceTo(point)
+        val mapMetersPerPixel = map.projection.getMetersPerPixelAtLatitude(center.latitude)
+        // meters * (1 / (meters/pixel)) = meters * (pixels / meter) = pixels
+        val distPixels = distMeters / mapMetersPerPixel
+
+        val radiusPixels = with (density) { radius.toPx() }
+
+        return distPixels < radiusPixels
+    }
+
+    override fun hashCode(): Int =
+        id.hashCode()
+
+    override fun equals(other: Any?) =
+        hashCode() == other.hashCode()
+}
+
 @Composable
 fun rememberMapboxState(
     initialStyle: String,
     initialPosition: CameraPosition? = null
 ): MapboxState {
     val coroutineContext = rememberCoroutineScope().coroutineContext
-    return remember {
-        MapboxState(initialStyle, initialPosition, coroutineContext)
+    val context = LocalContext.current
+    val viewConfig = remember(context) { ViewConfiguration.get(context) }
+    val touchSlop = remember(viewConfig) { viewConfig.scaledTouchSlop }
+    val longPressTimeout = ViewConfiguration.getLongPressTimeout()
+    val density = LocalDensity.current
+    return remember(touchSlop, longPressTimeout, density, coroutineContext) {
+        MapboxState(initialStyle, initialPosition, touchSlop, longPressTimeout, density, coroutineContext)
     }
 }
 
 class MapboxState(
     internal val initialStyle: String,
     internal val initialPosition: CameraPosition?,
+    private val touchSlop: Int,
+    private val longPressTimeout: Int,
+    private val density: Density,
     override val coroutineContext: CoroutineContext
 ) :
-    CoroutineScope, OnCameraTrackingChangedListener {
+    CoroutineScope, OnCameraTrackingChangedListener, View.OnTouchListener {
 
     private val _cameraPosition =
         MutableStateFlow(initialPosition ?: CameraPosition.Builder().build())
@@ -100,11 +150,26 @@ class MapboxState(
     private val _map = CompletableDeferred<MapboxMap>()
     private val _style = CompletableDeferred<Style>()
 
+    private val _touchAreas = mutableListOf<TouchArea>()
+
     suspend fun awaitMap() =
         _map.await()
 
     suspend fun awaitStyle() =
         _style.await()
+
+    /** Newer areas will go on top of older ones. */
+    fun registerTouchArea(area: TouchArea) {
+        _touchAreas.add(area)
+    }
+
+    fun deregisterTouchArea(id: Any) {
+        for ((idx, area) in _touchAreas.withIndex()) {
+            if (area.id == id) {
+                _touchAreas.removeAt(idx)
+            }
+        }
+    }
 
     /** Caller must ensure they have ACCESS_FINE_LOCATION permission */
     suspend fun trackLocation(context: Context, enable: Boolean) {
@@ -181,4 +246,115 @@ class MapboxState(
     override fun onCameraTrackingDismissed() {
         // Note: Redundant, called after onCameraTrackingChanged
     }
+
+    private var currentlyDown: CurrentDown? = null
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun onTouch(view: View?, event: MotionEvent?): Boolean {
+        if (view == null || event == null) {
+            Timber.d("Ignoring touch event as view or event null. view: %s, event: %s", view, event)
+            return false
+        }
+
+        if (event.actionMasked == MotionEvent.ACTION_CANCEL) {
+            currentlyDown = null
+        }
+
+        if (!_map.isCompleted) {
+            Timber.d("Ignoring touch event as map not loaded yet")
+            return false
+        }
+        val map = _map.getCompleted()
+
+        // NOTE: We reverse to obey contract of newer areas overriding
+        val areas = _touchAreas.reversed()
+
+        val cachedDown = currentlyDown
+        val onDrag = cachedDown?.area?.onDrag
+        if (event.actionMasked == MotionEvent.ACTION_MOVE && onDrag != null) {
+            val pointerIdx = event.findPointerIndex(cachedDown.pointerId)
+            val screenPoint = PointF(event.getX(pointerIdx), event.getY(pointerIdx))
+            val mapPoint = map.projection.fromScreenLocation(screenPoint)
+            if (pointerIdx != -1 && cachedDown.isDrag(screenPoint, touchSlop)) {
+                return onDrag(event, mapPoint)
+            }
+        }
+
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+            val screenPoint = PointF(event.getX(0), event.getY(0))
+            val mapPoint = map.projection.fromScreenLocation(screenPoint)
+
+            for (area in areas) {
+                if (!area.contains(mapPoint, map, density)) {
+                    continue
+                }
+
+                val onDown = area.onDown
+                if (onDown != null && onDown(event)) {
+                    return true
+                }
+
+                val pointerId = event.getPointerId(0)
+                currentlyDown = CurrentDown(area, screenPoint, mapPoint, pointerId)
+            }
+        }
+
+        val actionIsUp = event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_POINTER_UP;
+        val downPointerIdx = cachedDown?.let { event.findPointerIndex(it.pointerId) } ?: -1
+        if (actionIsUp && cachedDown != null && downPointerIdx != -1) {
+            for (area in areas) {
+                if (cachedDown.area != area) {
+                    continue
+                }
+
+                // If cachedDown.area matches this is the only area we check, so no continues
+                // after here
+
+                val screenPoint = PointF(event.getX(downPointerIdx), event.getY(downPointerIdx))
+                val mapPoint = map.projection.fromScreenLocation(screenPoint)
+
+                // If they don't handle onUp, proceed to the other handlers
+                val onUp = cachedDown.area.onUp
+                if (onUp != null && onUp(event)) {
+                    return true
+                }
+
+                val isCaptured = when {
+                    cachedDown.isDrag(screenPoint, touchSlop) -> {
+                        onDrag != null && onDrag(event, mapPoint)
+                    }
+                    event.downTime < longPressTimeout -> {
+                        val onPress = cachedDown.area.onPress
+                        if (onPress != null && onPress(event)) {
+                            view.performClick()
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                    else -> {
+                        val onLongPress = cachedDown.area.onLongPress
+                        onLongPress != null && onLongPress(event)
+                    }
+                }
+
+                currentlyDown = null
+                if (isCaptured) {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+}
+
+data class CurrentDown(
+    val area: TouchArea,
+    val startScreen: PointF,
+    val startMap: LatLng,
+    val pointerId: Int,
+) {
+    fun isDrag(latest: PointF, touchSlop: Int) =
+        startScreen.distanceTo(latest) > touchSlop
 }

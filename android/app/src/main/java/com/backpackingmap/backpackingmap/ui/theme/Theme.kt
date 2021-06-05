@@ -31,7 +31,7 @@ private val LightColorPalette = lightColors(
 )
 
 data class ThemeExtras(
-    val isTrackingColor: Color
+    val mapCornerButtonEnabled: Color
 )
 
 val LocalThemeExtras = compositionLocalOf<ThemeExtras> {
@@ -50,7 +50,7 @@ fun BackpackingMapTheme(
     }
 
     val themeExtras = ThemeExtras(
-        isTrackingColor = Blue500,
+        mapCornerButtonEnabled = Blue500,
     )
 
     CompositionLocalProvider(LocalThemeExtras.provides(themeExtras)) {

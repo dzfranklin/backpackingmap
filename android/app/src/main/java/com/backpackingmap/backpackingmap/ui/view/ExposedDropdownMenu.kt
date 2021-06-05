@@ -24,7 +24,9 @@ import kotlinx.coroutines.flow.collect
 data class ExposedDropdownMenuItem<T>(
     val id: T,
     val text: AnnotatedString,
-)
+) {
+    constructor(id: T, text: String): this(id, AnnotatedString(text))
+}
 
 @Composable
 fun <T> ExposedDropdownMenu(
