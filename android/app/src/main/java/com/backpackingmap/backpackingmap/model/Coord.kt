@@ -101,6 +101,9 @@ class Coord private constructor(val lat: Double, val lng: Double, private var _w
         return new
     }
 
+    fun distanceTo(b: Coord): Double =
+        LatLng(lat, lng).distanceTo(LatLng(b.lat, b.lng))
+
     companion object {
         val ZERO = Coord(0.0, 0.0)
 

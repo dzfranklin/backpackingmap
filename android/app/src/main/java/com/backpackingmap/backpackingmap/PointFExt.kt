@@ -9,4 +9,4 @@ fun PointF.toOffset() =
     Offset(x, y)
 
 fun PointF.distanceTo(other: PointF): Float =
-    sqrt((other.x - x).pow(2f) + (other.y - y).pow(2f))
+    sqrt((other.x - x).pow(2) + (other.y - y).pow(2))

@@ -98,7 +98,7 @@ fun MapScreen(
                 PrimaryState.CreateMarker ->
                     MapCreateMarker(repo, mapbox)
                 PrimaryState.CreateRoute -> {
-                    // TODO
+                    MapCreateRoute(repo, mapbox)
                 }
             }
         }

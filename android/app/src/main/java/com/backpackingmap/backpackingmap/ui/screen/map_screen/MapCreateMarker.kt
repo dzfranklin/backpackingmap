@@ -77,13 +77,13 @@ fun MapCreateMarker(repo: Repo, mapbox: MapboxState) {
                 )
             }
 
-            val touch = TouchArea(
+            val touch = TouchArea.Circle(
                 id = MARKER_AREA_ID,
                 center = initialPoint.toMapbox(),
-                onDrag = { _, mapPoint ->
+                onDrag = TouchArea.OnDrag(onDrag = { _, mapPoint ->
                     point.value = Coord(mapPoint)
                     true
-                }
+                })
             )
             // NOTE: Cleaned up in onDispose
             mapbox.registerTouchArea(touch)

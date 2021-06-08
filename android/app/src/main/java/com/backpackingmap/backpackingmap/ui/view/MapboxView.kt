@@ -84,32 +84,63 @@ fun MapboxViewPreview() {
     MapboxView(state)
 }
 
-class TouchArea(
-    val id: Any,
-    var center: LatLng,
-    val onPress: ((MotionEvent) -> Boolean)? = null,
-    val onLongPress: ((MotionEvent) -> Boolean)? = null,
-    val onDrag: ((MotionEvent, LatLng) -> Boolean)? = null,
-    val onDown: ((MotionEvent) -> Boolean)? = null,
-    val onUp: ((MotionEvent) -> Boolean)? = null,
-    val radius: Dp = 15.dp,
-) {
-    internal fun contains(point: LatLng, map: MapboxMap, density: Density): Boolean {
-        val distMeters = center.distanceTo(point)
-        val mapMetersPerPixel = map.projection.getMetersPerPixelAtLatitude(center.latitude)
-        // meters * (1 / (meters/pixel)) = meters * (pixels / meter) = pixels
-        val distPixels = distMeters / mapMetersPerPixel
 
-        val radiusPixels = with (density) { radius.toPx() }
+interface TouchArea {
+    val id: Any
 
-        return distPixels < radiusPixels
+    val onPress: ((MotionEvent) -> Boolean)?
+    val onLongPress: ((MotionEvent) -> Boolean)?
+    val onDrag: OnDrag?
+    val onDown: ((MotionEvent) -> Boolean)?
+    val onUp: ((MotionEvent) -> Boolean)?
+
+    fun contains(point: LatLng, map: MapboxMap, density: Density): Boolean
+
+    data class OnDrag(
+        val onStart: ((MotionEvent, LatLng) -> Boolean)? = null,
+        val onDrag: ((MotionEvent, LatLng) -> Boolean)? = null,
+        val onEnd: ((MotionEvent, LatLng) -> Boolean)? = null,
+        val onCancel: (() -> Unit)? = null,
+    )
+
+    data class Entire(
+        override val id: Any,
+        override val onPress: ((MotionEvent) -> Boolean)? = null,
+        override val onLongPress: ((MotionEvent) -> Boolean)? = null,
+        override val onDrag: OnDrag? = null,
+        override val onDown: ((MotionEvent) -> Boolean)? = null,
+        override val onUp: ((MotionEvent) -> Boolean)? = null,
+    ) : TouchArea {
+        override fun contains(point: LatLng, map: MapboxMap, density: Density) = true
     }
 
-    override fun hashCode(): Int =
-        id.hashCode()
+    class Circle(
+        override val id: Any,
+        var center: LatLng,
+        override val onPress: ((MotionEvent) -> Boolean)? = null,
+        override val onLongPress: ((MotionEvent) -> Boolean)? = null,
+        override val onDrag: OnDrag? = null,
+        override val onDown: ((MotionEvent) -> Boolean)? = null,
+        override val onUp: ((MotionEvent) -> Boolean)? = null,
+        val radius: Dp = 15.dp,
+    ) : TouchArea {
+        override fun contains(point: LatLng, map: MapboxMap, density: Density): Boolean {
+            val distMeters = center.distanceTo(point)
+            val mapMetersPerPixel = map.projection.getMetersPerPixelAtLatitude(center.latitude)
+            // meters * (1 / (meters/pixel)) = meters * (pixels / meter) = pixels
+            val distPixels = distMeters / mapMetersPerPixel
 
-    override fun equals(other: Any?) =
-        hashCode() == other.hashCode()
+            val radiusPixels = with(density) { radius.toPx() }
+
+            return distPixels < radiusPixels
+        }
+
+        override fun hashCode(): Int =
+            id.hashCode()
+
+        override fun equals(other: Any?) =
+            hashCode() == other.hashCode()
+    }
 }
 
 @Composable
@@ -255,8 +286,10 @@ class MapboxState(
             Timber.d("Ignoring touch event as view or event null. view: %s, event: %s", view, event)
             return false
         }
+        val cachedDown = currentlyDown
 
-        if (event.actionMasked == MotionEvent.ACTION_CANCEL) {
+        if (event.actionMasked == MotionEvent.ACTION_CANCEL && cachedDown != null) {
+            cachedDown.area.onDrag?.onCancel?.invoke()
             currentlyDown = null
         }
 
@@ -269,14 +302,18 @@ class MapboxState(
         // NOTE: We reverse to obey contract of newer areas overriding
         val areas = _touchAreas.reversed()
 
-        val cachedDown = currentlyDown
-        val onDrag = cachedDown?.area?.onDrag
-        if (event.actionMasked == MotionEvent.ACTION_MOVE && onDrag != null) {
+        val dragHandlers = cachedDown?.area?.onDrag
+        val onDragHandler = dragHandlers?.onDrag
+        if (event.actionMasked == MotionEvent.ACTION_MOVE && onDragHandler != null) {
             val pointerIdx = event.findPointerIndex(cachedDown.pointerId)
             val screenPoint = PointF(event.getX(pointerIdx), event.getY(pointerIdx))
             val mapPoint = map.projection.fromScreenLocation(screenPoint)
             if (pointerIdx != -1 && cachedDown.isDrag(screenPoint, touchSlop)) {
-                return onDrag(event, mapPoint)
+                if (!cachedDown.dragStarted) {
+                    dragHandlers.onStart?.invoke(event, mapPoint)
+                    cachedDown.dragStarted = true
+                }
+                return onDragHandler(event, mapPoint)
             }
         }
 
@@ -299,7 +336,7 @@ class MapboxState(
             }
         }
 
-        val actionIsUp = event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_POINTER_UP;
+        val actionIsUp = event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_POINTER_UP
         val downPointerIdx = cachedDown?.let { event.findPointerIndex(it.pointerId) } ?: -1
         if (actionIsUp && cachedDown != null && downPointerIdx != -1) {
             for (area in areas) {
@@ -321,7 +358,7 @@ class MapboxState(
 
                 val isCaptured = when {
                     cachedDown.isDrag(screenPoint, touchSlop) -> {
-                        onDrag != null && onDrag(event, mapPoint)
+                        onDragHandler != null && onDragHandler(event, mapPoint)
                     }
                     event.downTime < longPressTimeout -> {
                         val onPress = cachedDown.area.onPress
@@ -354,6 +391,7 @@ data class CurrentDown(
     val startScreen: PointF,
     val startMap: LatLng,
     val pointerId: Int,
+    var dragStarted: Boolean = false,
 ) {
     fun isDrag(latest: PointF, touchSlop: Int) =
         startScreen.distanceTo(latest) > touchSlop
