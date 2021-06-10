@@ -7,7 +7,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.ComposeView
+import com.backpackingmap.backpackingmap.ui.BMIntentAction
+import com.backpackingmap.backpackingmap.ui.LocalActivity
 import com.backpackingmap.backpackingmap.ui.Main
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CompletableDeferred
@@ -31,9 +34,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+        val startingAction = intent.action?.let { BMIntentAction.fromName(it) }
+
         composeView = ComposeView(this).apply {
             setContent {
-                Main(::ensureFineLocation)
+                CompositionLocalProvider(LocalActivity provides this@MainActivity) {
+                    Main(startingAction, ::ensureFineLocation)
+                }
             }
         };
         setContentView(composeView)

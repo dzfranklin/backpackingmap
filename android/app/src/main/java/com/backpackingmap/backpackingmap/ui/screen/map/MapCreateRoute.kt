@@ -1,8 +1,7 @@
-package com.backpackingmap.backpackingmap.ui.screen.map_screen
+package com.backpackingmap.backpackingmap.ui.screen.map
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import com.backpackingmap.backpackingmap.repo.Repo
 import com.backpackingmap.backpackingmap.ui.view.MapboxState
 import com.backpackingmap.backpackingmap.ui.view.TouchArea

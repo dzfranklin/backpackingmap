@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.ui.screen.map_screen
+package com.backpackingmap.backpackingmap.ui.screen.map
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -95,7 +95,7 @@ fun TrackingButton(
         isEnabled = isTracking,
         setIsEnabled = setIsTracking,
         icon = R.drawable.ic_track_location,
-        iconDescription = R.string.track_my_location,
+        iconDescription = R.string.track_location,
         modifier = modifier
     )
 }

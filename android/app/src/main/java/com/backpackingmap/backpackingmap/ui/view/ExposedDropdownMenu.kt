@@ -25,7 +25,7 @@ data class ExposedDropdownMenuItem<T>(
     val id: T,
     val text: AnnotatedString,
 ) {
-    constructor(id: T, text: String): this(id, AnnotatedString(text))
+    constructor(id: T, text: String) : this(id, AnnotatedString(text))
 }
 
 @Composable
@@ -34,7 +34,9 @@ fun <T> ExposedDropdownMenu(
     values: List<ExposedDropdownMenuItem<T>>,
     selected: T,
     onSelect: (T) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    includeCustom: Boolean = false,
+    onCustomSelect: (() -> Unit)? = null,
 ) {
     // Implementation of https://material.io/components/menus#exposed-dropdown-menu
 
@@ -65,12 +67,17 @@ fun <T> ExposedDropdownMenu(
 
     val isExpanded = derivedStateOf { !focusInteractions.isEmpty() }
 
+    val selectedLabel = when (val field = values.find { it.id == selected }) {
+        null -> AnnotatedString(stringResource(R.string.custom))
+        else -> field.text
+    }
+
     Box(modifier) {
         SubcomposeLayout { constraints ->
             val fieldPlaceables = subcompose(ExposedDropdownMenuSlot.Field) {
                 ExposedDropdownMenuField(
                     label = label,
-                    selected = values.find { it.id == selected }!!.text,
+                    selected = selectedLabel,
                     isExpanded = isExpanded.value,
                     interactionSource = interactionSource
                 )
@@ -90,13 +97,15 @@ fun <T> ExposedDropdownMenu(
                 fieldPlaceables.forEach { it.placeRelative(0, 0) }
 
                 subcompose(ExposedDropdownMenuSlot.Menu) {
-                    ExposedDropdownMenuDropdown(
+                    Dropdown(
                         values = values,
                         selected = selected,
                         onSelect = onSelect,
                         isExpanded = isExpanded.value,
                         onCollapse = collapse,
-                        fieldSize = DpOffset(fieldSize.width.toDp(), fieldSize.height.toDp())
+                        fieldSize = DpOffset(fieldSize.width.toDp(), fieldSize.height.toDp()),
+                        includeCustom = includeCustom,
+                        onCustomSelect = onCustomSelect,
                     )
                 }.forEach {
                     it.measure(constraints).place(0, 0)
@@ -121,6 +130,25 @@ fun ExposedDropdownMenuPreview() {
         selected = selected.value,
         onSelect = { selected.value = it },
         modifier = Modifier.padding(20.dp)
+    )
+}
+
+@Preview
+@Composable
+fun ExposedDropdownMenuWithCustomPreview() {
+    val items = listOf(
+        ExposedDropdownMenuItem(1, AnnotatedString("Item 1")),
+        ExposedDropdownMenuItem(2, AnnotatedString("Item 2")),
+        ExposedDropdownMenuItem(3, AnnotatedString("Item 3"))
+    )
+    val selected = remember { mutableStateOf(2) }
+    ExposedDropdownMenu(
+        label = "Label",
+        values = items,
+        selected = selected.value,
+        onSelect = { selected.value = it },
+        modifier = Modifier.padding(20.dp),
+        includeCustom = true,
     )
 }
 
@@ -164,38 +192,74 @@ private fun ExposedDropdownMenuField(
 }
 
 @Composable
-private fun <T> ExposedDropdownMenuDropdown(
+private fun <T> Dropdown(
     values: List<ExposedDropdownMenuItem<T>>,
     selected: T,
     onSelect: (T) -> Unit,
     isExpanded: Boolean,
     onCollapse: () -> Unit,
-    fieldSize: DpOffset
+    fieldSize: DpOffset,
+    includeCustom: Boolean,
+    onCustomSelect: (() -> Unit)?
 ) {
+    var isCustomSelected = true
+
     DropdownMenu(
         expanded = isExpanded,
         onDismissRequest = onCollapse,
         offset = DpOffset(0.dp, fieldSize.y)
     ) {
         for (value in values) {
-            DropdownMenuItem(
-                onClick = {
+            val isSelected = value.id == selected
+            if (isSelected) {
+                isCustomSelected = false
+            }
+
+            DropdownItem(
+                isSelected = isSelected,
+                onSelect = {
                     onSelect(value.id)
                     onCollapse()
-                }, contentPadding = PaddingValues(0.dp)
-            ) {
-                Box(
-                    Modifier
-                        .width(fieldSize.x)
-                        .background(Color.Black.copy(alpha = if (value == selected) 0.12f else 0f))
-                ) {
-                    Text(
-                        value.text,
-                        style = MaterialTheme.typography.body1,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
-                    )
-                }
-            }
+                },
+                text = value.text,
+                fieldSize = fieldSize,
+            )
+        }
+
+        if (includeCustom) {
+            DropdownItem(
+                isSelected = isCustomSelected,
+                onSelect = {
+                    onCustomSelect?.invoke()
+                    onCollapse()
+                },
+                text = AnnotatedString(stringResource(R.string.custom)),
+                fieldSize = fieldSize
+            )
+        }
+    }
+}
+
+@Composable
+private fun DropdownItem(
+    isSelected: Boolean,
+    onSelect: () -> Unit,
+    text: AnnotatedString,
+    fieldSize: DpOffset
+) {
+    DropdownMenuItem(
+        onClick = onSelect, contentPadding = PaddingValues(0.dp)
+    ) {
+        Box(
+            Modifier
+                .width(fieldSize.x)
+                .background(Color.Black.copy(alpha = if (isSelected) 0.12f else 0f))
+        ) {
+            Text(
+                text,
+                style = MaterialTheme.typography.body1,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+            )
         }
     }
 }

@@ -7,8 +7,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.backpackingmap.backpackingmap.MainActivity
 import com.backpackingmap.backpackingmap.model.Coord
 import com.backpackingmap.backpackingmap.repo.CoordinateMode
-import com.mapbox.mapboxsdk.geometry.LatLng
-import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith

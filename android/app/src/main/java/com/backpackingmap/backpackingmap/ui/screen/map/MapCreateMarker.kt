@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.ui.screen.map_screen
+package com.backpackingmap.backpackingmap.ui.screen.map
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.background

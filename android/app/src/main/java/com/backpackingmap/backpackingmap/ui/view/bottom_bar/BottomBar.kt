@@ -8,13 +8,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.backpackingmap.backpackingmap.ui.Destination
+import com.backpackingmap.backpackingmap.ui.view.bottom_bar.BottomBarDestination
 import timber.log.Timber
 
 @Composable
-fun BottomBar(current: Destination, navigateTo: (Destination) -> Unit) {
+fun BottomBar(current: BottomBarDestination, navigateTo: (BottomBarDestination) -> Unit) {
     BottomNavigation {
-        for (dest in Destination.values()) {
+        for (dest in BottomBarDestination.values()) {
             BottomNavigationItem(
                 selected = dest == current,
                 onClick = {
@@ -32,7 +32,7 @@ fun BottomBar(current: Destination, navigateTo: (Destination) -> Unit) {
 @Preview
 @Composable
 fun BottomBarPreview() {
-    val current = Destination.Map
+    val current = BottomBarDestination.Map
     Scaffold(
         bottomBar = {
             BottomBar(current) { Timber.i("Pretend navigating to %s", it) }

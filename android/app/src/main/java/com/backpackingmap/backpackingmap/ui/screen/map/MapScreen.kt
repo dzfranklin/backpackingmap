@@ -1,4 +1,4 @@
-package com.backpackingmap.backpackingmap.ui.screen.map_screen
+package com.backpackingmap.backpackingmap.ui.screen.map
 
 import android.Manifest
 import android.content.Context
@@ -9,7 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.backpackingmap.backpackingmap.repo.Repo
-import com.backpackingmap.backpackingmap.ui.Destination
+import com.backpackingmap.backpackingmap.ui.view.bottom_bar.BottomBarDestination
 import com.backpackingmap.backpackingmap.ui.view.BottomBar
 import com.backpackingmap.backpackingmap.ui.view.MapboxView
 import com.backpackingmap.backpackingmap.ui.view.rememberMapboxState
@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MapScreen(
     repo: Repo,
-    navigateTo: (Destination) -> Unit,
+    bottomBar: @Composable () -> Unit,
     ensureFineLocation: suspend () -> Boolean
 ) {
     val context = LocalContext.current
@@ -73,9 +73,7 @@ fun MapScreen(
         }
     }
 
-    Scaffold(
-        bottomBar = { BottomBar(Destination.Map, navigateTo) }
-    ) { contentPadding ->
+    Scaffold(bottomBar = bottomBar) { contentPadding ->
         Box(
             Modifier
                 .fillMaxSize()
