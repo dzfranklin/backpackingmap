@@ -52,7 +52,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.5.0")
     implementation("androidx.appcompat:appcompat:1.3.0")
     implementation("com.google.android.material:material:1.3.0")
-    implementation("androidx.compose.ui:ui:1.0.0-beta07")
+    implementation("androidx.compose.ui:ui:1.0.0-beta08")
     implementation("androidx.compose.material:material:1.0.0-beta07")
     implementation("androidx.compose.ui:ui-tooling:1.0.0-beta07")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha07")
