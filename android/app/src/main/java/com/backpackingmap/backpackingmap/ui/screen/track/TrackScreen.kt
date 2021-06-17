@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalTime::class)
-
 package com.backpackingmap.backpackingmap.ui.screen.track
 
 import android.app.Activity
@@ -44,7 +42,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 @Composable
 fun TrackScreen(repo: Repo, bottomBar: @Composable () -> Unit) {

@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalTime::class)
-
 package com.backpackingmap.backpackingmap.track_service
 
 import androidx.test.espresso.matcher.ViewMatchers.assertThat
@@ -19,7 +17,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import timber.log.Timber
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 data class MomentData(
     val track: TrackId,

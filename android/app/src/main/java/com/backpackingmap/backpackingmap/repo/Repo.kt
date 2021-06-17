@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 class Repo private constructor(override val coroutineContext: CoroutineContext, context: Context) :
     CoroutineScope {
@@ -47,7 +46,6 @@ class Repo private constructor(override val coroutineContext: CoroutineContext, 
         _cm.value = new
     }
 
-    @OptIn(ExperimentalTime::class)
     val _trackSettings = MutableStateFlow(
         TrackSettings(
             interval = Duration.seconds(30)

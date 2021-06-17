@@ -25,10 +25,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import kotlin.time.ExperimentalTime
 
 
-@OptIn(ExperimentalTime::class)
 class TrackService : LifecycleService() {
     data class Args(
         val trackSettings: Flow<TrackSettings>,
