@@ -37,7 +37,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
-        useIR = true
         freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn" + "-Xopt-in=kotlin.time.ExperimentalTime"
     }
     buildFeatures {
