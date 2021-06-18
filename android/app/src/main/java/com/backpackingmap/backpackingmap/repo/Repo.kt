@@ -1,27 +1,26 @@
 package com.backpackingmap.backpackingmap.repo
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import com.backpackingmap.backpackingmap.model.TrackId
-import com.backpackingmap.backpackingmap.model.TrackMeta
 import com.backpackingmap.backpackingmap.model.TrackMoment
-import com.backpackingmap.backpackingmap.model.TrackSettings
+import com.backpackingmap.backpackingmap.model.TrackConfig
+import com.backpackingmap.backpackingmap.repo.db.Db
 import com.backpackingmap.backpackingmap.track_service.TrackService
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
-import java.time.Instant
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 
-class Repo private constructor(override val coroutineContext: CoroutineContext, context: Context) :
-    CoroutineScope {
-    // NOTE: Constructor is private to enforce getting singleton
-
-    val defaultZoom = 12.0
-
+/** Note: Expected to be a singleton. Using the constructor directly is undefined */
+class Repo @VisibleForTesting internal constructor(
+    override val coroutineContext: CoroutineContext,
+    db: Db,
+    bindTrackService: (TrackService.Args) -> Unit,
+) : CoroutineScope {
     var _pos: CameraPosition? = null
 
     suspend fun mapPosition(): CameraPosition? {
@@ -47,16 +46,16 @@ class Repo private constructor(override val coroutineContext: CoroutineContext, 
     }
 
     val _trackSettings = MutableStateFlow(
-        TrackSettings(
+        TrackConfig(
             interval = Duration.seconds(30)
         )
     )
 
-    fun trackSettings(): Flow<TrackSettings> {
+    fun trackSettings(): Flow<TrackConfig> {
         return _trackSettings
     }
 
-    suspend fun setTrackSettings(new: TrackSettings) {
+    suspend fun setTrackSettings(new: TrackConfig) {
         _trackSettings.value = new
     }
 
@@ -82,14 +81,12 @@ class Repo private constructor(override val coroutineContext: CoroutineContext, 
     }
 
     init {
-        TrackService.bind(
+        bindTrackService(
             TrackService.Args(
-                trackSettings = trackSettings(),
+                trackConfig = trackSettings(),
                 activeTrack = activeTrack(),
                 addTrackMoment = ::addTrackMoment
-            ),
-            // Use application since we want this to outlive the specific context passed in
-            context.applicationContext
+            )
         )
     }
 
@@ -124,7 +121,15 @@ class Repo private constructor(override val coroutineContext: CoroutineContext, 
                 }
 
                 val coroutineContext = Job()
-                val new = Repo(coroutineContext, context)
+                val new = Repo(
+                    coroutineContext = coroutineContext,
+                    db = Db(coroutineContext, context),
+                    bindTrackService = { args ->
+                        // Use application since we want this to outlive the specific context passed in
+                        TrackService.bind(args, context.applicationContext)
+                    }
+                )
+
                 instance = new
                 return new
             }

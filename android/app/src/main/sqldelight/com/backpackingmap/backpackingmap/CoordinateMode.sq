@@ -1,0 +1,16 @@
+import com.backpackingmap.backpackingmap.repo.CoordinateMode;
+
+CREATE TABLE coordinateModeTable (
+    identity INTEGER PRIMARY KEY CHECK(identity = 0),
+    value TEXT AS CoordinateMode NOT NULL
+);
+
+set:
+    INSERT INTO coordinateModeTable(identity, value)
+    VALUES (0, ?)
+    ON CONFLICT (identity) DO UPDATE SET value=excluded.value;
+
+get:
+    SELECT value
+    FROM coordinateModeTable
+    WHERE identity=0;

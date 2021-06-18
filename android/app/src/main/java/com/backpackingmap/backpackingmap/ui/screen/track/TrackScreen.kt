@@ -24,7 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.backpackingmap.backpackingmap.R
-import com.backpackingmap.backpackingmap.model.TrackSettings
+import com.backpackingmap.backpackingmap.model.TrackConfig
 import com.backpackingmap.backpackingmap.repo.Repo
 import com.backpackingmap.backpackingmap.track_service.TrackService
 import com.backpackingmap.backpackingmap.ui.LocalActivity
@@ -113,8 +113,8 @@ private fun TrackInner(repo: Repo) {
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun EditSettingsSection(
-    trackSettings: TrackSettings,
-    setTrackSettings: (TrackSettings) -> Unit,
+    trackConfig: TrackConfig,
+    setTrackSettings: (TrackConfig) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val isExpanded = remember { mutableStateOf(false) }
@@ -148,14 +148,14 @@ private fun EditSettingsSection(
             exit = shrinkVertically(shrinkTowards = Alignment.Top),
         ) {
             Column(Modifier.padding(5.dp)) {
-                EditInterval(trackSettings, setTrackSettings)
+                EditInterval(trackConfig, setTrackSettings)
             }
         }
     }
 }
 
 @Composable
-private fun EditInterval(trackSettings: TrackSettings, setTrackSettings: (TrackSettings) -> Unit) {
+private fun EditInterval(trackConfig: TrackConfig, setTrackSettings: (TrackConfig) -> Unit) {
     val presetIntervals = listOf(
         ExposedDropdownMenuItem(Duration.seconds(30), stringResource(R.string.thirty_secs)),
         ExposedDropdownMenuItem(Duration.minutes(1), stringResource(R.string.one_min)),
@@ -165,7 +165,7 @@ private fun EditInterval(trackSettings: TrackSettings, setTrackSettings: (TrackS
         ExposedDropdownMenuItem(Duration.hours(1), stringResource(R.string.one_hour)),
     )
 
-    if (presetIntervals.none { it.id == trackSettings.interval }) {
+    if (presetIntervals.none { it.id == trackConfig.interval }) {
         throw IllegalStateException("TrackSettings interval must be a preset")
     }
 
@@ -174,8 +174,8 @@ private fun EditInterval(trackSettings: TrackSettings, setTrackSettings: (TrackS
             ExposedDropdownMenu(
                 stringResource(R.string.update_interval),
                 values = presetIntervals,
-                selected = trackSettings.interval,
-                onSelect = { setTrackSettings(trackSettings.copy(interval = it)) }
+                selected = trackConfig.interval,
+                onSelect = { setTrackSettings(trackConfig.copy(interval = it)) }
             )
         }
     }

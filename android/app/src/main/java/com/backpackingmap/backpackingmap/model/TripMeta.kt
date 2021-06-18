@@ -1,7 +1,6 @@
 package com.backpackingmap.backpackingmap.model
 
-data class TrackMeta(
-    val id: TrackId,
-    val trip: TripId,
+data class TripMeta(
+    val id: TripId,
     val name: String,
 )

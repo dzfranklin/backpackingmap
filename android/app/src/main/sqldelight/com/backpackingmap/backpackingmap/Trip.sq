@@ -1,0 +1,9 @@
+import com.backpackingmap.backpackingmap.model.TripId;
+
+CREATE TABLE tripMetaTable(
+    id BLOB AS TripId PRIMARY KEY,
+    name TEXT NOT NULL
+);
+
+insert:
+    INSERT INTO tripMetaTable(id, name) VALUES (?, ?);

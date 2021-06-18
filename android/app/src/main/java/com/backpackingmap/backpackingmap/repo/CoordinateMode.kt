@@ -5,5 +5,9 @@ import com.backpackingmap.backpackingmap.R
 
 enum class CoordinateMode(@StringRes val label: Int) {
     LatLng(R.string.latlng),
-    UTM(R.string.utm),
+    UTM(R.string.utm);
+
+    companion object {
+        val DEFAULT = LatLng
+    }
 }

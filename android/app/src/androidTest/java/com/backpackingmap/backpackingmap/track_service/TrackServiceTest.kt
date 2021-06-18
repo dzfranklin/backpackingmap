@@ -5,7 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.backpackingmap.backpackingmap.model.TrackId
 import com.backpackingmap.backpackingmap.model.TrackMoment
-import com.backpackingmap.backpackingmap.model.TrackSettings
+import com.backpackingmap.backpackingmap.model.TrackConfig
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -15,7 +15,6 @@ import org.hamcrest.CoreMatchers.equalTo
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import timber.log.Timber
 import kotlin.time.Duration
 
 data class MomentData(
@@ -27,7 +26,7 @@ data class MomentData(
 class TrackServiceTest {
     // NOTE: This seems to be capped around 1sec. Going slower won't necessarily cause a visible
     // impact because you also have to consider fastestInterval
-    private val trackSettings = MutableStateFlow(TrackSettings(interval = Duration.milliseconds(1)))
+    private val trackSettings = MutableStateFlow(TrackConfig(interval = Duration.milliseconds(1)))
 
     private val activeTrack = MutableStateFlow<TrackId?>(null)
 
@@ -38,7 +37,7 @@ class TrackServiceTest {
         val targetContext = InstrumentationRegistry.getInstrumentation().targetContext
         TrackService.bind(
             TrackService.Args(
-                trackSettings = trackSettings,
+                trackConfig = trackSettings,
                 activeTrack = activeTrack,
                 addTrackMoment = { active, moment ->
                     moments.send(MomentData(active, moment))

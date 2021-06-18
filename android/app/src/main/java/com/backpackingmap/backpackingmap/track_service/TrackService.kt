@@ -15,7 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import com.backpackingmap.backpackingmap.R
 import com.backpackingmap.backpackingmap.model.TrackId
 import com.backpackingmap.backpackingmap.model.TrackMoment
-import com.backpackingmap.backpackingmap.model.TrackSettings
+import com.backpackingmap.backpackingmap.model.TrackConfig
 import com.backpackingmap.backpackingmap.ui.BMIntentAction
 import com.backpackingmap.backpackingmap.ui.BMNotificationChannel
 import com.google.android.gms.location.*
@@ -29,7 +29,7 @@ import timber.log.Timber
 
 class TrackService : LifecycleService() {
     data class Args(
-        val trackSettings: Flow<TrackSettings>,
+        val trackConfig: Flow<TrackConfig>,
         val activeTrack: Flow<TrackId?>,
         val addTrackMoment: suspend (track: TrackId, moment: TrackMoment) -> Unit
     )
@@ -61,7 +61,7 @@ class TrackService : LifecycleService() {
         val client = LocationServices.getFusedLocationProviderClient(this)
         var currentUpdates: LocationCallback? = null
 
-        args.activeTrack.combine(args.trackSettings) { activeTrack, trackSettings -> activeTrack to trackSettings }
+        args.activeTrack.combine(args.trackConfig) { activeTrack, trackSettings -> activeTrack to trackSettings }
             .collect { (activeTrack, config) ->
                 val cachedCurrentUpdates = currentUpdates
                 if (cachedCurrentUpdates != null) {

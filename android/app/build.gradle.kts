@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
+    id("com.squareup.sqldelight")
 }
 
 android {
@@ -54,6 +55,13 @@ android {
     }
 }
 
+sqldelight {
+    database("MainDatabase") {
+        // since we use requery sqlite-android we know we meet this
+        dialect = "sqlite:3.25"
+    }
+}
+
 dependencies {
     implementation("com.jakewharton.timber:timber:4.7.1")
     implementation("androidx.navigation:navigation-compose:2.4.0-alpha01")
@@ -76,4 +84,10 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.0.0-beta08")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.0.0-beta08")
     implementation("com.google.android.gms:play-services-location:18.0.0")
+    implementation("com.squareup.sqldelight:android-driver:1.5.0")
+    implementation("com.squareup.sqldelight:coroutines-extensions-jvm:1.5.0")
+    testImplementation("io.mockk:mockk:1.11.0")
+    androidTestImplementation("io.mockk:mockk-android:1.11.0")
+    testImplementation("app.cash.turbine:turbine:0.5.2")
+    implementation("com.github.requery:sqlite-android:3.35.5")
 }

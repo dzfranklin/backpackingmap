@@ -1,0 +1,12 @@
+import com.backpackingmap.backpackingmap.model.TrackId;
+import com.backpackingmap.backpackingmap.model.TripId;
+
+CREATE TABLE trackMetaTable (
+    id BLOB AS TrackId PRIMARY KEY,
+    tripId BLOB AS TripId NOT NULL,
+    name TEXT NOT NULL,
+    FOREIGN KEY (tripId) REFERENCES tripMetaTable(id)
+);
+
+insert:
+    INSERT INTO trackMetaTable(id, tripId, name) VALUES (?, ?, ?);
